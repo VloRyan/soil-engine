@@ -1,0 +1,5 @@
+.idea/
+.venv/
+cmake-build-debug/
+test_package/build
+test_package/CMakeUserPresets.json
