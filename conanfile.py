@@ -40,7 +40,7 @@ class engineRecipe(ConanFile):
         self.requires("devil/1.8.0")
         self.requires("glm/1.0.1", transitive_headers=True)
         self.requires("plog/1.1.10")
-        self.requires("openal-soft/1.23.1")
+        self.requires("openal-soft/1.24.3")
         self.requires("gl3w/0.1")
 
     def generate(self):

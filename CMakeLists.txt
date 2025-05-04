@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31.6)
-project(soil_engine)
+project(soil_engine CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 
