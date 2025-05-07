@@ -41,7 +41,7 @@ class SoilEngineRecipe(ConanFile):
         self.requires("glm/1.0.1", transitive_headers=True)
         self.requires("plog/1.1.10")
         self.requires("openal-soft/1.24.3")
-        self.requires("gl3w/0.1")
+        self.requires("gl3w/1.0")
 
         self.test_requires("gtest/1.16.0")
 
