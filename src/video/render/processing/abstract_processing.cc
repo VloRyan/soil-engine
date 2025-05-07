@@ -1,13 +1,10 @@
 #include "video/render/processing/abstract_processing.h"
 #include <typeinfo>
 
-namespace video::render {
-    AbstractProcessing::AbstractProcessing()
-        : requiredStep_(nullptr), name_(typeid(*this).name()) {
-    }
+namespace soil::video::render {
+    AbstractProcessing::AbstractProcessing() : requiredStep_(nullptr), name_(typeid(*this).name()) {}
 
-    AbstractProcessing::AbstractProcessing(std::string name)
-        : requiredStep_(nullptr), name_(std::move(name)) {
+    AbstractProcessing::AbstractProcessing(std::string name) : requiredStep_(nullptr), name_(std::move(name)) {
         if (name_.empty()) {
             name_ = typeid(*this).name();
         }
@@ -23,15 +20,9 @@ namespace video::render {
         // NOOP
     }
 
-    AbstractProcessing* AbstractProcessing::GetRequiredStep() const {
-        return requiredStep_;
-    }
+    AbstractProcessing* AbstractProcessing::GetRequiredStep() const { return requiredStep_; }
 
-    void AbstractProcessing::SetName(std::string name) {
-        name_ = std::move(name);
-    }
+    void AbstractProcessing::SetName(std::string name) { name_ = std::move(name); }
 
-    std::string AbstractProcessing::GetName() {
-        return name_;
-    }
-}
+    std::string AbstractProcessing::GetName() { return name_; }
+} // namespace soil::video::render

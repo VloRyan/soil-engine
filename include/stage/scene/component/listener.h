@@ -1,26 +1,23 @@
 
-#ifndef ENGINE_STAGE_SCENE_COMPONENT_LISTENER_H
-#define ENGINE_STAGE_SCENE_COMPONENT_LISTENER_H
+#ifndef SOIL_STAGE_SCENE_COMPONENT_LISTENER_H
+#define SOIL_STAGE_SCENE_COMPONENT_LISTENER_H
 #include "component.h"
 #include "sound/listener.h"
 
-namespace stage::scene::component {
+namespace soil::stage::scene::component {
     class Listener final : public Component {
     public:
-        explicit Listener(::sound::Listener *listener);
+        explicit Listener(sound::Listener *listener);
 
         ~Listener() override = default;
 
-        [[nodiscard]] ::sound::Listener* GetListener() const;
+        [[nodiscard]] sound::Listener *GetListener() const;
 
         void UpdateMatrix(const glm::mat4 &matrix) override;
 
-    protected:
-
-
     private:
-        ::sound::Listener *listener_;
+        sound::Listener *listener_;
     };
-}
+} // namespace soil::stage::scene::component
 
-#endif //ENGINE_STAGE_SCENE_COMPONENT_LISTENER_H
+#endif // SOIL_STAGE_SCENE_COMPONENT_LISTENER_H

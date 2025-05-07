@@ -1,18 +1,17 @@
-#ifndef ENGINE_ENGINE_VIDEO_RENDER_PROPERTIES_H_
-#define ENGINE_ENGINE_VIDEO_RENDER_PROPERTIES_H_
+#ifndef SOIL_VIDEO_RENDER_PROPERTIES_H_
+#define SOIL_VIDEO_RENDER_PROPERTIES_H_
 #include <array>
 
-#include "base.h"
 #include <glm/glm.hpp>
 
 #define MAX_CLIPPING_PLANES 2U
 
-namespace video::render {
-    class Properties {
+namespace soil::video::render {
+    class Properties final {
     public:
         Properties();
 
-        virtual ~Properties();
+        ~Properties() = default;
 
         [[nodiscard]] bool isClippingPlaneEnabled(int index) const;
 
@@ -27,6 +26,6 @@ namespace video::render {
         uint shadowMapSize_;
         bool wireFrame_;
     };
-} // Render
+} // namespace soil::video::render
 
-#endif //ENGINE_ENGINE_VIDEO_RENDER_PROPERTIES_H_
+#endif // SOIL_VIDEO_RENDER_PROPERTIES_H_

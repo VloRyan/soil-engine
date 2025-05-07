@@ -1,35 +1,29 @@
-#ifndef VIDEO_TEXTURE_MANAGER_H
-#define VIDEO_TEXTURE_MANAGER_H
+#ifndef SOIL_VIDEO_TEXTURE_MANAGER_H
+#define SOIL_VIDEO_TEXTURE_MANAGER_H
 #include <vector>
 #include <video/texture/data.h>
 #include "parameter.h"
 #include "texture.h"
 
-namespace video::texture
-{
+namespace soil::video::texture {
 #define MAX_BINDLESS_TEXTURES 255U
 
-    struct TextureBuffer
-    {
+    struct TextureBuffer {
         GLuint64 texture[MAX_BINDLESS_TEXTURES];
     };
 
-    struct TextureCacheEntry
-    {
+    struct TextureCacheEntry {
         explicit TextureCacheEntry(Texture *texture);
 
         int useCount;
         Texture *texture;
     };
 
-    class Manager
-    {
+    class Manager final {
     public:
         explicit Manager();
 
-        virtual ~Manager();
-
-        // void Init(buffer::Object *uboTextures);
+        ~Manager();
 
         Texture *GetTexture2D(const std::string &fileName, const Parameter &parameter);
 
@@ -53,9 +47,9 @@ namespace video::texture
         static void initDevIL();
 
         static uint loadCubeMap(const std::string &name, const std::string &ext = ".tga",
-                                Texture::Format format = Texture::Format::sRGB);
+                                Texture::Format internalFormat = Texture::Format::sRGB);
 
-        static void loadCubeMapFace(const std::string &texturePathFile, uint target, Texture::Format format);
+        static void loadCubeMapFace(const std::string &texturePathFile, uint target, Texture::Format internalFormat);
 
         static Data *loadData(const std::string &fileName);
 
@@ -73,9 +67,7 @@ namespace video::texture
 
         static void logGLError(const char *text);
 
-        bool cacheDirty_;
         std::vector<TextureCacheEntry> texturesCache_;
-        // buffer::Object *uboTextures_;
     };
-} // namespace video::texture
-#endif /* VIDEO_TEXTURE_MANAGER_H */
+} // namespace soil::video::texture
+#endif /* SOIL_VIDEO_TEXTURE_MANAGER_H */

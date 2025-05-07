@@ -1,23 +1,17 @@
-#ifndef ENGINE_STAGE_SCENE_VIEWER_GUI_H_
-#define ENGINE_STAGE_SCENE_VIEWER_GUI_H_
+#ifndef SOIL_STAGE_SCENE_VIEWER_GUI_H_
+#define SOIL_STAGE_SCENE_VIEWER_GUI_H_
 
 #include "node.h"
 
-namespace stage::scene::viewer
-{
-    enum class OrthoType
-    {
-        OrthoHeight,
-        Full
-    };
-    class Ortho : public Node
-    {
+namespace soil::stage::scene::viewer {
+    enum class OrthoType { OrthoHeight, Full };
+    class Ortho final : public Node {
     public:
-        explicit Ortho(scene::Node *parent, glm::ivec2 resolution, float orthoHeight);
+        explicit Ortho(scene::Node *parent, glm::ivec2 resolution, float orthoSize);
 
         ~Ortho() override = default;
 
-        virtual void SetProjection(glm::vec3 size);
+        void SetProjection(glm::vec3 size);
 
         void Look(glm::vec3 pos, glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
 
@@ -29,11 +23,11 @@ namespace stage::scene::viewer
 
         void SetPosition(glm::vec3 pos) override;
 
-        void Handle(const engine::WindowEvent &event) override;
+        void Handle(const WindowEvent &event) override;
 
         void Update() override;
-        [[nodiscard]] virtual OrthoType GetOrthoType() const;
-        virtual void SetOrthoType(const OrthoType ortho_type);
+        [[nodiscard]] OrthoType GetOrthoType() const;
+        void SetOrthoType(OrthoType ortho_type);
 
     private:
         void UpdateDirty() override;
@@ -47,9 +41,9 @@ namespace stage::scene::viewer
         float nearZ_;
         float farZ_;
         world::collision::Frustum *frustum_;
-        float orthoHeight_;
+        float orthoSize_;
         OrthoType orthoType_{OrthoType::Full};
     };
-} // namespace stage::scene::viewer
+} // namespace soil::stage::scene::viewer
 
-#endif // ENGINE_STAGE_SCENE_VIEWER_GUI_H_
+#endif // SOIL_STAGE_SCENE_VIEWER_GUI_H_

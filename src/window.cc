@@ -5,22 +5,18 @@
 
 #include "exception.h"
 
-namespace engine
-{
-    Window::Window(const WindowParameter &args) : parameter_(args), stateFlags_(0), glfwWindow_(nullptr), statistics_()
-    {
-    }
+namespace soil {
+    Window::Window(const WindowParameter &args) :
+        parameter_(args), stateFlags_(0), glfwWindow_(nullptr), statistics_() {}
 
-    void Window::Open()
-    {
+    void Window::Open() {
         glfwWindowHint(GLFW_SAMPLES, 1);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, parameter_.OpenGLVersion[0]);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, parameter_.OpenGLVersion[1]);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
-        if (HasState(WindowState::Maximized))
-        {
+        if (HasState(WindowState::Maximized)) {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
         }
 
@@ -28,13 +24,11 @@ namespace engine
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
         GLFWmonitor *monitor = nullptr;
-        if (parameter_.Type == WindowType::Fullscreen)
-        {
+        if (parameter_.Type == WindowType::Fullscreen) {
             monitor = glfwGetPrimaryMonitor();
         }
         glfwWindow_ = glfwCreateWindow(parameter_.Size.x, parameter_.Size.y, title_.c_str(), monitor, nullptr);
-        if (glfwWindow_ == nullptr)
-        {
+        if (glfwWindow_ == nullptr) {
             const int code = glfwGetError(nullptr);
             std::stringstream stream;
             stream << std::hex << code;
@@ -49,8 +43,7 @@ namespace engine
         glfwSwapInterval(0);
     }
 
-    void Window::Close()
-    {
+    void Window::Close() {
         glfwSetWindowShouldClose(glfwWindow_, GLFW_TRUE);
         stateFlags_ = static_cast<short>(WindowState::Closed);
     }
@@ -63,38 +56,24 @@ namespace engine
 
     bool Window::HasState(WindowState stateFlag) const { return stateFlags_[static_cast<short>(stateFlag)]; }
 
-    void Window::registerCallbacks()
-    {
+    void Window::registerCallbacks() {
         static auto *instance = this;
-        glfwSetFramebufferSizeCallback(glfwWindow_,
-                                       [](GLFWwindow *win, const int width, const int height)
-                                       {
-                                           instance->parameter_.Size = glm::ivec2(width, height);
-                                           // if (width > height) {
-                                           const auto aspect = static_cast<float>(width) / static_cast<float>(height);
-                                           instance->parameter_.RenderSizeAspect = glm::ivec2(
-                                               static_cast<float>(instance->parameter_.RenderSize.y) * aspect,
-                                               instance->parameter_.RenderSize.y);
-
-                                           // } else {
-
-                                           /*
-                                           const auto aspect = static_cast<float>(height) / static_cast<float>(width);
-                                           instance->parameter_.RenderSizeAspect = glm::ivec2(
-                                               instance->parameter_.RenderSize.x,
-                                               static_cast<float>(instance->parameter_.RenderSize.x) * aspect);
-                                           */
-                                           // }
-                                           const auto event = WindowEvent(instance, WindowEvent::Cause::SizeChanged);
-                                           instance->fire(event);
-                                       });
-        glfwSetWindowIconifyCallback(
-            glfwWindow_, [](GLFWwindow *win, const int iconified)
-            { instance->stateFlags_[static_cast<short>(WindowState::Minimized)] = iconified != 0; });
-        glfwSetWindowFocusCallback(glfwWindow_, [](GLFWwindow *win, const int focused)
-                                   { instance->stateFlags_[static_cast<short>(WindowState::Focused)] = focused != 0; });
+        glfwSetFramebufferSizeCallback(glfwWindow_, [](GLFWwindow *, const int width, const int height) {
+            instance->parameter_.Size = glm::ivec2(width, height);
+            const auto aspect = static_cast<float>(width) / static_cast<float>(height);
+            instance->parameter_.RenderSizeAspect = glm::ivec2(
+                static_cast<float>(instance->parameter_.RenderSize.y) * aspect, instance->parameter_.RenderSize.y);
+            const auto event = WindowEvent(instance, WindowEvent::Cause::SizeChanged);
+            instance->fire(event);
+        });
+        glfwSetWindowIconifyCallback(glfwWindow_, [](GLFWwindow *, const int iconified) {
+            instance->stateFlags_[static_cast<short>(WindowState::Minimized)] = iconified != 0;
+        });
+        glfwSetWindowFocusCallback(glfwWindow_, [](GLFWwindow *, const int focused) {
+            instance->stateFlags_[static_cast<short>(WindowState::Focused)] = focused != 0;
+        });
         glfwSetWindowCloseCallback(
-            glfwWindow_, [](GLFWwindow *window) { instance->stateFlags_ = static_cast<short>(WindowState::Closed); });
+            glfwWindow_, [](GLFWwindow *) { instance->stateFlags_ = static_cast<short>(WindowState::Closed); });
     }
 
     GLFWwindow *Window::GetGLFWWindow() const { return glfwWindow_; }
@@ -103,27 +82,23 @@ namespace engine
 
     const glm::ivec2 &Window::GetRenderSize() const { return parameter_.RenderSizeAspect; }
 
-    glm::vec2 Window::CenterMouseCursor() const
-    {
+    glm::vec2 Window::CenterMouseCursor() const {
         glm::uvec2 centerPosition;
         centerPosition.x = parameter_.Size.x / 2;
         centerPosition.y = parameter_.Size.y / 2;
-        glfwSetCursorPos(glfwWindow_, (double)centerPosition.x, (double)centerPosition.y);
+        glfwSetCursorPos(glfwWindow_, centerPosition.x, centerPosition.y);
         return centerPosition;
     }
 
-    glm::vec2 Window::GetMouseCursorPos() const
-    {
+    glm::vec2 Window::GetMouseCursorPos() const {
         glm::dvec2 pos;
         glfwGetCursorPos(glfwWindow_, &pos[0], &pos[1]);
         return pos;
     }
 
-    void Window::SetParameter(const WindowParameter &params)
-    {
+    void Window::SetParameter(const WindowParameter &params) {
         GLFWmonitor *monitor = nullptr;
-        if (params.Type == WindowType::Fullscreen)
-        {
+        if (params.Type == WindowType::Fullscreen) {
             monitor = glfwGetPrimaryMonitor();
         }
         glfwSetWindowMonitor(glfwWindow_, monitor, 0, 0, params.Size.x, params.Size.y, params.RefreshRate);
@@ -136,12 +111,11 @@ namespace engine
 
     const WindowParameter &Window::GetParameter() const { return parameter_; }
 
-    void Window::UpdateStatistics(const Statistics &newStats)
-    {
+    void Window::UpdateStatistics(const Statistics &newStats) {
         this->statistics_ = newStats;
         const auto event = WindowEvent(this, WindowEvent::Cause::StatisticsChanged);
         fire(event);
     }
 
     const Statistics &Window::GetStatistics() const { return statistics_; }
-} // namespace engine
+} // namespace soil

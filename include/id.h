@@ -1,10 +1,10 @@
-#ifndef ENGINE_ID_H_
-#define ENGINE_ID_H_
+#ifndef SOIL_ID_H_
+#define SOIL_ID_H_
 
 #include <atomic>
 #include "base.h"
 
-namespace engine {
+namespace soil {
     class Id {
     public:
         static auto Next() -> uint;
@@ -14,4 +14,4 @@ namespace engine {
     };
 } // engine
 
-#endif //ENGINE_ID_H_
+#endif //SOIL_ID_H_

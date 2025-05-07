@@ -1,12 +1,12 @@
 
-#ifndef ENGINE_VIDEO_RENDER_INSTANCE_BUFFER_H
-#define ENGINE_VIDEO_RENDER_INSTANCE_BUFFER_H
+#ifndef SOIL_VIDEO_RENDER_INSTANCE_BUFFER_H
+#define SOIL_VIDEO_RENDER_INSTANCE_BUFFER_H
 #include <vector>
 #include "video/buffer/object.h"
 
 #include "video/render/instance/instance.h"
 
-namespace video::render::instance {
+namespace soil::video::render::instance {
     class Buffer {
     public:
         Buffer(const Buffer &other) = delete;
@@ -27,7 +27,7 @@ namespace video::render::instance {
 
         bool RemoveInstance(Instance *instance);
 
-        [[nodiscard]] buffer::Object* GetPerInstanceBuffer() const;
+        [[nodiscard]] buffer::Object *GetPerInstanceBuffer() const;
 
         [[nodiscard]] size_t GetInstanceSize() const;
 
@@ -42,6 +42,6 @@ namespace video::render::instance {
         buffer::Object *perInstanceBuffer_;
         size_t instanceSize_;
     };
-}
+} // namespace soil::video::render::instance
 
-#endif //ENGINE_VIDEO_RENDER_INSTANCE_BUFFER_H
+#endif // SOIL_VIDEO_RENDER_INSTANCE_BUFFER_H

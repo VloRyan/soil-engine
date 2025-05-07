@@ -1,15 +1,14 @@
-#ifndef ENGINE_STAGE_SCENE_VIEWER_PERSPECTIVE_H_
-#define ENGINE_STAGE_SCENE_VIEWER_PERSPECTIVE_H_
+#ifndef SOIL_STAGE_SCENE_VIEWER_PERSPECTIVE_H_
+#define SOIL_STAGE_SCENE_VIEWER_PERSPECTIVE_H_
 
-#include "node.h"
-#include "window.h"
-#include "window_event.h"
 #include "glm/glm.hpp"
+#include "node.h"
+#include "window_event.h"
 
-namespace stage::scene::viewer {
+namespace soil::stage::scene::viewer {
     class Perspective : public Node {
     public:
-        explicit Perspective(scene::Node *parent, glm::ivec2 resolution);
+        explicit Perspective(scene::Node *parent);
 
         ~Perspective() override;
 
@@ -17,7 +16,7 @@ namespace stage::scene::viewer {
 
         [[nodiscard]] glm::mat4 GetViewMatrix() const override;
 
-        world::collision::Frustum* GetFrustum() override;
+        world::collision::Frustum *GetFrustum() override;
 
         void Look(glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
 
@@ -25,16 +24,13 @@ namespace stage::scene::viewer {
 
         void AddVelocity(glm::vec3 velocity, bool relative = true);
 
-        //virtual void UpdateRotation(float timeElapsed) = 0;
-
         void SetPerspective(float fovY, float aspect, float nearZ, float farZ);
 
-        void Handle(const engine::WindowEvent &event) override;
+        void Handle(const WindowEvent &event) override;
 
         [[nodiscard]] glm::vec3 GetRotate() const;
 
         void SetRotate(glm::vec3 rot);
-
 
         [[nodiscard]] glm::vec3 GetRight() const override;
 
@@ -53,8 +49,7 @@ namespace stage::scene::viewer {
         void Update() override;
 
     protected:
-        void UpdateDirty();
-
+        void UpdateDirty() override;
 
         bool updateVelocity_;
         glm::vec3 moveSpeed_;
@@ -62,7 +57,6 @@ namespace stage::scene::viewer {
         glm::vec3 right_;
         glm::vec3 up_;
         glm::vec3 rotate_;
-        //glm::vec3 position_;
         glm::vec3 velocity_;
 
         float fovY_;
@@ -73,6 +67,6 @@ namespace stage::scene::viewer {
         glm::mat4 view_;
         world::collision::Frustum *frustum_;
     };
-} // stage::scene::viewer
+} // namespace soil::stage::scene::viewer
 
-#endif //ENGINE_STAGE_SCENE_VIEWER_PERSPECTIVE_H_
+#endif // SOIL_STAGE_SCENE_VIEWER_PERSPECTIVE_H_

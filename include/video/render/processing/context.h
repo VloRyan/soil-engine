@@ -1,19 +1,19 @@
-#ifndef VIDEO_RENDER_PROCESSING_CONTEXT_H_
-#define VIDEO_RENDER_PROCESSING_CONTEXT_H_
+#ifndef SOIL_VIDEO_RENDER_PROCESSING_CONTEXT_H_
+#define SOIL_VIDEO_RENDER_PROCESSING_CONTEXT_H_
 #include "video/render/properties.h"
 #include "video/render/state.h"
 #include "video/render/technique.h"
 
-namespace video::render {
+namespace soil::video::render {
     class Context {
     public:
         Context();
 
-        [[nodiscard]] Properties* GetProperties() const;
+        [[nodiscard]] Properties *GetProperties() const;
 
         void SetProperties(Properties *properties);
 
-        [[nodiscard]] Technique* GetTechnique() const;
+        [[nodiscard]] Technique *GetTechnique() const;
 
         void SetTechnique(Technique *algorithm);
 
@@ -26,6 +26,6 @@ namespace video::render {
         Technique *technique_;
         State *state_;
     };
-} // Render
+} // namespace soil::video::render
 
-#endif //VIDEO_RENDER_PROCESSING_CONTEXT_H_
+#endif // SOIL_VIDEO_RENDER_PROCESSING_CONTEXT_H_

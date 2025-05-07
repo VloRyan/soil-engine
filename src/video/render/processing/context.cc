@@ -1,19 +1,17 @@
 #include "video/render/processing/context.h"
 
-namespace video::render {
-Context::Context() : properties_(nullptr), technique_(nullptr), state_() {}
+namespace soil::video::render {
+    Context::Context() : properties_(nullptr), technique_(nullptr), state_() {}
 
-Properties *Context::GetProperties() const { return properties_; }
+    Properties *Context::GetProperties() const { return properties_; }
 
-void Context::SetProperties(Properties *properties) {
-  properties_ = properties;
-}
+    void Context::SetProperties(Properties *properties) { properties_ = properties; }
 
-Technique *Context::GetTechnique() const { return technique_; }
+    Technique *Context::GetTechnique() const { return technique_; }
 
-void Context::SetTechnique(Technique *algorithm) { technique_ = algorithm; }
+    void Context::SetTechnique(Technique *algorithm) { technique_ = algorithm; }
 
-State &Context::GetState() const { return *state_; }
+    State &Context::GetState() const { return *state_; }
 
-void Context::SetState(State &state) { state_ = &state; }
-} // namespace video::render
+    void Context::SetState(State &state) { state_ = &state; }
+} // namespace soil::video::render

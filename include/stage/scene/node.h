@@ -1,24 +1,24 @@
 
-#ifndef ENGINE_STAGE_SCENE_NODE_H
-#define ENGINE_STAGE_SCENE_NODE_H
+#ifndef SOIL_STAGE_SCENE_NODE_H
+#define SOIL_STAGE_SCENE_NODE_H
 
 #include <bitset>
 #include <cstdint>
 #include <string>
 #include <vector>
 
-#include "window_event.h"
 #include "component/component.h"
 #include "input/event.h"
 #include "stage/event/component.h"
 #include "stage/event/node.h"
+#include "window_event.h"
 #include "world/entity/object_3d.h"
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class Scene;
 
 
-    class Node : public world::entity::Object3d, public input::EventHandler, public engine::WindowEventHandler {
+    class Node : public world::entity::Object3d, public input::EventHandler, public WindowEventHandler {
     public:
         enum class State : std::uint8_t {
             /** Needs to be (re)initialized */
@@ -52,11 +52,7 @@ namespace stage::scene {
         };
 
 
-        enum class ReceiverType : std::uint8_t {
-            None = 0,
-            Window,
-            Input
-        };
+        enum class ReceiverType : std::uint8_t { None = 0, Window, Input };
 
         explicit Node(Node *parent, Type type, const std::vector<ReceiverType> &receiveTypeFlags = {},
                       std::string name = "");
@@ -79,15 +75,15 @@ namespace stage::scene {
 
         void SetParent(Node *parent);
 
-        [[nodiscard]] Node* GetParent() const;
+        [[nodiscard]] Node *GetParent() const;
 
         [[nodiscard]] const std::vector<Node *> &GetChildren() const;
 
-        [[nodiscard]] component::Component* GetComponent(component::Component::Type type) const;
+        [[nodiscard]] component::Component *GetComponent(component::Component::Type type) const;
 
         [[nodiscard]] std::vector<component::Component *> GetComponents(component::Component::Type type) const;
 
-        template<class T>
+        template <class T>
         T AddComponent(T comp) {
             using type = std::remove_pointer_t<T>;
             static_assert(std::is_base_of_v<component::Component, type>,
@@ -106,7 +102,7 @@ namespace stage::scene {
 
         virtual void SetName(const std::string &name);
 
-        [[nodiscard]] Scene* GetScene() const;
+        [[nodiscard]] Scene *GetScene() const;
 
         void SetPosition(glm::vec3 pos) override;
 
@@ -118,11 +114,9 @@ namespace stage::scene {
 
         void SetLocalTransform(const glm::mat4 &Transform) override;
 
-        void Handle(const input::Event &event) override {
-        }
+        void Handle(const input::Event &event) override {}
 
-        void Handle(const engine::WindowEvent &event) override {
-        }
+        void Handle(const WindowEvent &event) override {}
 
         virtual void Handle(const event::Component &event);
 
@@ -162,7 +156,5 @@ namespace stage::scene {
         std::vector<std::vector<component::Component *> > components_;
         std::bitset<4> receiveTypeFlags_;
     };
-};
-
-
-#endif //ENGINE_STAGE_SCENE_NODE_H
+} // namespace soil::stage::scene
+#endif // SOIL_STAGE_SCENE_NODE_H

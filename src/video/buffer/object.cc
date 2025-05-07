@@ -1,17 +1,12 @@
 #include "video/buffer/object.h"
 #include <plog/Log.h>
-#include "exception.h"
 #include "GL/gl3w.h"
+#include "exception.h"
 
-namespace video::buffer {
-    Object::Object(const Types bufferType, const UsageType usage, const AccessType access)
-        : data_(nullptr),
-          cursor_(nullptr),
-          id_(0),
-          bufferSize_(0),
-          bufferType_(bufferType),
-          usage_(usage),
-          access_(access) {
+namespace soil::video::buffer {
+    Object::Object(const Types bufferType, const UsageType usage, const AccessType access) :
+        data_(nullptr), cursor_(nullptr), id_(0), bufferSize_(0), bufferType_(bufferType), usage_(usage),
+        access_(access) {
         create();
     }
 
@@ -20,8 +15,8 @@ namespace video::buffer {
             return;
         }
 
-        PLOG_DEBUG << "Unload Object " << std::to_string(id_) << " with type " << std::to_string(
-                      static_cast<int>(bufferType_));
+        PLOG_DEBUG << "Unload Object " << std::to_string(id_) << " with type "
+                   << std::to_string(static_cast<int>(bufferType_));
         glDeleteBuffers(1, &id_);
         delete cursor_;
         id_ = 0;
@@ -35,7 +30,7 @@ namespace video::buffer {
         glGenBuffers(1, &id_);
     }
 
-    Cursor* Object::GetCursor() {
+    Cursor *Object::GetCursor() {
         if (cursor_ == nullptr) {
             cursor_ = new Cursor(data_);
         }
@@ -77,7 +72,7 @@ namespace video::buffer {
 
     void Object::Flush() {
         if (cursor_ != nullptr) {
-            uploadData(GetData(), cursor_->GetDataWritten());
+            uploadData(GetData(), static_cast<int>(cursor_->GetDataWritten()));
             cursor_->MoveTo(0);
         }
     }
@@ -95,67 +90,63 @@ namespace video::buffer {
 
     GLenum Object::getGLUsageType() const {
         switch (this->GetAccess()) {
-            case AccessType::Draw:
-                switch (this->GetUsage()) {
-                    case UsageType::Dynamic:
-                        return GL_DYNAMIC_DRAW;
-                    case UsageType::Stream:
-                        return GL_STREAM_DRAW;
-                    case UsageType::Static:
-                        return GL_STATIC_DRAW;
-                    default:
-                        throw engine::Exception("unknown usage type: " + std::to_string((uint) this->GetUsage()));
-                }
-            case AccessType::Read:
-                switch (this->GetUsage()) {
-                    case UsageType::Dynamic:
-                        return GL_DYNAMIC_READ;
-                    case UsageType::Stream:
-                        return GL_STREAM_READ;
-                    case UsageType::Static:
-                        return GL_STATIC_READ;
-                    default:
-                        throw engine::Exception("unknown usage type: " + std::to_string((uint) this->GetUsage()));
-                }
-            case AccessType::Copy:
-                switch (this->GetUsage()) {
-                    case UsageType::Dynamic:
-                        return GL_DYNAMIC_COPY;
-                    case UsageType::Stream:
-                        return GL_STREAM_COPY;
-                    case UsageType::Static:
-                        return GL_STATIC_COPY;
-                    default:
-                        throw engine::Exception("unknown usage type: " + std::to_string((uint) this->GetUsage()));
-                }
+        case AccessType::Draw:
+            switch (this->GetUsage()) {
+            case UsageType::Dynamic:
+                return GL_DYNAMIC_DRAW;
+            case UsageType::Stream:
+                return GL_STREAM_DRAW;
+            case UsageType::Static:
+                return GL_STATIC_DRAW;
             default:
-                throw engine::Exception("unknown access type: " + std::to_string((uint) this->GetAccess()));
+                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+            }
+        case AccessType::Read:
+            switch (this->GetUsage()) {
+            case UsageType::Dynamic:
+                return GL_DYNAMIC_READ;
+            case UsageType::Stream:
+                return GL_STREAM_READ;
+            case UsageType::Static:
+                return GL_STATIC_READ;
+            default:
+                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+            }
+        case AccessType::Copy:
+            switch (this->GetUsage()) {
+            case UsageType::Dynamic:
+                return GL_DYNAMIC_COPY;
+            case UsageType::Stream:
+                return GL_STREAM_COPY;
+            case UsageType::Static:
+                return GL_STATIC_COPY;
+            default:
+                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+            }
+        default:
+            throw Exception("unknown access type: " + std::to_string(static_cast<uint>(this->GetAccess())));
         }
     }
 
     GLenum Object::getGLBufferType(const Types type) const {
         switch (type) {
-            case Types::Vertex:
-                return GL_ARRAY_BUFFER;
-            case Types::ElementArray:
-                return GL_ELEMENT_ARRAY_BUFFER;
-            case Types::Uniform:
-                return GL_UNIFORM_BUFFER;
-            case Types::ShaderStorage:
-                return GL_SHADER_STORAGE_BUFFER;
-            case Types::DrawIndirect:
-                return GL_DRAW_INDIRECT_BUFFER;
+        case Types::Vertex:
+            return GL_ARRAY_BUFFER;
+        case Types::ElementArray:
+            return GL_ELEMENT_ARRAY_BUFFER;
+        case Types::Uniform:
+            return GL_UNIFORM_BUFFER;
+        case Types::ShaderStorage:
+            return GL_SHADER_STORAGE_BUFFER;
+        case Types::DrawIndirect:
+            return GL_DRAW_INDIRECT_BUFFER;
         }
-        throw engine::Exception("Unknown buffer type: " + std::to_string(static_cast<uint>(this->getBufferType())));
+        throw Exception("Unknown buffer type: " + std::to_string(static_cast<uint>(this->getBufferType())));
     }
 
-    void Object::Bind() const {
-        BindAs(getBufferType());
-    }
+    void Object::Bind() const { BindAs(getBufferType()); }
 
-    void Object::Unbind() const {
-        UnbindAs(getBufferType());
-    }
+    void Object::Unbind() const { UnbindAs(getBufferType()); }
 
     void Object::BindAs(const Types type) const {
 #ifdef DEBUG
@@ -167,46 +158,28 @@ namespace video::buffer {
         glBindBuffer(glType, GetId());
     }
 
-    void Object::UnbindAs(const Object::Types type) const {
+    void Object::UnbindAs(const Types type) const {
         const GLenum glType = getGLBufferType(type);
         glBindBuffer(glType, 0);
     }
 
-    Object::AccessType Object::GetAccess() const {
-        return access_;
-    }
+    Object::AccessType Object::GetAccess() const { return access_; }
 
-    uint Object::GetBufferSize() const {
-        return bufferSize_;
-    }
+    uint Object::GetBufferSize() const { return bufferSize_; }
 
-    Object::Types Object::getBufferType() const {
-        return bufferType_;
-    }
+    Object::Types Object::getBufferType() const { return bufferType_; }
 
-    const void* Object::GetData() const {
-        return data_;
-    }
+    const void *Object::GetData() const { return data_; }
 
-    uint Object::GetId() const {
-        return id_;
-    }
+    uint Object::GetId() const { return id_; }
 
-    Object::UsageType Object::GetUsage() const {
-        return usage_;
-    }
+    Object::UsageType Object::GetUsage() const { return usage_; }
 
-    bool Object::IsUsage(const UsageType desired) const {
-        return usage_ == desired;
-    }
+    bool Object::IsUsage(const UsageType desired) const { return usage_ == desired; }
 
-    bool Object::IsCreated() const {
-        return id_ != 0;
-    }
+    bool Object::IsCreated() const { return id_ != 0; }
 
-    void Object::BindToTarget(const uint index) const {
-        BindToTarget(index, getBufferType());
-    }
+    void Object::BindToTarget(const uint index) const { BindToTarget(index, getBufferType()); }
 
     void Object::BindToTarget(const uint index, const Types target) const {
 #ifdef DEBUG
@@ -215,13 +188,13 @@ namespace video::buffer {
         }
 #endif
         switch (target) {
-            case Types::ShaderStorage:
-            case Types::Uniform:
-                break;
-            default:
-                throw engine::Exception("Invalid target for binding: " + std::to_string(static_cast<uint>(target)));
+        case Types::ShaderStorage:
+        case Types::Uniform:
+            break;
+        default:
+            throw Exception("Invalid target for binding: " + std::to_string(static_cast<uint>(target)));
         }
         const GLenum glTarget = getGLBufferType(target);
         glBindBufferBase(glTarget, index, GetId());
     }
-}
+} // namespace soil::video::buffer

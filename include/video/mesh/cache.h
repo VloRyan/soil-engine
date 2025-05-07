@@ -1,29 +1,29 @@
-#ifndef ENGINE_VIDEO_MESH_CACHE_H_
-#define ENGINE_VIDEO_MESH_CACHE_H_
+#ifndef SOIL_VIDEO_MESH_CACHE_H_
+#define SOIL_VIDEO_MESH_CACHE_H_
 
-#include "../../base.h"
-#include "mesh.h"
 #include <functional>
 #include <string>
+#include "base.h"
+#include "mesh.h"
 
-namespace video::mesh {
- class Cache {
- public:
-  Cache() = default;
+namespace soil::video::mesh {
+    class Cache final {
+    public:
+        Cache() = default;
 
-  virtual ~Cache();
+        ~Cache();
 
-  Mesh* GetOrPut(const Definition &definition, const std::function<Mesh*(std::string name)> &func);
+        Mesh *GetOrPut(const Definition &definition, const std::function<Mesh *(std::string name)> &func);
 
-  Mesh* Get(const Definition &definition) const;
+        Mesh *Get(const Definition &definition) const;
 
-  Cache(Cache const &) = delete;
+        Cache(Cache const &) = delete;
 
-  void operator=(Cache const &) = delete;
+        void operator=(Cache const &) = delete;
 
- private:
-  HashMap<std::string, Mesh *> meshes_;
- };
-} // video::shader
+    private:
+        HashMap<std::string, Mesh *> meshes_;
+    };
+} // namespace soil::video::mesh
 
-#endif //ENGINE_VIDEO_MESH_CACHE_H_
+#endif // SOIL_VIDEO_MESH_CACHE_H_

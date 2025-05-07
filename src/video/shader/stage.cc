@@ -1,15 +1,14 @@
 #include "video/shader/stage.h"
-#include "GL/gl3w.h"
 #include <algorithm>
 #include <fstream>
+#include "GL/gl3w.h"
 
+#include "exception.h"
 #include "plog/Log.h"
 #include "util/files.h"
-#include "exception.h"
 
-namespace video::shader {
-    Stage::Stage(const uint id, const uint type) : id_(id), programId_(0), type_(type) {
-    }
+namespace soil::video::shader {
+    Stage::Stage(const uint id, const uint type) : id_(id), programId_(0), type_(type) {}
 
     Stage::~Stage() {
         if (id_ > 0) {
@@ -19,8 +18,7 @@ namespace video::shader {
         }
     }
 
-    size_t Stage::replaceLine(const std::string &line,
-                              std::list<std::string> &lineBuffer,
+    size_t Stage::replaceLine(const std::string &line, std::list<std::string> &lineBuffer,
                               std::string &originFileName) {
         if (line.starts_with("//#include ")) {
             std::string currentDir = util::Files::GetDirectory(originFileName);
@@ -29,7 +27,7 @@ namespace video::shader {
             std::ifstream in(includeFile);
             if (!in.is_open()) {
                 std::string message = "Impossible to open the include file '" + includeFilename + "'";
-                throw engine::Exception(message);
+                throw Exception(message);
             }
             size_t length = 0;
             std::string includeLine;
@@ -48,7 +46,7 @@ namespace video::shader {
         return line.length() + 1; // +1 line terminator
     }
 
-    Stage* Stage::load(std::string fileName, uint type) {
+    Stage *Stage::load(std::string fileName, uint type) {
         std::string line;
         size_t length = 0;
         std::list<std::string> lineBuffer;
@@ -56,7 +54,7 @@ namespace video::shader {
         std::ifstream in(fileName);
         if (!in.is_open()) {
             std::string message = "Impossible to open the shader file '" + fileName + "'";
-            throw engine::Exception(message);
+            throw Exception(message);
         }
         while (std::getline(in, line)) {
             if (line.empty()) {
@@ -74,7 +72,7 @@ namespace video::shader {
 
         char buffer[length];
         uint offset = 0;
-        for (auto elem: lineBuffer) {
+        for (auto elem : lineBuffer) {
             if (offset > 0) {
                 buffer[offset++] = '\n';
             }
@@ -82,11 +80,11 @@ namespace video::shader {
             offset += elem.length();
         }
         buffer[offset] = '\0';
-        Stage *stage = Stage::compile(buffer, type);
+        Stage *stage = compile(buffer, type);
         if (stage == nullptr) {
             /* Return NULL on failure */
             std::string message = "Impossible to compile the shader file '" + fileName + "'";
-            throw engine::Exception(message);
+            throw Exception(message);
         }
         return stage; /* Return the buffer */
     }
@@ -107,11 +105,11 @@ namespace video::shader {
         }
     }
 
-    Stage* Stage::compile(const char *source, const uint type) {
+    Stage *Stage::compile(const char *source, const uint type) {
         /* Assign our handles a "name" to new shader objects */
         const uint shaderId = glCreateShader(type);
         /* Associate the source code buffers with each handle */
-        glShaderSource(shaderId, 1, (const GLchar **) &source, nullptr);
+        glShaderSource(shaderId, 1, &source, nullptr);
         /* Compile our shader objects */
         glCompileShader(shaderId);
         GLint compiled;
@@ -119,15 +117,15 @@ namespace video::shader {
         std::string typeStr;
         if (compiled == GL_FALSE) {
             switch (type) {
-                case GL_VERTEX_SHADER:
-                    typeStr = "Vertex";
-                    break;
-                case GL_FRAGMENT_SHADER:
-                    typeStr = "Fragment";
-                    break;
-                default:
-                    typeStr = "Type(" + std::to_string(type) + ")";
-                    break;
+            case GL_VERTEX_SHADER:
+                typeStr = "Vertex";
+                break;
+            case GL_FRAGMENT_SHADER:
+                typeStr = "Fragment";
+                break;
+            default:
+                typeStr = "Type(" + std::to_string(type) + ")";
+                break;
             }
 
             PLOG_ERROR.printf("%s shader not compiled.", typeStr.c_str());
@@ -143,7 +141,5 @@ namespace video::shader {
         glAttachShader(programId, id_);
     }
 
-    uint Stage::GetId() const {
-        return id_;
-    }
-}
+    uint Stage::GetId() const { return id_; }
+} // namespace soil::video::shader

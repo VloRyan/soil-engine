@@ -1,18 +1,12 @@
-#ifndef VIDEO_OBJECT_H
-#define VIDEO_OBJECT_H
+#ifndef SOIL_VIDEO_BUFFER_OBJECT_H
+#define SOIL_VIDEO_BUFFER_OBJECT_H
 #include "base.h"
 #include "cursor.h"
 
-namespace video::buffer {
+namespace soil::video::buffer {
     class Object {
     public:
-        enum class Types : std::uint8_t {
-            Vertex,
-            ElementArray,
-            Uniform,
-            ShaderStorage,
-            DrawIndirect
-        };
+        enum class Types : std::uint8_t { Vertex, ElementArray, Uniform, ShaderStorage, DrawIndirect };
 
         /**
          * Expected usage of the Object
@@ -27,11 +21,14 @@ namespace video::buffer {
         };
 
         enum class AccessType : std::uint8_t {
-            /**The data store contents are modified by the application, and used as the source for GL drawing and image specification commands.*/
+            /**The data store contents are modified by the application, and used as the source for GL drawing and image
+               specification commands.*/
             Draw,
-            /**The data store contents are modified by reading data from the GL, and used to return that data when queried by the application.*/
+            /**The data store contents are modified by reading data from the GL, and used to return that data when
+               queried by the application.*/
             Read,
-            /**The data store contents are modified by reading data from the GL, and used as the source for GL drawing and image specification commands.*/
+            /**The data store contents are modified by reading data from the GL, and used as the source for GL drawing
+               and image specification commands.*/
             Copy
         };
 
@@ -50,7 +47,7 @@ namespace video::buffer {
 
         void SetData(const void *data, gl_size_t dataSize);
 
-        [[nodiscard]] const void* GetData() const;
+        [[nodiscard]] const void *GetData() const;
 
         virtual void Flush();
 
@@ -68,11 +65,11 @@ namespace video::buffer {
 
         void BindToTarget(uint index) const;
 
-        void BindToTarget(uint index, Object::Types target) const;
+        void BindToTarget(uint index, Types target) const;
 
         [[nodiscard]] AccessType GetAccess() const;
 
-        [[nodiscard]] Cursor* GetCursor();
+        [[nodiscard]] Cursor *GetCursor();
 
     protected:
         void create();
@@ -99,5 +96,5 @@ namespace video::buffer {
         UsageType usage_;
         AccessType access_;
     };
-}
-#endif /* VIDEO_OBJECT_H */
+} // namespace soil::video::buffer
+#endif /* SOIL_VIDEO_BUFFER_OBJECT_H */

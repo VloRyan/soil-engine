@@ -1,21 +1,14 @@
-#ifndef ENGINE_WORLD_COLLISION_FRUSTUM_H_
-#define ENGINE_WORLD_COLLISION_FRUSTUM_H_
+#ifndef SOIL_WORLD_COLLISION_FRUSTUM_H_
+#define SOIL_WORLD_COLLISION_FRUSTUM_H_
 
 #include <array>
-#include <vector>
 #include <glm/glm.hpp>
+#include <vector>
 
-namespace world::collision {
+namespace soil::world::collision {
     constexpr int PlanesCount = 6;
 
-    enum class Planes : std::uint8_t {
-        Left = 0,
-        Right,
-        Top,
-        Bottom,
-        Far,
-        Near
-    };
+    enum class Planes : std::uint8_t { Left = 0, Right, Top, Bottom, Far, Near };
 
     enum Points : std::uint8_t {
         NearTopLeft = 0,
@@ -28,11 +21,11 @@ namespace world::collision {
         FarTopRight
     };
 
-    class Frustum {
+    class Frustum final {
     public:
         explicit Frustum(const glm::mat4 &viewProjection);
 
-        virtual ~Frustum();
+        ~Frustum() = default;
 
         void SetViewProjection(const glm::mat4 &viewProjection);
 
@@ -60,6 +53,6 @@ namespace world::collision {
         // Planes are in format: normal(xyz), offset(w)
         std::array<glm::vec4, PlanesCount> planes_;
     };
-} // world::collision
+} // namespace soil::world::collision
 
-#endif //ENGINE_WORLD_COLLISION_FRUSTUM_H_
+#endif // SOIL_WORLD_COLLISION_FRUSTUM_H_

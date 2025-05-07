@@ -1,22 +1,22 @@
-#ifndef ENGINE_SOUND_FILE_H
-#define ENGINE_SOUND_FILE_H
+#ifndef SOIL_SOUND_FILE_H
+#define SOIL_SOUND_FILE_H
 #include <string>
 
-namespace sound {
-struct File {
-  explicit File(std::string name, int format, int dataSize, int frequency,
-                fpos_t dataOffset, unsigned char *Data);
+namespace soil::sound {
+    struct File final {
+        explicit File(std::string name, int format, int dataSize, int frequency, fpos_t dataOffset,
+                      unsigned char *Data);
 
-  explicit File(std::string name);
+        explicit File(std::string name);
 
-  virtual ~File();
+        ~File();
 
-  std::string Name;
-  int Format;
-  int Frequency;
-  int DataSize;
-  fpos_t DataOffset;
-  unsigned char *Data;
-};
-} // namespace sound
-#endif // ENGINE_SOUND_FILE_H
+        std::string Name;
+        int Format;
+        int Frequency;
+        int DataSize;
+        fpos_t DataOffset;
+        unsigned char *Data;
+    };
+} // namespace soil::sound
+#endif // SOIL_SOUND_FILE_H

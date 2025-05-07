@@ -1,23 +1,23 @@
-#ifndef ENGINE_VIDEO_SHADER_CACHE_H_
-#define ENGINE_VIDEO_SHADER_CACHE_H_
+#ifndef SOIL_VIDEO_SHADER_CACHE_H_
+#define SOIL_VIDEO_SHADER_CACHE_H_
 
-#include "../../base.h"
-#include "instance_shader.h"
 #include <functional>
 #include <string>
+#include "base.h"
+#include "instance_shader.h"
 
-namespace video::shader {
+namespace soil::video::shader {
     class Cache final {
     public:
         Cache() = default;
 
         ~Cache();
 
-        [[nodiscard]] Shader* GetByName(const std::string &name);
+        [[nodiscard]] Shader *GetByName(const std::string &name);
 
-        [[nodiscard]] InstanceShader* GetByName2(const std::string &name);
+        [[nodiscard]] InstanceShader *GetByName2(const std::string &name);
 
-        [[nodiscard]] Shader* GetById(int id) const;
+        [[nodiscard]] Shader *GetById(int id) const;
 
         void Prepare(const std::string &name, const std::string &path = "");
 
@@ -25,7 +25,7 @@ namespace video::shader {
 
         void PrepareInstanceShader(const std::string &name, InstanceShader *shader);
 
-        [[nodiscard]] Shader* Create(const std::string &name, const Definition &shaderDef);
+        [[nodiscard]] Shader *Create(const std::string &name, const Definition &shaderDef);
 
         void ForEach(const std::function<void(Shader *)> &callback) const;
 
@@ -37,6 +37,6 @@ namespace video::shader {
         HashMap<std::string, Shader *> shaders_;
         HashMap<std::string, InstanceShader *> instanceShaders_;
     };
-} // video::shader
+} // namespace soil::video::shader
 
-#endif //ENGINE_VIDEO_SHADER_CACHE_H_
+#endif // SOIL_VIDEO_SHADER_CACHE_H_

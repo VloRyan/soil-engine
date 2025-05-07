@@ -1,21 +1,18 @@
-#ifndef VIDEO_RENDER_PROCESSING_RENDERSTEP_H
-#define VIDEO_RENDER_PROCESSING_RENDERSTEP_H
-#include "abstract_processing.h"
-#include "video/buffer/frame_buffer.h"
-#include "video/render/instance/instance.h"
-#include "video/shader/shader.h"
+#ifndef SOIL_VIDEO_RENDER_PROCESSING_RENDERSTEP_H
+#define SOIL_VIDEO_RENDER_PROCESSING_RENDERSTEP_H
 #include <functional>
 #include <list>
+#include "abstract_processing.h"
+#include "video/buffer/fb.h"
+#include "video/render/instance/instance.h"
+#include "video/shader/shader.h"
 
 #include "video/render/state.h"
 
-namespace video::render {
-    class RenderStep : public AbstractProcessing {
+namespace soil::video::render {
+    class RenderStep final : public AbstractProcessing {
     public:
-        enum class Type : std::uint8_t {
-            Scene,
-            TextureQuad
-        };
+        enum class Type : std::uint8_t { Scene, TextureQuad };
 
         explicit RenderStep(buffer::FrameBuffer *target, Type type = Type::Scene, bool clearBeforeRender = true);
 
@@ -26,32 +23,30 @@ namespace video::render {
 
         void Process(Context &context, const std::vector<Renderable *> &renderables) override;
 
-        void setTexture(texture::Texture *texture);
+        void SetTexture(texture::Texture *texture);
 
-        [[nodiscard]] texture::Texture* getTexture() const;
+        [[nodiscard]] texture::Texture *GetTexture() const;
 
-        void setClipPlane(glm::vec4 ClipPlane);
+        void SetClipPlane(glm::vec4 ClipPlane);
 
-        [[nodiscard]] glm::vec4 getClipPlane() const;
+        [[nodiscard]] glm::vec4 GetClipPlane() const;
 
-        void setTextureShader(shader::Shader *textureShader, std::string textureLocatorName);
+        void SetTextureShader(shader::Shader *textureShader, std::string textureLocatorName);
 
-        [[nodiscard]] shader::Shader* getTextureShader() const;
+        [[nodiscard]] shader::Shader *GetTextureShader() const;
 
-        [[nodiscard]] buffer::FrameBuffer* getTargetBuffer() const;
+        [[nodiscard]] buffer::FrameBuffer *GetTargetBuffer() const;
 
-        [[nodiscard]] buffer::FrameBuffer* getRenderBuffer() const;
+        [[nodiscard]] buffer::FrameBuffer *GetRenderBuffer() const;
 
-        void setTexture2(texture::Texture *Texture2, std::string TextureLocator2);
+        void SetTexture2(texture::Texture *Texture2, std::string TextureLocator2);
 
-        void setMultisampleBuffer(buffer::FrameBuffer *MultisampleBuffer, bool blitToTargetBuffer = true);
+        void SetMultisampleBuffer(buffer::FrameBuffer *MultisampleBuffer, bool blitToTargetBuffer = true);
 
-        void setFilterPredicate(std::function<bool(instance::Instance *)> FilterPredicate);
+        void SetFilterPredicate(std::function<bool(instance::Instance *)> FilterPredicate);
 
     private:
         void Render(const Context &context, const std::vector<Renderable *> &renderables) const;
-
-        void renderTexturedQuad(const Context *context) const;
 
         void filterInstances(const std::list<std::list<instance::Instance *> > &input,
                              std::list<std::list<instance::Instance *> > &result) const;
@@ -66,12 +61,12 @@ namespace video::render {
 
         bool clearBeforeRender_;
         bool blitToTargetBuffer_;
-        //FrameBuffer_Ptr m_SourceBuffer;
+        // FrameBuffer_Ptr m_SourceBuffer;
         buffer::FrameBuffer *multisampleBuffer_;
         buffer::FrameBuffer *targetBuffer_;
         shader::Shader *textureShader_;
         std::function<bool(instance::Instance *)> filterPredicate_;
         glm::vec4 clipPlane_;
     };
-}
-#endif /* VIDEO_RENDER_PROCESSING_RENDERSTEP_H */
+} // namespace soil::video::render
+#endif /* SOIL_VIDEO_RENDER_PROCESSING_RENDERSTEP_H */

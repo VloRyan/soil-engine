@@ -2,35 +2,32 @@
 #define ENGINE_ENGINE_UTIL_POINTER_CACHE_HPP_
 
 #include <functional>
-#include <memory>
 #include <list>
+#include <memory>
 #include <mutex>
 #include "base.h"
 #include "exception.h"
 
-namespace util {
-    template<class Key, class Tp>
-    class PointerCache {
+namespace soil::util {
+    template <class Key, class Tp>
+    class PointerCache final {
     public:
         struct CacheEntry {
             std::weak_ptr<Tp> weakPtr;
         };
 
-        explicit PointerCache(const std::function<void(Tp *)> removeHook = nullptr)
-            : PointerCache(false, removeHook) {
-        }
+        explicit PointerCache(const std::function<void(Tp *)> removeHook = nullptr) : PointerCache(false, removeHook) {}
 
-        explicit PointerCache(const bool holdPointer, const std::function<void(Tp *)> removeHook = nullptr)
-            : holdPointer_(holdPointer), removeHook_(removeHook) {
-        }
+        explicit PointerCache(const bool holdPointer, const std::function<void(Tp *)> removeHook = nullptr) :
+            holdPointer_(holdPointer), removeHook_(removeHook) {}
 
-        virtual ~PointerCache() {
+        ~PointerCache() {
             holdCache_.clear();
             clear();
         }
 
         std::shared_ptr<Tp> get(Key key) {
-            std::unique_lock<std::mutex> lock(mutex_);
+            std::unique_lock lock(mutex_);
             _prune();
             auto itr = cache_.find(key);
             if (itr != cache_.end()) {
@@ -41,12 +38,13 @@ namespace util {
                 }
             }
             return nullptr;
-        };
+        }
 
         std::shared_ptr<Tp> cache(Key key, Tp *value) {
             std::unique_lock lock(mutex_);
             _prune();
-            //std::shared_ptr<_Tp> sharedPtr(value, std::bind(&PointerCache::removeValue, this, std::placeholders::_1));
+            // std::shared_ptr<_Tp> sharedPtr(value, std::bind(&PointerCache::removeValue, this,
+            // std::placeholders::_1));
             std::shared_ptr<Tp> sharedPtr;
             if (removeHook_) {
                 sharedPtr = std::shared_ptr<Tp>(value, removeHook_);
@@ -63,7 +61,7 @@ namespace util {
             std::pair<Key, std::weak_ptr<Tp> > pair(key, weakPtr);
 
             if (auto insertResult = cache_.insert(pair); !insertResult.second) {
-                throw engine::Exception("Insert failed");
+                throw Exception("Insert failed");
             }
             if (holdPointer_) {
                 holdCache_.push_back(sharedPtr);
@@ -81,7 +79,7 @@ namespace util {
                     weakPtr = itrCache->second;
                 }
                 if (!weakPtr) {
-                    throw engine::Exception("Remove failed");
+                    throw Exception("Remove failed");
                 }
                 for (auto itrHoldCache = holdCache_.begin(); itrHoldCache != holdCache_.end(); ++itrHoldCache) {
                     if (std::shared_ptr<Tp> holdPointer = *itrHoldCache; holdPointer.get() == weakPtr.lock().get()) {
@@ -93,7 +91,7 @@ namespace util {
                 return;
             }
             if (const size_t numErased = cache_.erase(key); numErased != 1) {
-                throw engine::Exception("Remove failed");
+                throw Exception("Remove failed");
             }
         }
 
@@ -107,18 +105,12 @@ namespace util {
             _prune();
         }
 
-        typename HashMap<Key, std::weak_ptr<Tp> >::size_type size() const {
-            return cache_.size();
-        }
+        typename HashMap<Key, std::weak_ptr<Tp> >::size_type size() const { return cache_.size(); }
 
     protected:
-        typename HashMap<Key, std::weak_ptr<Tp> >::iterator begin() {
-            return cache_.begin();
-        }
+        typename HashMap<Key, std::weak_ptr<Tp> >::iterator begin() { return cache_.begin(); }
 
-        typename HashMap<Key, std::weak_ptr<Tp> >::iterator end() {
-            return cache_.end();
-        }
+        typename HashMap<Key, std::weak_ptr<Tp> >::iterator end() { return cache_.end(); }
 
     private:
         void _prune() {
@@ -148,22 +140,21 @@ namespace util {
                     itr = cache_.erase(itr);
                     ++numErased;
 #ifndef DEBUG
-        break;
+                    break;
 #endif
+                }
+                if (itr->second.lock().get() == value) {
+                    itr = cache_.erase(itr);
+                    ++numErased;
                 } else {
-                    if (itr->second.lock().get() == value) {
-                        itr = cache_.erase(itr);
-                        ++numErased;
-                    } else {
-                        ++itr;
-                    }
+                    ++itr;
                 }
             }
             if (numErased != 1) {
-                throw engine::Exception("Remove failed");
+                throw Exception("Remove failed");
             }
             delete value;
-        };
+        }
 
 
         HashMap<Key, std::weak_ptr<Tp> > cache_;
@@ -173,12 +164,12 @@ namespace util {
         std::function<void(Tp *)> removeHook_;
     };
 
-    template<typename T>
+    template <typename T>
     using StringCache = PointerCache<std::string, T>;
-    template<typename T>
+    template <typename T>
     using IntegerCache = PointerCache<int, T>;
-    template<typename T>
+    template <typename T>
     using UIntegerCache = PointerCache<uint, T>;
-} // util
+} // namespace soil::util
 
-#endif //ENGINE_ENGINE_UTIL_POINTER_CACHE_HPP_
+#endif // ENGINE_ENGINE_UTIL_POINTER_CACHE_HPP_

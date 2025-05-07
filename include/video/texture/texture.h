@@ -1,12 +1,11 @@
-#ifndef VIDEO_TEXTURE_H
-#define VIDEO_TEXTURE_H
-#include <string>
+#ifndef SOIL_VIDEO_TEXTURE_TEXTURE_H
+#define SOIL_VIDEO_TEXTURE_TEXTURE_H
 #include <glm/glm.hpp>
+#include <string>
 #include "base.h"
 
-namespace video::texture {
-    class
-            Texture {
+namespace soil::video::texture {
+    class Texture final {
         friend class Manager;
         friend class Loader;
 
@@ -32,7 +31,7 @@ namespace video::texture {
         Texture(uint id, std::string name, glm::uvec2 size, Type type = Texture2D, Format format = sRGBA);
 
 
-        virtual ~Texture();
+        ~Texture();
 
         /**
          * Returns the filename of the texture.
@@ -73,7 +72,5 @@ namespace video::texture {
         Format format_;
         glm::uvec2 size_;
     };
-}
-#endif /* VIDEO_TEXTURE_H */
-
-
+} // namespace soil::video::texture
+#endif /* SOIL_VIDEO_TEXTURE_TEXTURE_H */

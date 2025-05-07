@@ -1,18 +1,16 @@
-#ifndef ENGINE_STAGE_SCENE_COMPONENT_COMPONENT_H_
-#define ENGINE_STAGE_SCENE_COMPONENT_COMPONENT_H_
+#ifndef SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_
+#define SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_
 #include <cstdint>
-#include <string>
 #include <glm/fwd.hpp>
+#include <string>
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class Node;
 }
 
-namespace stage::scene::component {
+namespace soil::stage::scene::component {
     class Component {
     public:
-        //friend class Node;
-
         enum class Type : std::uint8_t {
             Renderable = 0,
             BoundingVolume,
@@ -46,7 +44,7 @@ namespace stage::scene::component {
 
         void SetName(const std::string &name);
 
-        [[nodiscard]] Node* GetParent() const;
+        [[nodiscard]] Node *GetParent() const;
 
         void SetDirty();
 
@@ -61,6 +59,6 @@ namespace stage::scene::component {
         Type type_;
         State state_;
     };
-} // component
+} // namespace soil::stage::scene::component
 
-#endif //ENGINE_STAGE_SCENE_COMPONENT_COMPONENT_H_
+#endif // SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_

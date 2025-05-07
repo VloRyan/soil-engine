@@ -1,16 +1,16 @@
-#ifndef ENGINE_ENGINE_VIDEO_BUFFER_CURSOR_H_
-#define ENGINE_ENGINE_VIDEO_BUFFER_CURSOR_H_
+#ifndef SOIL_VIDEO_BUFFER_CURSOR_H_
+#define SOIL_VIDEO_BUFFER_CURSOR_H_
 #include <glm/glm.hpp>
 #include "base.h"
 
-namespace video::buffer {
-    class Cursor {
+namespace soil::video::buffer {
+    class Cursor final {
     public:
         explicit Cursor(byte *data);
 
         Cursor(const Cursor &orig) = delete;
 
-        virtual ~Cursor();
+        ~Cursor() = default;
 
         void Write(const int &data);
 
@@ -39,6 +39,6 @@ namespace video::buffer {
         byte *start_;
         byte *max_;
     };
-} // buffer
+} // namespace soil::video::buffer
 
-#endif //ENGINE_ENGINE_VIDEO_BUFFER_CURSOR_H_
+#endif // SOIL_VIDEO_BUFFER_CURSOR_H_

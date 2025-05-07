@@ -1,12 +1,12 @@
-#ifndef ENGINE_STAGE_EVENTS_NODE_EVENT_H
-#define ENGINE_STAGE_EVENTS_NODE_EVENT_H
+#ifndef SOIL_STAGE_EVENTS_NODE_EVENT_H
+#define SOIL_STAGE_EVENTS_NODE_EVENT_H
 
 #include "event/event.h"
 #include "event/handler.hpp"
 #include "stage/scene/component/component.h"
 
-namespace stage::event {
-    class Component : ::event::Event {
+namespace soil::stage::event {
+    class Component final : soil::event::Event {
     public:
         enum class ChangeType {
             Added,
@@ -20,13 +20,13 @@ namespace stage::event {
 
         [[nodiscard]] ChangeType GetChangeType() const;
 
-        [[nodiscard]] scene::component::Component* GetOrigin() const;
+        [[nodiscard]] scene::component::Component *GetOrigin() const;
 
     private:
         scene::component::Component *origin_;
         ChangeType changeType_;
     };
 
-    using ComponentEventHandler = ::event::Handler<Component>;
-} // stage::event
-#endif //ENGINE_STAGE_EVENTS_NODE_EVENT_H
+    using ComponentEventHandler = soil::event::Handler<Component>;
+} // namespace soil::stage::event
+#endif // SOIL_STAGE_EVENTS_NODE_EVENT_H

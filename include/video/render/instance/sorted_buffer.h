@@ -1,11 +1,11 @@
 
-#ifndef ENGINE_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
-#define ENGINE_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
+#ifndef SOIL_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
+#define SOIL_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
 #include "buffer.h"
 
 
-namespace video::render::instance {
-    class SortedBuffer : public Buffer {
+namespace soil::video::render::instance {
+    class SortedBuffer final : public Buffer {
     public:
         enum class SortType {
             BackToFront,
@@ -13,15 +13,19 @@ namespace video::render::instance {
         };
 
         struct {
-            bool operator()(std::pair<float, Instance *> &a, std::pair<float, Instance *> &b) const {
-                if (a.first != b.first) { return a.first < b.first; }
+            bool operator()(const std::pair<float, Instance *> &a, const std::pair<float, Instance *> &b) const {
+                if (a.first != b.first) {
+                    return a.first < b.first;
+                }
                 return a.second < b.second;
             }
         } SortByDistanceBackToFront;
 
         struct {
-            bool operator()(std::pair<float, Instance *> &a, std::pair<float, Instance *> &b) const {
-                if (a.first != b.first) { return a.first > b.first; }
+            bool operator()(const std::pair<float, Instance *> &a, const std::pair<float, Instance *> &b) const {
+                if (a.first != b.first) {
+                    return a.first > b.first;
+                }
                 return a.second < b.second;
             }
         } SortByDistanceFrontToBack;
@@ -33,7 +37,7 @@ namespace video::render::instance {
     private:
         SortType sortType_;
     };
-}
+} // namespace soil::video::render::instance
 
 
-#endif //ENGINE_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
+#endif // SOIL_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H

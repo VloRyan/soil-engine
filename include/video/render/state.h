@@ -1,15 +1,12 @@
 
-#ifndef VIDEO_RENDER_STATE_H
-#define VIDEO_RENDER_STATE_H
+#ifndef SOIL_VIDEO_RENDER_STATE_H
+#define SOIL_VIDEO_RENDER_STATE_H
 #include <functional>
-#include <string>
-#include <video/buffer/frame_buffer.h>
-#include <video/buffer/uniform_buffer_object.h>
-
-#include "renderable.h"
+#include <video/buffer/fb.h>
+#include <video/buffer/ubo.h>
 #include "window.h"
 
-namespace video::render {
+namespace soil::video::render {
     struct StateDef {
         bool Blend{false};
         bool DepthTest{false};
@@ -45,13 +42,13 @@ namespace video::render {
         void RegisterUbo(int target, buffer::UniformBufferObject *ubo);
 
         // buffer::UniformBufferObject* GetUbo(const std::string &name);
-        [[nodiscard]] buffer::FrameBuffer* GetFramebuffer() const;
+        [[nodiscard]] buffer::FrameBuffer *GetFramebuffer() const;
 
         void SetFramebuffer(buffer::FrameBuffer *framebuffer);
 
-        [[nodiscard]] glm::vec2 GetViewPort() const;
+        [[nodiscard]] glm::ivec2 GetViewPort() const;
 
-        void SetViewPort(const glm::vec2 &viewPort);
+        void SetViewPort(const glm::ivec2 &viewPort);
 
     private:
         bool blend_;
@@ -61,9 +58,9 @@ namespace video::render {
         buffer::UniformBufferObject *uboMatrices_;
         std::unordered_map<int, buffer::UniformBufferObject *> uboMap_;
         buffer::FrameBuffer *framebuffer_;
-        glm::vec2 viewPort_;
+        glm::ivec2 viewPort_;
     };
-}
+} // namespace soil::video::render
 
 
-#endif //VIDEO_RENDER_STATE_H
+#endif // SOIL_VIDEO_RENDER_STATE_H

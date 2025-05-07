@@ -1,10 +1,9 @@
-#ifndef VIDEO_SHADER_DEFINITION_H
-#define VIDEO_SHADER_DEFINITION_H
-#include "../../base.h"
+#ifndef SOIL_VIDEO_SHADER_DEFINITION_H
+#define SOIL_VIDEO_SHADER_DEFINITION_H
 #include <string>
 
-namespace video::shader {
-    class Definition {
+namespace soil::video::shader {
+    class Definition final {
     public:
         Definition();
 
@@ -12,7 +11,7 @@ namespace video::shader {
 
         Definition(std::string vertexShaderName, std::string fragmentShaderName);
 
-        virtual ~Definition();
+        ~Definition();
 
         void SetFragmentShaderName(std::string FragmentShaderName);
 
@@ -65,5 +64,5 @@ namespace video::shader {
         std::string tessellationControlShaderName_;
         std::string tessellationEvalShaderName_;
     };
-}
-#endif /* VIDEO_SHADER_DEFINITION_H */
+} // namespace soil::video::shader
+#endif /* SOIL_VIDEO_SHADER_DEFINITION_H */

@@ -1,11 +1,11 @@
 
-#ifndef ENGINE_VIDEO_VIEWER_H
-#define ENGINE_VIDEO_VIEWER_H
+#ifndef SOIL_VIDEO_VIEWER_H
+#define SOIL_VIDEO_VIEWER_H
 #include <glm/fwd.hpp>
 
 #include "render/state.h"
 
-namespace video {
+namespace soil::video {
     class Viewer {
     public:
         virtual ~Viewer() = default;
@@ -16,5 +16,5 @@ namespace video {
 
         virtual void Render(render::State &state) = 0;
     };
-}
-#endif //ENGINE_VIDEO_VIEWER_H
+} // namespace soil::video
+#endif // SOIL_VIDEO_VIEWER_H

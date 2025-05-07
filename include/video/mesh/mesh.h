@@ -1,50 +1,43 @@
-#ifndef VIDEO_MESH_MESH_H_
-#define VIDEO_MESH_MESH_H_
-#include "../../base.h"
-#include "video/vertex/vertex.h"
+#ifndef SOIL_VIDEO_MESH_MESH_H_
+#define SOIL_VIDEO_MESH_MESH_H_
 #include <glm/glm.hpp>
 #include <string>
+#include "base.h"
+#include "video/vertex/vertex.h"
 
-namespace video::mesh {
-    enum class PrimitiveType : std::uint8_t {
-        Line = 0,
-        Quad,
-        Box
-    };
+namespace soil::video::mesh {
+    enum class PrimitiveType : std::uint8_t { Line = 0, Quad, Box };
 
     struct Definition {
         std::string Identifier;
         PrimitiveType Type;
 
-        std::string TypeString() const {
+        [[nodiscard]] std::string TypeString() const {
             switch (Type) {
-                case (PrimitiveType::Line): return "Line";
-                case (PrimitiveType::Quad): return "Quad";
-                case (PrimitiveType::Box): return "Box";
+            case PrimitiveType::Line:
+                return "Line";
+            case PrimitiveType::Quad:
+                return "Quad";
+            case PrimitiveType::Box:
+                return "Box";
             }
             return "";
         }
 
-        std::string ToString() const {
-            return TypeString() + "_" + Identifier;
-        }
+        [[nodiscard]] std::string ToString() const { return TypeString() + "_" + Identifier; }
     };
 
-    class Mesh {
+    class Mesh final {
     public:
         friend class Cache;
 
-        explicit Mesh(int id, std::string name, const uint *indices, uint indexCount, const byte *data,
-                      size_t dataSize,
-                      size_t vertexSize,
-                      vertex::VertexType targetType);
+        explicit Mesh(int id, std::string name, const uint *indices, uint indexCount, const byte *data, size_t dataSize,
+                      size_t vertexSize, vertex::VertexType targetType);
 
         explicit Mesh(int id, std::string name, const ushort *indices, ushort indexCount, const byte *data,
-                      size_t dataSize,
-                      size_t vertexSize,
-                      vertex::VertexType targetType);
+                      size_t dataSize, size_t vertexSize, vertex::VertexType targetType);
 
-        virtual ~Mesh();
+        ~Mesh();
 
         [[nodiscard]] int GetId() const;
 
@@ -73,7 +66,7 @@ namespace video::mesh {
          */
         [[nodiscard]] glm::vec3 GetDimension() const;
 
-        [[nodiscard]] byte* GetIndices() const;
+        [[nodiscard]] byte *GetIndices() const;
 
         [[nodiscard]] vertex::IndexType GetIndexType() const;
 
@@ -87,7 +80,7 @@ namespace video::mesh {
 
         [[nodiscard]] vertex::VertexType GetVertexDataType() const;
 
-        [[nodiscard]] byte* GetVertexData() const;
+        [[nodiscard]] byte *GetVertexData() const;
 
         [[nodiscard]] uint GetVertexCount() const;
 
@@ -98,7 +91,7 @@ namespace video::mesh {
         [[nodiscard]] std::string GetName() const;
 
 
-        static Mesh* New(int id, std::string name, PrimitiveType type);
+        static Mesh *New(int id, std::string name, PrimitiveType type);
 
     protected:
         void clearIndices();
@@ -123,6 +116,6 @@ namespace video::mesh {
         glm::vec3 minCoords_;
         glm::vec3 maxCoords_;
     };
-} // video::mesh
+} // namespace soil::video::mesh
 
-#endif //VIDEO_MESH_MESH_H_
+#endif // SOIL_VIDEO_MESH_MESH_H_

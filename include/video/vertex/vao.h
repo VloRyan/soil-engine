@@ -1,26 +1,22 @@
-#ifndef ENGINE_ENGINE_VIDEO_VERTEX_VAO_H_
-#define ENGINE_ENGINE_VIDEO_VERTEX_VAO_H_
+#ifndef SOIL_VIDEO_VERTEX_VAO_H_
+#define SOIL_VIDEO_VERTEX_VAO_H_
 #include <vector>
 #include "base.h"
+#include "video/buffer/ebo.h"
 #include "video/buffer/object.h"
 #include "video/vertex/attribute_pointer.h"
-#include "video/buffer/ebo.h"
 
-namespace video::vertex {
-    class Vao {
+namespace soil::video::vertex {
+    class Vao final {
     public:
         Vao();
 
-        virtual ~Vao();
+        ~Vao();
 
         [[nodiscard]] uint GetId() const;
 
-        size_t AddAttributePointer(buffer::Object *buffer,
-                                   AttributePointer::DataType dataType,
-                                   int elementSize,
-                                   int elementStride = 0,
-                                   size_t offset = 0,
-                                   bool perInstance = false);
+        size_t AddAttributePointer(buffer::Object *buffer, AttributePointer::DataType dataType, int elementSize,
+                                   int elementStride = 0, size_t offset = 0, bool perInstance = false);
 
         void Create(const void *indices, uint indexSize);
 
@@ -41,6 +37,6 @@ namespace video::vertex {
         buffer::Ebo *ebo_;
         std::vector<AttributePointer *> attribPointer_;
     };
-} // video
+} // namespace soil::video::vertex
 
-#endif //ENGINE_ENGINE_VIDEO_VERTEX_VAO_H_
+#endif // SOIL_VIDEO_VERTEX_VAO_H_

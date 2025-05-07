@@ -1,27 +1,27 @@
 
-#ifndef ENGINE_STAGE_SCENE_COMPONENT_SOUND_H
-#define ENGINE_STAGE_SCENE_COMPONENT_SOUND_H
+#ifndef SOIL_STAGE_SCENE_COMPONENT_SOUND_H
+#define SOIL_STAGE_SCENE_COMPONENT_SOUND_H
 
 #include "component.h"
-#include "../../../sound/source.h"
+#include "sound/source.h"
 
-namespace stage::scene::component {
-    class Sound : public Component {
+namespace soil::stage::scene::component {
+    class Sound final : public Component {
     public:
-        explicit Sound(::sound::Source *source);
+        explicit Sound(sound::Source *source);
 
         void Play() const;
 
         void Stop() const;
 
-        [[nodiscard]] ::sound::Source* GetSource() const;
+        [[nodiscard]] sound::Source *GetSource() const;
 
         void UpdateMatrix(const glm::mat4 &matrix) override;
 
     private:
-        ::sound::Source *source_;
+        sound::Source *source_;
     };
-}
+} // namespace soil::stage::scene::component
 
 
-#endif //ENGINE_STAGE_SCENE_COMPONENT_SOUND_H
+#endif // SOIL_STAGE_SCENE_COMPONENT_SOUND_H

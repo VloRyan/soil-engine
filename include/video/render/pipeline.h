@@ -1,51 +1,45 @@
-#ifndef ENGINE_ENGINE_VIDEO_RENDER_PIPELINE_H_
-#define ENGINE_ENGINE_VIDEO_RENDER_PIPELINE_H_
+#ifndef SOIL_VIDEO_RENDER_PIPELINE_H_
+#define SOIL_VIDEO_RENDER_PIPELINE_H_
 
-#include <set>
 #include <vector>
 
 #include "renderable.h"
 #include "technique.h"
-#include "video/buffer/frame_buffer.h"
+#include "video/buffer/fb.h"
 #include "video/render/processing/abstract_processing.h"
 #include "video/render/processing/render_step.h"
 
 
-namespace video::render {
-    class Pipeline {
+namespace soil::video::render {
+    class Pipeline final {
     public:
         explicit Pipeline(std::string name);
 
-        virtual ~Pipeline();
+        ~Pipeline();
 
-        virtual void Render(const std::vector<Renderable *> &renderables, State &state);
+        void Render(const std::vector<Renderable *> &renderables, State &state);
 
-        virtual void Reset(bool multisample, glm::ivec2 resolution);
+        void Reset(bool multisample);
 
-        virtual void Clear();
+        void Clear();
 
         void SetRenderingTechnique(TechniqueType type);
 
-        [[nodiscard]] Technique* GetRenderingTechnique() const;
+        [[nodiscard]] Technique *GetRenderingTechnique() const;
 
         void InsertStep(AbstractProcessing *step, AbstractProcessing *requiredStep = nullptr);
 
         void RemoveStep(const AbstractProcessing *step);
 
-        void Print();
+        void Print() const;
 
-        bool Empty() const;
+        [[nodiscard]] bool Empty() const;
 
-        AbstractProcessing* GetStep(uint number);
+        [[nodiscard]] AbstractProcessing *GetStep(uint number);
 
-        AbstractProcessing* GetStep(const std::string &name);
+        [[nodiscard]] AbstractProcessing *GetStep(const std::string &name) const;
 
-
-        //FrameBuffer_Ptr getFrameBuffer(std::string name);
-        //void registerFrameBuffer(std::string name, FrameBuffer_Ptr buffer);
-
-
-        [[nodiscard]] buffer::FrameBuffer* GetOutputBuffer() const;
+        [[nodiscard]] buffer::FrameBuffer *GetOutputBuffer() const;
 
         void SetOutputBuffer(buffer::FrameBuffer *buffer);
 
@@ -64,10 +58,6 @@ namespace video::render {
         std::string name_;
         bool renderToScreen_;
 
-        /* Render Techniques */
-        //ForwardRendering* m_ForwardRendering;
-        //std::unique_ptr<DeferredRendering> m_DeferredRendering;
-
         RenderStep *renderSceneToTextureStep_;
 
         /* Stage Texture */
@@ -76,9 +66,8 @@ namespace video::render {
 
         buffer::FrameBuffer *outputBuffer_;
         std::vector<AbstractProcessing *> processingSteps_;
-        // HashMap<std::string, FrameBuffer_Ptr> m_NamedFrameBuffer;
         Context context_;
     };
-} // Render
+} // namespace soil::video::render
 
-#endif //ENGINE_ENGINE_VIDEO_RENDER_PIPELINE_H_
+#endif // SOIL_VIDEO_RENDER_PIPELINE_H_

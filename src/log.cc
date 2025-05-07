@@ -3,7 +3,7 @@
 #include <plog/Formatters/TxtFormatter.h>
 #include "plog/Initializers/ConsoleInitializer.h"
 
-namespace engine {
+namespace soil {
     void Log::Init() {
         plog::init<plog::TxtFormatter>(plog::debug, plog::OutputStream::streamStdOut);
     }

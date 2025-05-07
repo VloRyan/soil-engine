@@ -1,19 +1,21 @@
 
-#ifndef ENGINE_STAGE_SCENE_SCENE_H
-#define ENGINE_STAGE_SCENE_SCENE_H
+#ifndef SOIL_STAGE_SCENE_SCENE_H
+#define SOIL_STAGE_SCENE_SCENE_H
 #include "node.h"
 #include "stage/manager.h"
 #include "stage/resources.h"
 #include "viewer/node.h"
 
-namespace stage {
+namespace soil::stage {
     class Stage;
 }
 
-namespace stage::scene {
-    class Scene : public Node, public ::event::Handler<event::Node>, public ::event::Handler<event::Component>,
+namespace soil::stage::scene {
+    class Scene : public Node,
+                  public soil::event::Handler<event::Node>,
+                  public soil::event::Handler<event::Component>,
                   public input::EventHandler,
-                  public engine::WindowEventHandler {
+                  public WindowEventHandler {
     public:
         explicit Scene(Stage *stage);
 
@@ -25,7 +27,7 @@ namespace stage::scene {
 
         void Handle(const input::Event &event) override;
 
-        void Handle(const engine::WindowEvent &event) override;
+        void Handle(const WindowEvent &event) override;
 
         [[nodiscard]] const std::vector<viewer::Node *> &GetViewer() const;
 
@@ -35,10 +37,9 @@ namespace stage::scene {
 
         [[nodiscard]] Resources &GetResources() const;
 
-        //void SetQuadTree(QuadTree *quadTree);
         virtual void Render(video::render::State &state);
 
-        Stage* GetStage() const;
+        [[nodiscard]] Stage *GetStage() const;
 
     protected:
         void RemoveChild(Node *node) override;
@@ -58,7 +59,7 @@ namespace stage::scene {
     private:
         static void forEachChild(const Node *node, const std::function<void(Node *child)> &func);
 
-        [[nodiscard]] static Node* computeTopDirtyNode(Node *current);
+        [[nodiscard]] static Node *computeTopDirtyNode(Node *current);
 
         Stage *stage_;
         std::vector<viewer::Node *> viewer_;
@@ -71,6 +72,6 @@ namespace stage::scene {
         int nextId_;
         glm::mat4 worldTransform_;
     };
-}
+} // namespace soil::stage::scene
 
-#endif //ENGINE_STAGE_SCENE_SCENE_H
+#endif // SOIL_STAGE_SCENE_SCENE_H
