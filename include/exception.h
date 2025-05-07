@@ -1,9 +1,9 @@
-#ifndef ENGINE_ENGINE_EXCEPTION_H_
-#define ENGINE_ENGINE_EXCEPTION_H_
+#ifndef SOIL_EXCEPTION_H
+#define SOIL_EXCEPTION_H
 #include <string>
 
-namespace engine {
-    class Exception : public std::exception {
+namespace soil {
+    class Exception final : public std::exception {
     public:
         explicit Exception(std::string message);
 
@@ -13,7 +13,7 @@ namespace engine {
 
         [[nodiscard]] Exception *getCause() const;
 
-        [[nodiscard]] virtual std::string getMessage() const noexcept;
+        [[nodiscard]] std::string getMessage() const noexcept;
 
         [[nodiscard]] const char *what() const noexcept override;
 
@@ -21,5 +21,5 @@ namespace engine {
         Exception *cause_;
         std::string message_;
     };
-}
-#endif //ENGINE_ENGINE_EXCEPTION_H_
+} // namespace soil
+#endif // SOIL_EXCEPTION_H

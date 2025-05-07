@@ -1,15 +1,17 @@
-#ifndef ENGINE_FILE_FONT_H_
-#define ENGINE_FILE_FONT_H_
+#ifndef SOIL_FILE_FONT_H_
+#define SOIL_FILE_FONT_H_
+
+#include <string>
+#include <unordered_map>
 
 #include "video/model/letter.h"
-#include <string>
 
-namespace file {
-    class Font {
+namespace soil::file {
+    class Font final {
     public:
         friend class Font_Loader;
 
-        virtual ~Font();
+        ~Font();
 
         glm::vec4 getPadding() const;
 
@@ -62,6 +64,6 @@ namespace file {
         std::string textureFile_;
         uint imageSize_;
     };
-} // file
+} // namespace soil::file
 
-#endif //ENGINE_FILE_FONT_H_
+#endif // SOIL_FILE_FONT_H_

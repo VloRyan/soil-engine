@@ -1,12 +1,12 @@
-#ifndef ENGINE_STAGE_SCENE_COMPONENT_AABB_H_
-#define ENGINE_STAGE_SCENE_COMPONENT_AABB_H_
+#ifndef SOIL_STAGE_SCENE_COMPONENT_AABB_H_
+#define SOIL_STAGE_SCENE_COMPONENT_AABB_H_
 
 #include <array>
 #include <bitset>
 #include <glm/glm.hpp>
 #include "bounding_volume.h"
 
-namespace stage::scene::component {
+namespace soil::stage::scene::component {
     class AABB final : public BoundingVolume {
     public:
         enum class Point : std::uint8_t {
@@ -60,7 +60,7 @@ namespace stage::scene::component {
 
         void SetParent(Node *parent) override;
 
-        bool IsContactType(ContactType contactType) const override;
+        [[nodiscard]] bool IsContactType(ContactType contactType) const override;
 
         void SetContactType(ContactType type, bool value) override;
 
@@ -83,6 +83,6 @@ namespace stage::scene::component {
     private:
         glm::vec3 maxPoint_;
     };
-} // stage::scene::component
+} // namespace soil::stage::scene::component
 
-#endif //ENGINE_STAGE_SCENE_COMPONENT_AABB_H_
+#endif // SOIL_STAGE_SCENE_COMPONENT_AABB_H_

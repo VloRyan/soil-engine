@@ -1,12 +1,12 @@
 
-#ifndef ENGINE_STAGE_SCENE_INPUT_H
-#define ENGINE_STAGE_SCENE_INPUT_H
+#ifndef SOIL_STAGE_SCENE_INPUT_H
+#define SOIL_STAGE_SCENE_INPUT_H
 
-#include "node.h"
 #include "input/event_map.h"
+#include "node.h"
 
-namespace stage::scene {
-    class Input : public Node {
+namespace soil::stage::scene {
+    class Input final : public Node {
     public:
         explicit Input(Node *parent);
 
@@ -17,6 +17,6 @@ namespace stage::scene {
     private:
         input::EventMap eventMap_;
     };
-}
+} // namespace soil::stage::scene
 
-#endif //ENGINE_STAGE_SCENE_INPUT_H
+#endif // SOIL_STAGE_SCENE_INPUT_H

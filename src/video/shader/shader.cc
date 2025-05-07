@@ -6,15 +6,13 @@
 #include "plog/Log.h"
 #include "util/files.h"
 
-namespace video::shader
-{
+namespace soil::video::shader {
     uint Shader::vertexCount_ = 0;
     uint Shader::drawCount_ = 0;
     uint Shader::currentShaderId_ = 0;
 
     Shader::Shader(const std::string &name, const std::string &path) :
-        name_(name), id_(0), linked_(false), attribCount_(0)
-    {
+        name_(name), id_(0), linked_(false), attribCount_(0) {
         const auto filePath = path + name;
         AddStageIfExists(filePath, GLSL_SHADER_FILE_COMPUTE, GL_COMPUTE_SHADER);
         AddStageIfExists(filePath, GLSL_SHADER_FILE_VERTEX, GL_VERTEX_SHADER);
@@ -24,8 +22,7 @@ namespace video::shader
         AddStageIfExists(filePath, GLSL_SHADER_FILE_TESS_EVALUATION, GL_TESS_EVALUATION_SHADER);
     }
 
-    Shader::Shader(const Definition &def) : name_(def.ComputeName()), id_(0), linked_(false), attribCount_(0)
-    {
+    Shader::Shader(const Definition &def) : name_(def.ComputeName()), id_(0), linked_(false), attribCount_(0) {
         AddStageIfExists(def.GetComputeShaderFilePath(), GLSL_SHADER_FILE_COMPUTE, GL_COMPUTE_SHADER);
         AddStageIfExists(def.GetVertexShaderFilePath(), GLSL_SHADER_FILE_VERTEX, GL_VERTEX_SHADER);
         AddStageIfExists(def.GetFragmentShaderFilePath(), GLSL_SHADER_FILE_FRAGMENT, GL_FRAGMENT_SHADER);
@@ -36,14 +33,11 @@ namespace video::shader
                          GL_TESS_EVALUATION_SHADER);
     }
 
-    Shader::~Shader()
-    {
-        for (const Stage *stage : shaderStages_)
-        {
+    Shader::~Shader() {
+        for (const Stage *stage : shaderStages_) {
             delete stage;
         }
-        if (IsLinked())
-        {
+        if (IsLinked()) {
             glDeleteProgram(this->GetId());
         }
         PLOG_DEBUG.printf("Deleted shader %s", name_.c_str());
@@ -53,18 +47,15 @@ namespace video::shader
 
     std::string Shader::GetName() const { return name_; }
 
-    void Shader::Create()
-    {
+    void Shader::Create() {
 #ifdef DEBUG
-        if (id_ != 0)
-        {
+        if (id_ != 0) {
             throw engine::Exception("shader program already created.");
         }
 #endif
         // create the shader program
         id_ = glCreateProgram();
-        for (auto *stage : shaderStages_)
-        {
+        for (auto *stage : shaderStages_) {
             stage->AttachToProgram(id_);
         }
         Link();
@@ -72,56 +63,45 @@ namespace video::shader
 
     uint Shader::GetId() const { return id_; }
 
-    void Shader::Use()
-    {
-        if (id_ == 0)
-        {
+    void Shader::Use() {
+        if (id_ == 0) {
             Create();
         }
-        if (currentShaderId_ != GetId())
-        {
+        if (currentShaderId_ != GetId()) {
             glUseProgram(GetId());
             currentShaderId_ = GetId();
         }
     }
 
-    void Shader::Leave()
-    {
+    void Shader::Leave() {
         glUseProgram(0);
         currentShaderId_ = 0;
     }
 
-    bool Shader::UniformLocationExists(const std::string &name)
-    {
-        if (const UniformLocation location = GetUniformLocation(name); location == UNIFORM_NOT_FOUND)
-        {
+    bool Shader::UniformLocationExists(const std::string &name) {
+        if (const UniformLocation location = GetUniformLocation(name); location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return false;
         }
         return true;
     }
 
-    void Shader::BindUniformBlock(const std::string &name, const int target)
-    {
+    void Shader::BindUniformBlock(const std::string &name, const int target) {
         Use();
         const auto location = glGetUniformBlockIndex(GetId(), name.c_str());
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             return;
         }
         glUniformBlockBinding(GetId(), location, target);
     }
 
-    UniformLocation Shader::GetUniformLocation(const std::string &name)
-    {
-        if (const auto itr = uniformLocator_.find(name); itr != uniformLocator_.end())
-        {
+    UniformLocation Shader::GetUniformLocation(const std::string &name) {
+        if (const auto itr = uniformLocator_.find(name); itr != uniformLocator_.end()) {
             return itr->second;
         }
 
         UniformLocation location = glGetUniformLocation(this->GetId(), name.c_str());
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return UNIFORM_NOT_FOUND;
         }
@@ -129,41 +109,34 @@ namespace video::shader
         return location;
     }
 
-    void Shader::Link()
-    {
-        if (this->GetId() == 0)
-        {
-            throw engine::Exception("ShaderProgram is not created. Use create() before link().");
+    void Shader::Link() {
+        if (this->GetId() == 0) {
+            throw Exception("ShaderProgram is not created. Use create() before link().");
         }
         /* Link our program, and set it as being actively used */
         glLinkProgram(this->GetId());
         GLint IsLinked;
         glGetProgramiv(this->GetId(), GL_LINK_STATUS, &IsLinked);
-        if (IsLinked == GL_FALSE)
-        {
+        if (IsLinked == GL_FALSE) {
             GLint maxLength;
             glGetProgramiv(this->GetId(), GL_INFO_LOG_LENGTH, &maxLength);
             std::string errorMessage;
-            if (maxLength > 0)
-            {
+            if (maxLength > 0) {
                 auto *const pLinkInfoLog = new char[maxLength];
                 glGetProgramInfoLog(this->GetId(), maxLength, &maxLength, pLinkInfoLog);
                 errorMessage.assign(pLinkInfoLog);
                 delete[] pLinkInfoLog;
-            }
-            else
-            {
+            } else {
                 errorMessage = "Link failed for unknown reason.";
             }
             glDeleteProgram(this->GetId());
             id_ = 0;
-            throw engine::Exception(errorMessage);
+            throw Exception(errorMessage);
         }
         glUseProgram(this->GetId());
         this->linked_ = true;
         /*After link shaderStage will not be needed explicit and can be deleted*/
-        for (const Stage *stage : shaderStages_)
-        {
+        for (const Stage *stage : shaderStages_) {
             delete stage;
         }
         shaderStages_.clear();
@@ -174,8 +147,7 @@ namespace video::shader
     // <editor-fold default-state="collapsed" desc="Draw">
 
 
-    void Shader::DrawElements(const uint mode, const GLsizei indexCount, const vertex::IndexType indexType)
-    {
+    void Shader::DrawElements(const uint mode, const GLsizei indexCount, const vertex::IndexType indexType) {
         const GLenum glIndexType = GetGLIndexType(indexType);
         glDrawElements(mode, indexCount, glIndexType, nullptr);
         vertexCount_ += indexCount;
@@ -185,16 +157,14 @@ namespace video::shader
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="DrawInstanced">
 
-    void Shader::DrawArrays(const uint mode, const int count, const int indexOffset)
-    {
+    void Shader::DrawArrays(const uint mode, const int count, const int indexOffset) {
         glDrawArrays(mode, indexOffset, count);
         vertexCount_ += count;
         ++drawCount_;
     }
 
     void Shader::DrawElementsInstanced(const uint mode, const uint indexCount, const vertex::IndexType indexType,
-                                       const int instanceCount, const uint baseInstance)
-    {
+                                       const int instanceCount, const uint baseInstance) {
         const GLenum glIndexType = GetGLIndexType(indexType);
         glDrawElementsInstancedBaseInstance(mode, static_cast<GLsizei>(indexCount), glIndexType, nullptr, instanceCount,
                                             baseInstance);
@@ -202,8 +172,7 @@ namespace video::shader
         ++drawCount_;
     }
 
-    void Shader::DrawElementsIndirect(const uint mode, const vertex::IndexType indexType)
-    {
+    void Shader::DrawElementsIndirect(const uint mode, const vertex::IndexType indexType) {
         const GLenum glIndexType = GetGLIndexType(indexType);
         glDrawElementsIndirect(mode, glIndexType, static_cast<void *>(nullptr));
     }
@@ -211,12 +180,10 @@ namespace video::shader
     // </editor-fold>
     // <editor-fold default-state="collapsed" desc="SetUniform">
 
-    void Shader::SetUniform(const std::string &name, const int value)
-    {
+    void Shader::SetUniform(const std::string &name, const int value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -224,12 +191,10 @@ namespace video::shader
         glUniform1i(location, value);
     }
 
-    void Shader::SetUniform(const std::string &name, const uint value)
-    {
+    void Shader::SetUniform(const std::string &name, const uint value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -237,12 +202,10 @@ namespace video::shader
         glUniform1ui(location, value);
     }
 
-    void Shader::SetUniform(const std::string &name, const float value)
-    {
+    void Shader::SetUniform(const std::string &name, const float value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -250,12 +213,10 @@ namespace video::shader
         glUniform1f(location, value);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::vec2 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::vec2 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -263,12 +224,10 @@ namespace video::shader
         glUniform2fv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::vec3 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::vec3 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -276,12 +235,10 @@ namespace video::shader
         glUniform3fv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::vec4 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::vec4 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -289,12 +246,10 @@ namespace video::shader
         glUniform4fv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::ivec2 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::ivec2 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -302,12 +257,10 @@ namespace video::shader
         glUniform2iv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::ivec3 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::ivec3 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -315,12 +268,10 @@ namespace video::shader
         glUniform3iv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::ivec4 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::ivec4 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -328,12 +279,10 @@ namespace video::shader
         glUniform4iv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::uvec2 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::uvec2 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -341,12 +290,10 @@ namespace video::shader
         glUniform2uiv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::uvec3 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::uvec3 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -354,12 +301,10 @@ namespace video::shader
         glUniform3uiv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::uvec4 value)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::uvec4 value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -367,12 +312,10 @@ namespace video::shader
         glUniform4uiv(location, 1, &value[0]);
     }
 
-    void Shader::SetUniform(const std::string &name, const glm::mat4 value, const bool transpose)
-    {
+    void Shader::SetUniform(const std::string &name, const glm::mat4 &value, const bool transpose) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -380,36 +323,30 @@ namespace video::shader
         glUniformMatrix4fv(location, 1, static_cast<GLboolean>(transpose), glm::value_ptr(value));
     }
 
-    void Shader::SetUniform(const UniformLocation locator, glm::mat4 value, const bool transpose) const
-    {
+    void Shader::SetUniform(const UniformLocation location, glm::mat4 value, const bool transpose) const {
 #ifdef DEBUG
-        if (locator == -1)
-        {
+        if (locator == -1) {
             PLOG_ERROR << GetName() << ": Uniform locator does not exist.";
             return;
         }
 #endif
-        glUniformMatrix4fv(locator, 1, static_cast<GLboolean>(transpose), glm::value_ptr(value));
+        glUniformMatrix4fv(location, 1, static_cast<GLboolean>(transpose), glm::value_ptr(value));
     }
 
-    void Shader::SetUniform(const UniformLocation locator, const float value) const
-    {
+    void Shader::SetUniform(const UniformLocation location, const float value) const {
 #ifdef DEBUG
-        if (locator == -1)
-        {
+        if (locator == -1) {
             PLOG_ERROR << GetName() << ": Uniform locator does not exist.";
             return;
         }
 #endif
-        glUniform1f(locator, value);
+        glUniform1f(location, value);
     }
 
-    void Shader::SetUniformHandle(const std::string &name, const uint handle)
-    {
+    void Shader::SetUniformHandle(const std::string &name, const uint handle) {
+#ifdef DEBUG
         UniformLocation location = GetUniformLocation(name);
-#ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;
         }
@@ -421,67 +358,54 @@ namespace video::shader
     // <editor-fold defaultstate="collapsed" desc="Texture">
 
     void Shader::SetTextures2d(const std::vector<texture::Texture *> &textures, const std::string &uniformName,
-                               const byte maxTextures)
-    {
+                               const byte maxTextures) {
         const auto location = GetUniformLocation(uniformName);
-        for (auto i = 0; i < textures.size() && i < maxTextures; ++i)
-        {
+        for (auto i = 0; i < textures.size() && i < maxTextures; ++i) {
             SetTexture2d(static_cast<byte>(i), textures.at(i), location + i);
         }
     }
 
     void Shader::SetTextures2d(const std::vector<texture::Texture *> &textures, const UniformLocation location,
-                               const byte maxTextures)
-    {
-        for (auto i = 0; i < textures.size() && i < maxTextures; ++i)
-        {
+                               const byte maxTextures) {
+        for (auto i = 0; i < textures.size() && i < maxTextures; ++i) {
             SetTexture2d(static_cast<byte>(i), textures.at(i), location + i);
         }
     }
 
     void Shader::SetTextures(const GLenum target, const std::vector<texture::Texture *> &textures,
-                             const std::string &uniformName, const byte maxTextures)
-    {
+                             const std::string &uniformName, const byte maxTextures) {
         const auto location = GetUniformLocation(uniformName);
-        for (auto i = 0; i < textures.size() && i < maxTextures; ++i)
-        {
+        for (auto i = 0; i < textures.size() && i < maxTextures; ++i) {
             SetTexture(target, static_cast<byte>(i), textures.at(i), location + i);
         }
     }
 
     void Shader::SetTextures(const GLenum target, const std::vector<texture::Texture *> &textures,
-                             const UniformLocation location, const byte maxTextures)
-    {
-        for (auto i = 0; i < textures.size() && i < maxTextures; ++i)
-        {
+                             const UniformLocation location, const byte maxTextures) {
+        for (auto i = 0; i < textures.size() && i < maxTextures; ++i) {
             SetTexture(target, static_cast<byte>(i), textures.at(i), location + i);
         }
     }
 
-    void Shader::SetTexture2d(const byte textureUnit, const texture::Texture *texture, const std::string &uniformName)
-    {
+    void Shader::SetTexture2d(const byte textureUnit, const texture::Texture *texture, const std::string &uniformName) {
         const UniformLocation location = GetUniformLocation(uniformName);
         SetTexture(GL_TEXTURE_2D, textureUnit, texture, location);
     }
 
-    void Shader::SetTexture2d(const byte textureUnit, const texture::Texture *texture, const UniformLocation location)
-    {
+    void Shader::SetTexture2d(const byte textureUnit, const texture::Texture *texture, const UniformLocation location) {
         SetTexture(GL_TEXTURE_2D, textureUnit, texture, location);
     }
 
     void Shader::SetTexture(const GLenum target, const byte textureUnit, const texture::Texture *texture,
-                            const UniformLocation location)
-    {
+                            const UniformLocation location) {
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << "Texture Uniform does not exist.";
             return;
         }
 #endif
         uint texId = 0;
-        if (texture != nullptr)
-        {
+        if (texture != nullptr) {
             texId = texture->GetId();
         }
         glActiveTexture(GL_TEXTURE0 + textureUnit * (GL_TEXTURE1 - GL_TEXTURE0));
@@ -490,24 +414,20 @@ namespace video::shader
     }
 
     void Shader::SetTextureCubeMap(const byte textureUnit, const texture::Texture *texture,
-                                   const std::string &uniformName)
-    {
+                                   const std::string &uniformName) {
         SetTextureCubeMap(textureUnit, texture, GetUniformLocation(uniformName));
     }
 
     void Shader::SetTextureCubeMap(const byte textureUnit, const texture::Texture *texture,
-                                   const UniformLocation location)
-    {
+                                   const UniformLocation location) {
 #ifdef DEBUG
-        if (location == UNIFORM_NOT_FOUND)
-        {
+        if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << "TextureCubeMap Uniform does not exist.";
             return;
         }
 #endif
         uint texId = 0;
-        if (texture != nullptr)
-        {
+        if (texture != nullptr) {
             texId = texture->GetId();
         }
         glActiveTexture(GL_TEXTURE0 + textureUnit * (GL_TEXTURE1 - GL_TEXTURE0));
@@ -517,10 +437,8 @@ namespace video::shader
 
     // </editor-fold>
 
-    const void *Shader::GetBufferOffset(const GLenum indexType, const uint offset)
-    {
-        switch (indexType)
-        {
+    const void *Shader::GetBufferOffset(const GLenum indexType, const uint offset) {
+        switch (indexType) {
         case GL_UNSIGNED_INT:
             {
                 return BUFFER_OFFSET_UINT(offset);
@@ -533,10 +451,8 @@ namespace video::shader
         }
     }
 
-    GLenum Shader::GetGLIndexType(const vertex::IndexType indexType)
-    {
-        switch (indexType)
-        {
+    GLenum Shader::GetGLIndexType(const vertex::IndexType indexType) {
+        switch (indexType) {
         case vertex::IndexType::TYPE_UINT:
             {
                 return GL_UNSIGNED_INT;
@@ -553,8 +469,7 @@ namespace video::shader
 
     uint Shader::GetVerticeCount() { return vertexCount_; }
 
-    void Shader::ResetCounter()
-    {
+    void Shader::ResetCounter() {
         vertexCount_ = 0;
         drawCount_ = 0;
     }
@@ -563,21 +478,14 @@ namespace video::shader
 
     void Shader::SetPatchVertices(const int value) { glPatchParameteri(GL_PATCH_VERTICES, value); }
 
-    void Shader::DispatchCompute(const uint num_groups_x, const uint num_groups_y, const uint num_groups_z)
-    {
-        /*if (num_groups_x > MaxGroupCount) {
-          LOGGER->debug("Max supported group count x %d", MaxGroupCount);
-          num_groups_x = MaxGroupCount;
-        }*/
+    void Shader::DispatchCompute(const uint num_groups_x, const uint num_groups_y, const uint num_groups_z) {
         glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
     }
 
-    void Shader::AddStageIfExists(const std::string &basePath, const std::string &ext, const uint type)
-    {
-        if (const auto filePath = basePath + "." + ext + GLSL_SHADER_FILE_EXTENSION; util::Files::Exists(filePath))
-        {
+    void Shader::AddStageIfExists(const std::string &basePath, const std::string &ext, const uint type) {
+        if (const auto filePath = basePath + "." + ext + GLSL_SHADER_FILE_EXTENSION; util::Files::Exists(filePath)) {
             auto *const stage = Stage::load(filePath, type);
             shaderStages_.push_back(stage);
         }
     }
-} // namespace video::shader
+} // namespace soil::video::shader

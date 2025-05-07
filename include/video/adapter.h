@@ -1,16 +1,11 @@
-#ifndef ENGINE_ENGINE_VIDEO_ADAPTER_H_
-#define ENGINE_ENGINE_VIDEO_ADAPTER_H_
+#ifndef SOIL_VIDEO_ADAPTER_H_
+#define SOIL_VIDEO_ADAPTER_H_
 
 #include <cstdint>
 #include <string>
 
-namespace video {
-    enum Vendor : std::uint8_t {
-        ATI = 0,
-        NVIDIA = 1,
-        INTEL = 3,
-        OTHER = 99
-    };
+namespace soil::video {
+    enum Vendor : std::uint8_t { ATI = 0, NVIDIA = 1, INTEL = 3, OTHER = 99 };
 
     class Adapter {
     public:
@@ -24,6 +19,6 @@ namespace video {
         Vendor vendor_;
         std::string model_;
     };
-} // video
+} // namespace soil::video
 
-#endif //ENGINE_ENGINE_VIDEO_ADAPTER_H_
+#endif // SOIL_VIDEO_ADAPTER_H_

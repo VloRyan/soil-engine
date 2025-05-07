@@ -1,16 +1,13 @@
 #include <utility>
 
 #include "video/shader/definition.h"
-#include "video/shader/stage.h"
-#include "util/files.h"
-#include "exception.h"
 
-namespace video::shader {
+
+namespace soil::video::shader {
     Definition::Definition() = default;
 
-    Definition::Definition(std::string vertexShaderName, std::string fragmentShaderName)
-        : vertexShaderName_(std::move(vertexShaderName)), fragmentShaderName_(std::move(fragmentShaderName)) {
-    }
+    Definition::Definition(std::string vertexShaderName, std::string fragmentShaderName) :
+        vertexShaderName_(std::move(vertexShaderName)), fragmentShaderName_(std::move(fragmentShaderName)) {}
 
     Definition::Definition(Definition &other) = default;
 
@@ -20,21 +17,15 @@ namespace video::shader {
         fragmentShaderName_ = std::move(FragmentShaderName);
     }
 
-    std::string Definition::GetFragmentShaderName() const {
-        return fragmentShaderName_;
-    }
+    std::string Definition::GetFragmentShaderName() const { return fragmentShaderName_; }
 
-    std::string Definition::GetFragmentShaderFilePath() const {
-        return filePath_ + fragmentShaderName_;
-    }
+    std::string Definition::GetFragmentShaderFilePath() const { return filePath_ + fragmentShaderName_; }
 
     void Definition::SetTessellationEvalStageShaderName(std::string TessellationEvalStageShaderName) {
         tessellationEvalShaderName_ = std::move(TessellationEvalStageShaderName);
     }
 
-    std::string Definition::GetTessellationEvalStageShaderName() const {
-        return tessellationEvalShaderName_;
-    }
+    std::string Definition::GetTessellationEvalStageShaderName() const { return tessellationEvalShaderName_; }
 
     std::string Definition::GetTessellationEvalStageShaderFilePath() const {
         return filePath_ + tessellationEvalShaderName_;
@@ -44,9 +35,7 @@ namespace video::shader {
         tessellationControlShaderName_ = TessellationControlShaderName;
     }
 
-    std::string Definition::GetTessellationControlShaderName() const {
-        return tessellationControlShaderName_;
-    }
+    std::string Definition::GetTessellationControlShaderName() const { return tessellationControlShaderName_; }
 
     std::string Definition::GetTessellationControlShaderFilePath() const {
         return filePath_ + tessellationControlShaderName_;
@@ -56,37 +45,23 @@ namespace video::shader {
         geometryShaderName_ = GeometryShaderName;
     }
 
-    std::string Definition::GetGeometryShaderName() const {
-        return geometryShaderName_;
-    }
+    std::string Definition::GetGeometryShaderName() const { return geometryShaderName_; }
 
-    std::string Definition::GetGeometryShaderFilePath() const {
-        return filePath_ + geometryShaderName_;
-    }
+    std::string Definition::GetGeometryShaderFilePath() const { return filePath_ + geometryShaderName_; }
 
-    void Definition::SetVertexShaderName(const std::string &VertexShaderName) {
-        vertexShaderName_ = VertexShaderName;
-    }
+    void Definition::SetVertexShaderName(const std::string &VertexShaderName) { vertexShaderName_ = VertexShaderName; }
 
-    std::string Definition::GetVertexShaderName() const {
-        return vertexShaderName_;
-    }
+    std::string Definition::GetVertexShaderName() const { return vertexShaderName_; }
 
-    std::string Definition::GetVertexShaderFilePath() const {
-        return filePath_ + vertexShaderName_;
-    }
+    std::string Definition::GetVertexShaderFilePath() const { return filePath_ + vertexShaderName_; }
 
     void Definition::SetComputeShaderName(const std::string &ComputeShaderName) {
         computeShaderName_ = ComputeShaderName;
     }
 
-    std::string Definition::GetComputeShaderName() const {
-        return computeShaderName_;
-    }
+    std::string Definition::GetComputeShaderName() const { return computeShaderName_; }
 
-    std::string Definition::GetComputeShaderFilePath() const {
-        return filePath_ + computeShaderName_;
-    }
+    std::string Definition::GetComputeShaderFilePath() const { return filePath_ + computeShaderName_; }
 
     void Definition::SetFilePath(const std::string &filePath) {
         if (filePath.ends_with("/")) {
@@ -96,9 +71,7 @@ namespace video::shader {
         }
     }
 
-    std::string Definition::GetFilePath() const {
-        return filePath_;
-    }
+    std::string Definition::GetFilePath() const { return filePath_; }
 
     std::string Definition::ComputeName() const {
         std::string pipelineName;
@@ -122,4 +95,4 @@ namespace video::shader {
         }
         return pipelineName;
     }
-}
+} // namespace soil::video::shader

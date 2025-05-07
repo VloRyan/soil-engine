@@ -1,69 +1,61 @@
-#ifndef ENGINE_SOUND_SOURCE_H
-#define ENGINE_SOUND_SOURCE_H
-#include <glm/vec3.hpp>
+#ifndef SOIL_SOUND_SOURCE_H
+#define SOIL_SOUND_SOURCE_H
+#include "glm/vec3.hpp"
 
-#include "sound/buffer.h"
+#include "buffer.h"
 
-namespace sound {
+namespace soil::sound {
     class Source {
     public:
-        explicit Source(Buffer *buffer);
+        explicit Source() {};
 
-        virtual ~Source();
+        virtual ~Source() = default;
 
+        [[nodiscard]] virtual glm::vec3 GetPosition() const = 0;
 
-        [[nodiscard]] virtual glm::vec3 GetPosition() const;
+        virtual void SetPosition(glm::vec3 position) const = 0;
 
-        virtual void SetPosition(glm::vec3 position);
+        [[nodiscard]] virtual float GetPitch() const = 0;
 
-        [[nodiscard]] virtual float GetPitch() const;
+        virtual void SetPitch(float) const = 0;
 
-        virtual void SetPitch(float);
+        [[nodiscard]] virtual float GetGain() const = 0;
 
-        [[nodiscard]] virtual float GetGain() const;
+        virtual void SetGain(float) const = 0;
 
-        virtual void SetGain(float);
+        [[nodiscard]] virtual bool IsPlaying() const = 0;
 
-        [[nodiscard]] virtual bool IsPlaying() const;
+        virtual void SetLooping(bool doLoop) const = 0;
 
-        virtual void SetLooping(bool doLoop);
+        [[nodiscard]] virtual bool GetLooping() const = 0;
 
-        [[nodiscard]] virtual bool GetLooping() const;
+        virtual void SetSourceRelative(bool relative) const = 0;
 
-        virtual void SetSourceRelative(bool relative);
+        [[nodiscard]] virtual bool GetSourceRelative() const = 0;
 
-        [[nodiscard]] virtual bool GetSourceRelative() const;
+        [[nodiscard]] virtual float GetMaxDistance() const = 0;
 
-        [[nodiscard]] virtual float GetMaxDistance() const;
+        virtual void SetMaxDistance(float distance) const = 0;
 
-        virtual void SetMaxDistance(float distance);
+        [[nodiscard]] virtual float GetRolloffFactor() const = 0;
 
-        [[nodiscard]] virtual float GetRolloffFactor() const;
+        virtual void SetRolloffFactor(float factor) const = 0;
 
-        virtual void SetRolloffFactor(float factor);
+        [[nodiscard]] virtual float GetReferenceDistance() const = 0;
 
-        [[nodiscard]] virtual float GetReferenceDistance() const;
+        virtual void SetReferenceDistance(float distance) const = 0;
 
-        virtual void SetReferenceDistance(float distance);
+        virtual void Play() const = 0;
 
-        virtual void Play();
+        virtual void Pause() const = 0;
 
-        virtual void Pause();
+        virtual void Rewind() const = 0;
 
-        virtual void Rewind();
+        virtual void Stop() const = 0;
 
-        virtual void Stop();
+        virtual void SetBuffer(Buffer *Buffer) = 0;
 
-        void SetBuffer(Buffer *Buffer);
-
-        [[nodiscard]] Buffer* GetBuffer() const;
-
-    private:
-        [[nodiscard]] uint GetId() const;
-
-        uint id_;
-        Buffer *buffer_;
+        [[nodiscard]] virtual Buffer *GetBuffer() const = 0;
     };
-}
-#endif // ENGINE_SOUND_SOURCE_H
-
+} // namespace soil::sound
+#endif // SOIL_SOUND_SOURCE_H

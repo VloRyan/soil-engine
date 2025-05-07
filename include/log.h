@@ -1,10 +1,9 @@
-#ifndef ENGINE_ENGINE_LOG_LOG_H_
-#define ENGINE_ENGINE_LOG_LOG_H_
+#ifndef SOIL_LOG_LOG_H_
+#define SOIL_LOG_LOG_H_
 
 #include <string>
-#include <plog/Severity.h>
 
-namespace engine {
+namespace soil {
     class Log {
     public:
         static void Init();
@@ -21,6 +20,6 @@ namespace engine {
 
         static void Errorf(const std::string &format, ...);
     };
-} // logger
+} // namespace soil
 
-#endif //ENGINE_ENGINE_LOG_LOG_H_
+#endif // SOIL_LOG_LOG_H_

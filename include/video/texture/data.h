@@ -1,15 +1,15 @@
-#ifndef VIDEO_TEXTURE_DATA_H
-#define VIDEO_TEXTURE_DATA_H
+#ifndef SOIL_VIDEO_TEXTURE_DATA_H
+#define SOIL_VIDEO_TEXTURE_DATA_H
 #include <glm/glm.hpp>
 #include "base.h"
 
-namespace video::texture {
-    struct Data {
+namespace soil::video::texture {
+    struct Data final {
         Data(const byte *data, glm::ivec2 size, int format, int type);
 
         Data(const Data &other);
 
-        virtual ~Data();
+        ~Data();
 
         static int getComponentsPerPixel(int format);
 
@@ -21,5 +21,5 @@ namespace video::texture {
     private:
         void copyData(const byte *data);
     };
-}
-#endif /* VIDEO_TEXTURE_DATA_H */
+} // namespace soil::video::texture
+#endif /* SOIL_VIDEO_TEXTURE_DATA_H */

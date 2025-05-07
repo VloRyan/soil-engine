@@ -1,14 +1,12 @@
 
-#ifndef RENDERABLE_H
-#define RENDERABLE_H
+#ifndef SOIL_STAGE_SCENE_COMPONENT_RENDERABLE_H
+#define SOIL_STAGE_SCENE_COMPONENT_RENDERABLE_H
 #include "stage/event/component.h"
 #include "video/mesh/mesh.h"
 #include "video/render/renderable.h"
-#include "video/render/instance/instance.h"
 #include "video/shader/instance_shader.h"
 
-
-namespace stage::scene::component {
+namespace soil::stage::scene::component {
     class Renderable : public Component {
     public:
         ~Renderable() override = default;
@@ -17,13 +15,12 @@ namespace stage::scene::component {
 
         [[nodiscard]] virtual video::shader::InstanceShader* GetShader() const = 0;
 
-
         [[nodiscard]] virtual bool IsOpaque() const = 0;
 
     protected:
-        Renderable();
+        Renderable() : Component(Type::Renderable) {};
     };
-}
+} // namespace soil::stage::scene::component
 
 
-#endif //RENDERABLE_H
+#endif // SOIL_STAGE_SCENE_COMPONENT_RENDERABLE_H

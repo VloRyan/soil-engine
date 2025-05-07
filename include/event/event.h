@@ -1,14 +1,11 @@
-#ifndef ENGINE_EVENT_EVENT_H
-#define ENGINE_EVENT_EVENT_H
+#ifndef SOIL_EVENT_EVENT_H
+#define SOIL_EVENT_EVENT_H
 #include <cstdint>
 
-namespace event
-{
-    class Event
-    {
+namespace soil::event {
+    class Event {
     public:
-        enum class Type : std::uint8_t
-        {
+        enum class Type : std::uint8_t {
             System = 0,
             Video,
             Input,
@@ -24,7 +21,7 @@ namespace event
 
         virtual ~Event();
 
-        Type getType() const;
+        [[nodiscard]] Type getType() const;
 
         void consume();
 
@@ -34,5 +31,5 @@ namespace event
         Type type_;
         bool consumed_;
     };
-} // namespace event
-#endif /* ENGINE_EVENT_EVENT_H */
+} // namespace soil::event
+#endif /* SOIL_EVENT_EVENT_H */

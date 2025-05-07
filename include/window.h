@@ -1,7 +1,6 @@
-#ifndef ENGINE_ENGINE_VIDEO_WINDOW_H_
-#define ENGINE_ENGINE_VIDEO_WINDOW_H_
+#ifndef SOIL_VIDEO_WINDOW_H_
+#define SOIL_VIDEO_WINDOW_H_
 
-// #define GLFW_INCLUDE_NONE
 #include <bitset>
 #include <string>
 #include "GLFW/glfw3.h"
@@ -12,32 +11,18 @@
 #define OPEN_GL_MAJOR_VERSION 3
 #define OPEN_GL_MINOR_VERSION 3
 
-namespace engine
-{
-    struct Statistics
-    {
+namespace soil {
+    struct Statistics {
         int fps;
         int vertexCount;
         int drawCount;
     };
 
-    enum class WindowType : std::uint8_t
-    {
-        Fullscreen = 0,
-        Windowed
-    };
+    enum class WindowType : std::uint8_t { Fullscreen = 0, Windowed };
 
-    enum class WindowState : std::uint8_t
-    {
-        Closed = 0,
-        Open,
-        Maximized,
-        Minimized,
-        Focused
-    };
+    enum class WindowState : std::uint8_t { Closed = 0, Open, Maximized, Minimized, Focused };
 
-    struct WindowParameter
-    {
+    struct WindowParameter {
         glm::ivec2 Size{800, 600};
         glm::ivec2 RenderSize{640, 480};
         glm::ivec2 RenderSizeAspect{640, 480};
@@ -46,8 +31,7 @@ namespace engine
         glm::ivec2 OpenGLVersion{OPEN_GL_MAJOR_VERSION, OPEN_GL_MINOR_VERSION};
     };
 
-    class Window final : public ::event::Observable<WindowEvent>
-    {
+    class Window final : public event::Observable<WindowEvent> {
     public:
         explicit Window(const WindowParameter &args);
 
@@ -93,5 +77,5 @@ namespace engine
         GLFWwindow *glfwWindow_;
         Statistics statistics_;
     };
-} // namespace engine
-#endif // ENGINE_ENGINE_VIDEO_WINDOW_H_
+} // namespace soil
+#endif // SOIL_VIDEO_WINDOW_H_

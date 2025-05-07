@@ -1,9 +1,9 @@
-#ifndef ENGINE_WORLD_ENTITY_OBJECT_3D_H_
-#define ENGINE_WORLD_ENTITY_OBJECT_3D_H_
+#ifndef SOIL_WORLD_ENTITY_OBJECT_3D_H_
+#define SOIL_WORLD_ENTITY_OBJECT_3D_H_
 
 #include <glm/glm.hpp>
 
-namespace world::entity {
+namespace soil::world::entity {
     class Object3d {
     public:
         Object3d(const Object3d &other) = delete;
@@ -44,6 +44,6 @@ namespace world::entity {
         glm::mat4 localTransform_;
         glm::mat4 worldTransform_;
     };
-} // entity
+} // namespace soil::world::entity
 
-#endif //ENGINE_WORLD_ENTITY_OBJECT_3D_H_
+#endif // SOIL_WORLD_ENTITY_OBJECT_3D_H_

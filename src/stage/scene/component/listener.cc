@@ -3,15 +3,14 @@
 
 #include "stage/scene/node.h"
 
-namespace stage::scene::component {
-Listener::Listener(::sound::Listener *listener)
-    : Component(Type::Sound), listener_(listener) {}
+namespace soil::stage::scene::component {
+    Listener::Listener(sound::Listener *listener) : Component(Type::Sound), listener_(listener) {}
 
-::sound::Listener *Listener::GetListener() const { return listener_; }
+    sound::Listener *Listener::GetListener() const { return listener_; }
 
-void Listener::UpdateMatrix(const glm::mat4 &matrix) {
-  Component::UpdateMatrix(matrix);
-  listener_->SetPosition(matrix[3]);
-  listener_->SetOrientation(glm::mat2x3(matrix[2], matrix[1]));
-}
-} // namespace stage::scene::component
+    void Listener::UpdateMatrix(const glm::mat4 &matrix) {
+        Component::UpdateMatrix(matrix);
+        listener_->SetPosition(matrix[3]);
+        listener_->SetOrientation(glm::mat2x3(matrix[2], matrix[1]));
+    }
+} // namespace soil::stage::scene::component

@@ -1,15 +1,15 @@
 
-#ifndef QUAD_H
-#define QUAD_H
+#ifndef SOIL_VIDEO_RENDER_QUAD_H
+#define SOIL_VIDEO_RENDER_QUAD_H
+#include <string>
 #include "renderable.h"
 #include "video/mesh/mesh.h"
 #include "video/shader/instance_shader.h"
 #include "video/vertex/vao.h"
-#include <string>
 
 
-namespace video::render {
-    class Quad : public Renderable {
+namespace soil::video::render {
+    class Quad final : public Renderable {
     public:
         struct QuadShaderDef {
             shader::Shader *Shader;
@@ -24,7 +24,7 @@ namespace video::render {
 
         [[nodiscard]] bool IsOpaque() const override;
 
-        void SetTexture(texture::Texture *const texture);
+        void SetTexture(texture::Texture *texture);
 
     private:
         bool opaque_;
@@ -35,6 +35,6 @@ namespace video::render {
         std::string textureUniform_;
         texture::Texture *texture_;
     };
-}
+} // namespace soil::video::render
 
-#endif //QUAD_H
+#endif // SOIL_VIDEO_RENDER_QUAD_H

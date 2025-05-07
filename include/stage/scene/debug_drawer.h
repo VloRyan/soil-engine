@@ -1,10 +1,10 @@
 
-#ifndef ENGINE_STAGE_SCENE_DEBUG_DRAWER_H
-#define ENGINE_STAGE_SCENE_DEBUG_DRAWER_H
+#ifndef SOIL_STAGE_SCENE_DEBUG_DRAWER_H
+#define SOIL_STAGE_SCENE_DEBUG_DRAWER_H
 #include <glm/glm.hpp>
 
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class Node;
 
     class IDebugDrawer {
@@ -21,13 +21,11 @@ namespace stage::scene {
 
         virtual ~IDebugDrawer() = default;
 
-        virtual void StartDraw() {
-        };
+        virtual void StartDraw() {};
 
         virtual void Line(glm::vec3 start, glm::vec3 end, glm::vec4 color) = 0;
 
-        virtual void EndDraw() {
-        };
+        virtual void EndDraw() {};
     };
-}
-#endif //ENGINE_STAGE_SCENE_DEBUG_DRAWER_H
+} // namespace soil::stage::scene
+#endif // SOIL_STAGE_SCENE_DEBUG_DRAWER_H

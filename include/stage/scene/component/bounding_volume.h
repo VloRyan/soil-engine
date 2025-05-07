@@ -1,15 +1,15 @@
-#ifndef ENGINE_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
-#define ENGINE_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
+#ifndef SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
+#define SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
 
 #include <glm/glm.hpp>
 #include "component.h"
 #include "stage/scene/debug_drawer.h"
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class QuadTree;
 }
 
-namespace stage::scene::component {
+namespace soil::stage::scene::component {
     struct IntersectionResult {
         bool Intersecting = false;
         glm::vec3 IntersectionPoint;
@@ -43,11 +43,11 @@ namespace stage::scene::component {
 
         virtual void DrawDebugLines(IDebugDrawer *debugDrawer) = 0;
 
-        virtual bool IsContactType(ContactType type) const = 0;
+        [[nodiscard]] virtual bool IsContactType(ContactType type) const = 0;
 
-        virtual void SetContactType(ContactType type, bool value) =0;
+        virtual void SetContactType(ContactType type, bool value) = 0;
     };
-} // stage::scene::component
+} // namespace soil::stage::scene::component
 
 
-#endif //ENGINE_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
+#endif // SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_

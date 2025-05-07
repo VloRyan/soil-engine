@@ -1,23 +1,18 @@
-#ifndef ENGINE_VIDEO_RENDER_FORWARD_RENDERING_H_
-#define ENGINE_VIDEO_RENDER_FORWARD_RENDERING_H_
+#ifndef SOIL_VIDEO_RENDER_FORWARD_RENDERING_H_
+#define SOIL_VIDEO_RENDER_FORWARD_RENDERING_H_
 
 #include <vector>
 #include "technique.h"
 
-namespace video::render {
-    class ForwardRendering : public Technique {
+namespace soil::video::render {
+    class ForwardRendering final : public Technique {
     public:
         ForwardRendering();
 
-        ~ForwardRendering();
+        ~ForwardRendering() override;
 
         void Render(State &state, const std::vector<Renderable *> &renderables) const override;
-
-    private:
-        //static void toSortedList(std::vector<render::object::Instance *> &instances, std::vector<Pile> &piles);
-
-        // static bool SortByOpaqueAndRenderObject(object::Instance *a, object::Instance *b);
     };
-} // Render
+} // namespace soil::video::render
 
-#endif //ENGINE_VIDEO_RENDER_FORWARD_RENDERING_H_
+#endif // SOIL_VIDEO_RENDER_FORWARD_RENDERING_H_

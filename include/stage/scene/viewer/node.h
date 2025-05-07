@@ -1,16 +1,16 @@
-#ifndef STAGE_SCENE_VIEWER_NODE_H
-#define STAGE_SCENE_VIEWER_NODE_H
+#ifndef SOIL_STAGE_SCENE_VIEWER_NODE_H
+#define SOIL_STAGE_SCENE_VIEWER_NODE_H
 
 #include "glm/glm.hpp"
-#include "stage/scene/node.h"
 #include "stage/scene/component/renderable_instance.h"
+#include "stage/scene/node.h"
 #include "stage/scene/space/quad_tree.h"
-#include "video/viewer.h"
 #include "video/render/batch.h"
 #include "video/render/pipeline.h"
+#include "video/viewer.h"
 #include "world/collision/frustum.h"
 
-namespace stage::scene::viewer {
+namespace soil::stage::scene::viewer {
     class Node : public scene::Node, public video::Viewer {
     public:
         ~Node() override = default;
@@ -19,9 +19,9 @@ namespace stage::scene::viewer {
 
         [[nodiscard]] glm::mat4 GetProjectionMatrix() const override = 0;
 
-        virtual world::collision::Frustum* GetFrustum() = 0;
+        virtual world::collision::Frustum *GetFrustum() = 0;
 
-        [[nodiscard]] video::render::Pipeline* GetPipeline() const;
+        [[nodiscard]] video::render::Pipeline *GetPipeline() const;
 
 
         [[nodiscard]] bool IsViewChanged() const;
@@ -44,7 +44,7 @@ namespace stage::scene::viewer {
 
         [[nodiscard]] int GetUboMatricesBindingTarget() const;
 
-        void SetUboMatricesBindingTarget(const int uboMatricesBindingTarget);
+        void SetUboMatricesBindingTarget(int uboMatricesBindingTarget);
 
     protected:
         explicit Node(scene::Node *parent);
@@ -62,5 +62,5 @@ namespace stage::scene::viewer {
         video::render::StateDef stateDef_;
         int uboMatricesBindingTarget_;
     };
-}
-#endif // STAGE_SCENE_VIEWER_NODE_H
+} // namespace soil::stage::scene::viewer
+#endif // SOIL_STAGE_SCENE_VIEWER_NODE_H

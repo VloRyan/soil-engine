@@ -1,10 +1,10 @@
-#ifndef ENGINE_ENGINE_VIDEO_BUFFER_EBO_H_
-#define ENGINE_ENGINE_VIDEO_BUFFER_EBO_H_
+#ifndef SOIL_VIDEO_BUFFER_EBO_H_
+#define SOIL_VIDEO_BUFFER_EBO_H_
 #include "video/buffer/object.h"
 
-namespace video::buffer {
+namespace soil::video::buffer {
     /**Element Array Buffer */
-    class Ebo : public Object {
+    class Ebo final : public Object {
     public:
         explicit Ebo(UsageType usage = UsageType::Static, AccessType access = AccessType::Draw);
 
@@ -12,5 +12,5 @@ namespace video::buffer {
 
         ~Ebo() override;
     };
-}
-#endif //ENGINE_ENGINE_VIDEO_BUFFER_EBO_H_
+} // namespace soil::video::buffer
+#endif // SOIL_VIDEO_BUFFER_EBO_H_

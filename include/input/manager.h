@@ -1,38 +1,39 @@
-#ifndef ENGINE_ENGINE_INPUT_MANAGER_H_
-#define ENGINE_ENGINE_INPUT_MANAGER_H_
+#ifndef SOIL_INPUT_MANAGER_H_
+#define SOIL_INPUT_MANAGER_H_
 
+#include <mutex>
 #include "event.h"
 #include "event/observable.hpp"
 #include "window.h"
-#include <mutex>
 
-namespace input {
-using EventQueue = std::vector<Event>;
+namespace soil::input {
+    using EventQueue = std::vector<Event>;
 
-class Manager : public event::Observable<Event> {
-public:
-  Manager();
+    class Manager final : public event::Observable<Event> {
+    public:
+        Manager();
 
-  ~Manager() override;
+        ~Manager() override;
 
-  void Update();
+        void Update();
 
-  void Init(engine::Window *window);
+        void Init(Window *window);
 
-protected:
-  void processEvents(EventQueue *queue);
+    protected:
+        void processEvents(EventQueue *queue);
 
-  static MouseButton getMouseButton(int button);
+        static MouseButton getMouseButton(int button);
 
-  static Keys getKey(int key);
+        static Keys getKey(int key);
 
-private:
-  static std::mutex mutex_;
-  engine::Window *window_;
-  EventQueue *eventQueue_;
-  EventQueue eventQueueBack1_;
-  EventQueue eventQueueBack2_;
-};
-} // namespace input
+    private:
+        static std::mutex mutex_;
+        Window *window_;
+        EventQueue *eventQueue_;
+        EventQueue eventQueueBack1_;
+        EventQueue eventQueueBack2_;
+        glm::vec2 cursorPosition_;
+    };
+} // namespace soil::input
 
-#endif // ENGINE_ENGINE_INPUT_MANAGER_H_
+#endif // SOIL_INPUT_MANAGER_H_

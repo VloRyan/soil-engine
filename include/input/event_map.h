@@ -1,13 +1,13 @@
-#ifndef ENGINE_ENGINE_INPUT_EVENT_MAP_H_
-#define ENGINE_ENGINE_INPUT_EVENT_MAP_H_
+#ifndef SOIL_INPUT_EVENT_MAP_H_
+#define SOIL_INPUT_EVENT_MAP_H_
 
-#include <vector>
 #include <functional>
+#include <vector>
 #include "constants.hpp"
 #include "event.h"
 
 
-namespace input {
+namespace soil::input {
     struct KeyEventMapping {
         KeyEventMapping(Keys key, Event::State state, std::function<void(const Event &)> action);
 
@@ -29,16 +29,14 @@ namespace input {
     };
 
     struct MouseWheelEventMapping {
-        MouseWheelEventMapping(std::function<void(const Event &)> action);
+        explicit MouseWheelEventMapping(MouseWheelDirection direction, std::function<void(const Event &)> action);
 
-        [[nodiscard]] static bool Matches(const Event &event);
-
-        // MouseButton button_;
-        //Event::State state_;
+        [[nodiscard]] bool Matches(const Event &event) const;
+        MouseWheelDirection direction_;
         std::function<void(const Event &)> fun_;
     };
 
-    class EventMap : public EventHandler {
+    class EventMap final : public EventHandler {
     public:
         explicit EventMap();
 
@@ -51,14 +49,13 @@ namespace input {
         void AddMouseButtonMapping(MouseButton button, Event::State state,
                                    const std::function<void(const Event &)> &action);
 
-        void AddMouseWheelMapping(
-            const std::function<void(const Event &)> &action);
+        void AddMouseWheelMapping(MouseWheelDirection direction, const std::function<void(const Event &)> &action);
 
     private:
         std::vector<KeyEventMapping> keyMappings_;
         std::vector<MouseButtonEventMapping> mouseButtonMappings_;
         std::vector<MouseWheelEventMapping> mouseWheelMappings_;
     };
-} // input
+} // namespace soil::input
 
-#endif //ENGINE_ENGINE_INPUT_EVENT_MAP_H_
+#endif // SOIL_INPUT_EVENT_MAP_H_

@@ -1,7 +1,6 @@
 #include "world/entity/object_3d.h"
 
-namespace world::entity
-{
+namespace soil::world::entity {
     Object3d::Object3d() : localTransform_(1.0F), worldTransform_(1.0F) {}
 
     Object3d::~Object3d() = default;
@@ -10,11 +9,7 @@ namespace world::entity
 
     glm::vec3 Object3d::GetWorldPosition() const { return {worldTransform_[3]}; }
 
-    void Object3d::SetPosition(const glm::vec3 pos)
-    {
-        localTransform_[3] = glm::vec4(pos, 1.0F);
-        // worldTransform_[3] = glm::vec4(pos, 1.0F);
-    }
+    void Object3d::SetPosition(const glm::vec3 pos) { localTransform_[3] = glm::vec4(pos, 1.0F); }
 
     glm::vec3 Object3d::GetDirection() const { return localTransform_[2]; }
 
@@ -32,10 +27,9 @@ namespace world::entity
 
     const glm::mat4 &Object3d::GetLocalTransform() const { return localTransform_; }
 
-    void Object3d::ComputeWorldTransform(const glm::mat4 &parentWorldTransform)
-    {
+    void Object3d::ComputeWorldTransform(const glm::mat4 &parentWorldTransform) {
         worldTransform_ = parentWorldTransform * localTransform_;
     }
 
     const glm::mat4 &Object3d::GetWorldTransform() const { return worldTransform_; }
-} // namespace world::entity
+} // namespace soil::world::entity

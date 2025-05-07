@@ -1,38 +1,37 @@
-#ifndef VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H
-#define VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H
+#ifndef SOIL_VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H
+#define SOIL_VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H
 #include <string>
 #include "context.h"
 #include "video/render/renderable.h"
 
-namespace video::render {
- class Pipeline;
+namespace soil::video::render {
+    class Pipeline;
 
- class AbstractProcessing {
-  friend class Pipeline;
+    class AbstractProcessing {
+        friend class Pipeline;
 
- public:
-  AbstractProcessing();
+    public:
+        AbstractProcessing();
 
-  explicit AbstractProcessing(std::string name);
+        explicit AbstractProcessing(std::string name);
 
-  virtual ~AbstractProcessing();
+        virtual ~AbstractProcessing();
 
-  virtual void Process(Context &context, const std::vector<Renderable *> &renderables) = 0;
+        virtual void Process(Context &context, const std::vector<Renderable *> &renderables) = 0;
 
-  [[nodiscard]] AbstractProcessing* GetRequiredStep() const;
+        [[nodiscard]] AbstractProcessing *GetRequiredStep() const;
 
-  std::string GetName();
+        std::string GetName();
 
-  void SetName(std::string name);
+        void SetName(std::string name);
 
- protected:
-  virtual void onAttach();
+    protected:
+        virtual void onAttach();
 
-  AbstractProcessing *requiredStep_;
+        AbstractProcessing *requiredStep_;
 
- private:
-  std::string name_;
- };
-}
-#endif /* VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H */
-
+    private:
+        std::string name_;
+    };
+} // namespace soil::video::render
+#endif /* SOIL_VIDEO_RENDER_PROCESSING_ABSTRACT_PROCESSING_H */

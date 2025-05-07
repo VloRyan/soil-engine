@@ -1,13 +1,18 @@
-#ifndef ENGINE_ENGINE_STRINGS_STRINGS_H_
-#define ENGINE_ENGINE_STRINGS_STRINGS_H_
+#ifndef SOIL_STRINGS_STRINGS_H_
+#define SOIL_STRINGS_STRINGS_H_
 
+#include <array>
 #include <string>
 #include <vector>
 #include "glm/glm.hpp"
 
-namespace util {
+namespace soil::util {
     class Strings {
     public:
+        /**
+         * @return <code>option[0]</code> if <code>value</code> is false, else <code>option[1]</code>
+         */
+        static std::string to_string(bool value, std::array<std::string, 2> options = {"yes", "no"});
         /**
          * @return string in format (x, y)
          */
@@ -21,33 +26,25 @@ namespace util {
         /**
          * @return string in format (x, y)
          */
-        static std::string to_string(glm::vec2 value,
-                                     int precision = 3,
-                                     const std::string &delimiter = ", ",
+        static std::string to_string(glm::vec2 value, int precision = 3, const std::string &delimiter = ", ",
                                      bool surroundingParentheses = true);
 
         /**
          * @return string in format (x, y, z)
          */
-        static std::string to_string(glm::vec3 value,
-                                     int precision = 3,
-                                     const std::string &delimiter = ", ",
+        static std::string to_string(glm::vec3 value, int precision = 3, const std::string &delimiter = ", ",
                                      bool surroundingParentheses = true);
 
         /**
          * @return string in format (x, y, z, w)
          */
-        static std::string to_string(glm::vec4 value,
-                                     int precision = 3,
-                                     const std::string &delimiter = ", ",
+        static std::string to_string(glm::vec4 value, int precision = 3, const std::string &delimiter = ", ",
                                      bool surroundingParentheses = true);
 
         /**
          * @return string in format "(x, y, z, w)\n" for each row
          */
-        static std::string to_string(const glm::mat4 &matrix,
-                                     int precision = 3,
-                                     const std::string &delimiter = ", ",
+        static std::string to_string(const glm::mat4 &matrix, int precision = 3, const std::string &delimiter = ", ",
                                      bool surroundingParentheses = true);
 
         /**
@@ -108,6 +105,6 @@ namespace util {
 
         static bool startsWith(const std::string &text, const std::string &starting);
     };
-} // util
+} // namespace soil::util
 
-#endif //ENGINE_ENGINE_STRINGS_STRINGS_H_
+#endif // SOIL_STRINGS_STRINGS_H_

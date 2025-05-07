@@ -1,8 +1,8 @@
 
-#ifndef ENGINE_VIDEO_RENDER_RENDERABLE_H
-#define ENGINE_VIDEO_RENDER_RENDERABLE_H
+#ifndef SOIL_VIDEO_RENDER_RENDERABLE_H
+#define SOIL_VIDEO_RENDER_RENDERABLE_H
 
-namespace video::render {
+namespace soil::video::render {
     class Renderable {
     public:
         virtual ~Renderable() = default;
@@ -11,5 +11,5 @@ namespace video::render {
 
         [[nodiscard]] virtual bool IsOpaque() const = 0;
     };
-}
-#endif //ENGINE_VIDEO_RENDER_RENDERABLE_H
+} // namespace soil::video::render
+#endif // SOIL_VIDEO_RENDER_RENDERABLE_H

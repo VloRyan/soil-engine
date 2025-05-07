@@ -1,13 +1,13 @@
 #include "util/files.h"
-#include <sys/stat.h>
 #include <sstream>
+#include <sys/stat.h>
 
 // for windows mkdir
 #ifdef _WIN32
 #include <direct.h>
 
 #endif
-namespace util {
+namespace soil::util {
     bool Files::Exists(const std::string &name) {
         if (FILE *file = fopen(name.c_str(), "r")) {
             fclose(file);
@@ -36,7 +36,7 @@ namespace util {
         return directory;
     }
 
-    bool Files::IsAbsolutePath(const std::string path) {
+    bool Files::IsAbsolutePath(const std::string &path) {
         if (path.length() < 3) {
             return false;
         }
@@ -59,12 +59,12 @@ namespace util {
      */
     int Files::mkdir(const char *path) {
 #ifdef _WIN32
-  return ::_mkdir(path);
+        return ::_mkdir(path);
 #else
 #if _POSIX_C_SOURCE
         return ::mkdir(path, 0755);
 #else
-  return ::mkdir(path, 0755); // not sure if this works on mac
+        return ::mkdir(path, 0755); // not sure if this works on mac
 #endif
 #endif
     }
@@ -88,9 +88,7 @@ namespace util {
         return true;
     }
 
-    bool Files::FolderExists(const std::string &name) {
-        return IsDirectory(name);
-    }
+    bool Files::FolderExists(const std::string &name) { return IsDirectory(name); }
 
     bool Files::IsDirectory(const std::string &path) {
         struct stat stat_{};
@@ -107,4 +105,4 @@ namespace util {
         }
         return false;
     }
-}
+} // namespace soil::util

@@ -1,14 +1,14 @@
-#ifndef ENGINE_STAGE_EVENT_NODE_H
-#define ENGINE_STAGE_EVENT_NODE_H
+#ifndef SOIL_STAGE_EVENT_NODE_H
+#define SOIL_STAGE_EVENT_NODE_H
 
 #include "event/event.h"
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class Node;
 }
 
-namespace stage::event {
-    class Node : ::event::Event {
+namespace soil::stage::event {
+    class Node final : soil::event::Event {
     public:
         enum class ChangeType : std::uint8_t {
             Created,
@@ -24,9 +24,9 @@ namespace stage::event {
 
         [[nodiscard]] ChangeType GetChangeType() const;
 
-        [[nodiscard]] scene::Node* GetOrigin() const;
+        [[nodiscard]] scene::Node *GetOrigin() const;
 
-        [[nodiscard]] scene::Node* GetChangedNode() const;
+        [[nodiscard]] scene::Node *GetChangedNode() const;
 
         Node &WithNode(scene::Node *node);
 
@@ -37,5 +37,5 @@ namespace stage::event {
     };
 
     // using NodeEventHandler = ::event::Handler<Node>;
-} // stage::event
-#endif //ENGINE_STAGE_EVENT_NODE_H
+} // namespace soil::stage::event
+#endif // SOIL_STAGE_EVENT_NODE_H

@@ -1,5 +1,5 @@
 #include "video/model/letter.h"
 
-namespace video::model {
-bool Letter::isPrintable() const { return Id != ' '; }
-} // namespace video::model
+namespace soil::video::model {
+    bool Letter::isPrintable() const { return Id != ' '; }
+} // namespace soil::video::model

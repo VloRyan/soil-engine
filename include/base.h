@@ -1,5 +1,5 @@
-#ifndef ENGINE_ENGINE_BASE_H_
-#define ENGINE_ENGINE_BASE_H_
+#ifndef SOIL_BASE_H_
+#define SOIL_BASE_H_
 
 #include <unordered_map>
 #include <GL/glcorearb.h>
@@ -32,4 +32,4 @@ using HashMap = std::unordered_map<Key, T, HashType<Key> >;
 template<typename Key, typename T>
 using PairHashMap = std::unordered_map<Key, T, PairHash>;
 
-#endif //ENGINE_ENGINE_BASE_H_
+#endif //SOIL_BASE_H_

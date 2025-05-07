@@ -1,20 +1,19 @@
 
-#ifndef STAGE_SCENE_GRID_SCENE_H
-#define STAGE_SCENE_GRID_SCENE_H
+#ifndef SOIL_STAGE_SCENE_GRID_SCENE_H
+#define SOIL_STAGE_SCENE_GRID_SCENE_H
 #include "stage/scene/scene.h"
 
 
-namespace stage::scene {
+namespace soil::stage::scene {
     class GridScene : public Scene {
     public:
         explicit GridScene(Stage *stage, float size, int maxLevel = 512, float minChildSize = 6.0F);
 
         ~GridScene() override = default;
 
-        void ForNodesAt(glm::vec2 pos,
-                        const std::function<void(const component::BoundingVolume *volume)> &f) const;
+        void ForNodesAt(glm::vec2 pos, const std::function<void(const component::BoundingVolume *volume)> &f) const;
 
-        virtual space::QuadTree* GetQuadTree() const;
+        [[nodiscard]] space::QuadTree *GetQuadTree() const;
 
     protected:
         void ComponentStateChanged(component::Component *component) override;
@@ -30,7 +29,7 @@ namespace stage::scene {
     private:
         space::QuadTree *quadTree_;
     };
-}
+} // namespace soil::stage::scene
 
 
-#endif //STAGE_SCENE_GRID_SCENE_H
+#endif // SOIL_STAGE_SCENE_GRID_SCENE_H

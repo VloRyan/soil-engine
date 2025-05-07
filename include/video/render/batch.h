@@ -1,15 +1,15 @@
 
-#ifndef ENGINE_VIDEO_RENDER_BATCH_H
-#define ENGINE_VIDEO_RENDER_BATCH_H
+#ifndef SOIL_VIDEO_RENDER_BATCH_H
+#define SOIL_VIDEO_RENDER_BATCH_H
 #include <video/shader/instance_shader.h>
 
-#include "renderable.h"
 #include "instance/buffer.h"
+#include "renderable.h"
 #include "video/mesh/mesh.h"
 #include "video/vertex/vao.h"
 
-namespace video::render {
-    class Batch : public Renderable {
+namespace soil::video::render {
+    class Batch final : public Renderable {
     public:
         Batch(const mesh::Mesh &mesh, shader::InstanceShader *shader, bool opaque, int preserveInstances = 10000);
 
@@ -37,6 +37,6 @@ namespace video::render {
         vertex::IndexType indexType_;
         bool opaque_;
     };
-}
+} // namespace soil::video::render
 
-#endif //ENGINE_VIDEO_RENDER_BATCH_H
+#endif // SOIL_VIDEO_RENDER_BATCH_H

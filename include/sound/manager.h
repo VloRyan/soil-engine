@@ -1,54 +1,32 @@
+#ifndef SOIL_SOUND_MANAGER
+#define SOIL_SOUND_MANAGER
+#include <cstdint>
 
-#ifndef ENGINE_SOUND_MANAGER_H
-#define ENGINE_SOUND_MANAGER_H
-
-#include <string>
-
-#include "../base.h"
-#include "sound/buffer.h"
-#include "sound/listener.h"
+#include "buffer.h"
+#include "listener.h"
 #include "source.h"
-class ALCdevice;
-class ALCcontext;
 
-namespace sound {
-class Manager {
-public:
-  enum class DistanceModel : std::uint8_t {
-    INVERSE_DISTANCE,
-    INVERSE_DISTANCE_CLAMPED,
-    LINEAR_DISTANCE,
-    LINEAR_DISTANCE_CLAMPED,
-    EXPONENT_DISTANCE,
-    EXPONENT_DISTANCE_CLAMPED,
-    NONE
-  };
+namespace soil::sound {
+    class Manager {
+    public:
+        enum class DistanceModel : std::uint8_t {
+            INVERSE_DISTANCE,
+            INVERSE_DISTANCE_CLAMPED,
+            LINEAR_DISTANCE,
+            LINEAR_DISTANCE_CLAMPED,
+            EXPONENT_DISTANCE,
+            EXPONENT_DISTANCE_CLAMPED,
+            NONE
+        };
+        Manager() = default;
+        virtual ~Manager() = default;
+        virtual void Init() = 0;
+        [[nodiscard]] virtual Source *GetSource(const std::string &fileName) = 0;
+        [[nodiscard]] virtual Buffer *GetBuffer(const std::string &fileName) = 0;
+        [[nodiscard]] virtual Listener *GetListener() const = 0;
+    };
 
-  Manager();
 
-  ~Manager();
+} // namespace soil::sound
 
-  void Init();
-
-  Source *GetSource(const std::string &fileName);
-
-  Buffer *GetBuffer(const std::string &fileName);
-
-private:
-  static Buffer *loadAudioFile(const std::string &filename);
-
-  static void logErrors();
-
-  ALCdevice *device_;
-  ALCcontext *context_;
-  Listener *listener_;
-
-public:
-  [[nodiscard]] Listener *GetListener() const;
-
-private:
-  HashMap<std::string, Buffer *> bufferCache_;
-};
-} // namespace sound
-
-#endif // ENGINE_SOUND_MANAGER_H
+#endif // SOIL_SOUND_MANAGER

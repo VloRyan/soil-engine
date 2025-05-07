@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace engine
+namespace soil
 {
     Exception::Exception(std::string message) : Exception(std::move(message), nullptr) {}
 

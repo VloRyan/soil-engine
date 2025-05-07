@@ -1,18 +1,17 @@
-#ifndef ENGINE_VIDEO_RENDER_INSTANCE_INSTANCE_H_
-#define ENGINE_VIDEO_RENDER_INSTANCE_INSTANCE_H_
+#ifndef SOIL_VIDEO_RENDER_INSTANCE_INSTANCE_H_
+#define SOIL_VIDEO_RENDER_INSTANCE_INSTANCE_H_
 
 
 #include "video/buffer/cursor.h"
 #include "video/mesh/mesh.h"
 
-namespace video::render::instance {
+namespace soil::video::render::instance {
     enum class DrawMode : std::uint8_t {
         Points = GL_POINTS,
         Lines = GL_LINES,
         Triangles = GL_TRIANGLES,
         TriangleStrip = GL_TRIANGLE_STRIP,
         Quads = GL_QUADS,
-        //Patches = GL_PATCHES,
     };
 
     struct Definition {
@@ -23,7 +22,7 @@ namespace video::render::instance {
 
         [[nodiscard]] std::string ToString() const {
             return MeshDefinition.ToString() + ShaderName + "_" + std::to_string(static_cast<int>(Mode)) + "_" +
-                   std::to_string(static_cast<int>(Opaque));
+                std::to_string(static_cast<int>(Opaque));
         }
     };
 
@@ -46,6 +45,6 @@ namespace video::render::instance {
     private:
         int index_;
     };
-}
+} // namespace soil::video::render::instance
 
-#endif //ENGINE_VIDEO_RENDER_INSTANCE_INSTANCE_H_
+#endif // SOIL_VIDEO_RENDER_INSTANCE_INSTANCE_H_

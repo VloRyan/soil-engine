@@ -1,14 +1,14 @@
-#ifndef  ENGINE_EVENT_SYSTEM_EVENT_H
-#define  ENGINE_EVENT_SYSTEM_EVENT_H
+#ifndef SOIL_WINDOW_EVENT_H
+#define SOIL_WINDOW_EVENT_H
 #include <cstdint>
 
 #include "event/event.h"
 #include "event/handler.hpp"
 
-namespace engine {
+namespace soil {
     class Window;
 
-    class WindowEvent : public event::Event {
+    class WindowEvent final : public event::Event {
     public:
         enum Cause : std::uint8_t {
             SizeChanged,
@@ -21,7 +21,7 @@ namespace engine {
 
         [[nodiscard]] Cause GetCause() const;
 
-        [[nodiscard]] Window* GetWindow() const;
+        [[nodiscard]] Window *GetWindow() const;
 
     private:
         Cause cause_;
@@ -29,5 +29,5 @@ namespace engine {
     };
 
     using WindowEventHandler = event::Handler<WindowEvent>;
-}
-#endif /* ENGINE_EVENT_SYSTEM_EVENT_H */
+} // namespace soil
+#endif /* SOIL_WINDOW_EVENT_H */
