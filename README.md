@@ -16,6 +16,9 @@ Soil is a C++ game engine based on OpenGL and OpenAL with capabilities of creati
 * Conan packages from [VloRyan/conan](https://github.com/VloRyan/conan)
     * gl3w
     * openal
+* Some xorg libs as dependencies from gl3w
+  * libxaw
+  * libxres
 
 ### Build
 
