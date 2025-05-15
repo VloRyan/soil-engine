@@ -4,15 +4,12 @@
 #include <stdexcept>
 #include "AL/al.h"
 #include "AL/alc.h"
-
-#include "exception.h"
 #include "log.h"
 #include "sound/file.h"
 #include "sound/openal/buffer.h"
 #include "sound/openal/listener.h"
 #include "sound/openal/source.h"
 #include "sound/wave.h"
-#include "util/files.h"
 #include "util/strings.h"
 
 namespace soil::sound::openal {
@@ -54,7 +51,7 @@ namespace soil::sound::openal {
         const auto source = new openal::Source(buffer);
 
         if (ALenum error = 0; (error = alGetError()) != AL_NO_ERROR) {
-            throw Exception("Failed to get AudioSource from " + fileName + ": " + std::to_string(error));
+            throw std::runtime_error("Failed to get AudioSource from " + fileName + ": " + std::to_string(error));
         }
         return source;
     }
@@ -78,7 +75,7 @@ namespace soil::sound::openal {
     sound::Buffer *Manager::loadAudioFile(const std::string &filename) {
         const File *file = Wave::LoadFile(filename);
         if (file == nullptr) {
-            throw Exception("Error loading audio file " + filename);
+            throw std::runtime_error("Error loading audio file " + filename);
         }
         auto *newBuffer = new Buffer(filename);
 
@@ -86,7 +83,7 @@ namespace soil::sound::openal {
 
         delete file;
         if (ALenum error; (error = alGetError()) != AL_NO_ERROR) {
-            throw Exception("Failed to get AudioSource from " + filename + ": " + std::to_string(error));
+            throw std::runtime_error("Failed to get AudioSource from " + filename + ": " + std::to_string(error));
         }
         return newBuffer;
     }
@@ -115,5 +112,7 @@ namespace soil::sound::openal {
         }
     }
 
-    sound::Listener *Manager::GetListener() const { return listener_; }
+    sound::Listener *Manager::GetListener() const {
+        return listener_;
+    }
 } // namespace soil::sound::openal

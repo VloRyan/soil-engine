@@ -6,10 +6,11 @@
 
 #include "IL/il.h"
 #include "IL/ilu.h"
-#include "exception.h"
 
 namespace soil::video::texture {
-    Manager::Manager() { initDevIL(); }
+    Manager::Manager() {
+        initDevIL();
+    }
 
     Manager::~Manager() {
         for (auto itr = texturesCache_.begin(); itr != texturesCache_.end();) {
@@ -22,7 +23,7 @@ namespace soil::video::texture {
 
     void Manager::initDevIL() {
         if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION || iluGetInteger(ILU_VERSION_NUM) < ILU_VERSION) {
-            throw Exception("DevIL library is out of date! Please upgrade");
+            throw std::runtime_error("DevIL library is out of date! Please upgrade");
         }
 
         // Needed to initialize DevIL.
@@ -89,8 +90,7 @@ namespace soil::video::texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-        //   const float borderColor[4]{1.0F, 1.0F, 1.0F, 1.0F};
-        //   glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
         if (isMipMapping(parameter.MinFilter)) {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
@@ -169,7 +169,6 @@ namespace soil::video::texture {
         return new Texture(id, name, data.Size, Texture::Type::TextureArray2D, parameter.Format);
     }
 
-
     Data *Manager::loadData(const std::string &fileName) {
         logGLError(("Error before loadData " + fileName).c_str());
 
@@ -182,7 +181,7 @@ namespace soil::video::texture {
             textureFileNamePath = "Texture/" + fileName;
         }
         if (!util::Files::Exists(textureFileNamePath)) {
-            throw Exception("Texture file not found");
+            throw std::runtime_error("Texture file not found");
         }
         PLOG_DEBUG << "load texture " << textureFileNamePath;
         // Generate the main image name to Use.
@@ -206,14 +205,12 @@ namespace soil::video::texture {
         return data;
     }
 
-
     Texture *Manager::GetCubeMap(const std::string &name, const std::string &ext,
                                  const Texture::Format internalFormat) {
         const uint openGlId = loadCubeMap(name, ext, internalFormat);
         const auto entry = texturesCache_.emplace_back(new Texture(openGlId, name, glm::uvec2(0)));
         return entry.texture;
     }
-
 
     uint Manager::loadCubeMap(const std::string &name, const std::string &ext, const Texture::Format internalFormat) {
         PLOG_INFO << "load cubeMap " << name;
@@ -234,7 +231,7 @@ namespace soil::video::texture {
         } else {
             fileTop = "Texture/cubemap/" + name + "/" + name + "_up" + ext;
             if (!util::Files::Exists(fileTop)) {
-                throw Exception("Cubemap textures not found");
+                throw std::runtime_error("Cubemap textures not found");
             }
             fileBottom = "Texture/cubemap/" + name + "/" + name + "_dn" + ext;
             fileLeft = "Texture/cubemap/" + name + "/" + name + "_lf" + ext;
@@ -342,7 +339,7 @@ namespace soil::video::texture {
         case Texture::Format::DepthComponent32:
             return GL_DEPTH_COMPONENT32;
         }
-        throw Exception("unknown format: " + std::to_string(static_cast<uint>(format)));
+        throw std::runtime_error("unknown format: " + std::to_string(static_cast<uint>(format)));
     }
 
     Texture::Format Manager::getTextureFormat(const uint format) {
@@ -356,7 +353,7 @@ namespace soil::video::texture {
         case GL_SRGB_ALPHA:
             return Texture::Format::sRGBA;
         default:
-            throw Exception("unknown format: " + std::to_string(format));
+            throw std::runtime_error("unknown format: " + std::to_string(format));
         }
     }
 
@@ -372,7 +369,7 @@ namespace soil::video::texture {
             return GL_MIRRORED_REPEAT;
         }
 
-        throw Exception("unknown wrapType");
+        throw std::runtime_error("unknown wrapType");
     }
 
     GLint Manager::getGLMinFilter(const Parameter::MinFilterType type) {
@@ -391,7 +388,7 @@ namespace soil::video::texture {
             return GL_NEAREST_MIPMAP_NEAREST;
         }
 
-        throw Exception("unknown MinFilterType");
+        throw std::runtime_error("unknown MinFilterType");
     }
 
     bool Manager::isMipMapping(const Parameter::MinFilterType type) {
@@ -416,7 +413,7 @@ namespace soil::video::texture {
         case Parameter::MagFilterType::NEAREST:
             return GL_NEAREST;
         }
-        throw Exception("unknown MagFilterType");
+        throw std::runtime_error("unknown MagFilterType");
     }
 
     TextureCacheEntry::TextureCacheEntry(Texture *texture) : useCount(1), texture(texture) {}

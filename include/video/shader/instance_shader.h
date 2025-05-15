@@ -2,7 +2,6 @@
 #ifndef SOIL_VIDEO_SHADER_INSTANCE_SHADER_H
 #define SOIL_VIDEO_SHADER_INSTANCE_SHADER_H
 #include "shader.h"
-#include "video/render/instance/instance.h"
 
 namespace soil::video::shader {
     class InstanceShader : public Shader {
@@ -15,7 +14,7 @@ namespace soil::video::shader {
 
         virtual std::vector<vertex::VertexAttribDescriptor> GetInstanceVertexDescriptors() = 0;
 
-        virtual render::instance::DrawMode GetDrawMode() = 0;
+        virtual DrawMode GetDrawMode() = 0;
 
         virtual void PrepareRender() {}
     };

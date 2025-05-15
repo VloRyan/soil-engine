@@ -7,7 +7,7 @@
 namespace soil::sound {
     class Source {
     public:
-        explicit Source() {};
+        explicit Source() = default;
 
         virtual ~Source() = default;
 

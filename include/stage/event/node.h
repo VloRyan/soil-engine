@@ -16,6 +16,7 @@ namespace soil::stage::event {
             State,
             ChildAdded,
             ChildRemoved,
+            UpdateType,
         };
 
         Node(scene::Node *origin, ChangeType type);
@@ -35,7 +36,5 @@ namespace soil::stage::event {
         scene::Node *changedNode_;
         ChangeType changeType_;
     };
-
-    // using NodeEventHandler = ::event::Handler<Node>;
 } // namespace soil::stage::event
 #endif // SOIL_STAGE_EVENT_NODE_H

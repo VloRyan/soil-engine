@@ -3,41 +3,32 @@
 
 #include <vector>
 
-#include "renderable.h"
-#include "technique.h"
+#include "container.h"
 #include "video/buffer/fb.h"
-#include "video/render/processing/abstract_processing.h"
-#include "video/render/processing/render_step.h"
-
+#include "video/render/step/base.h"
 
 namespace soil::video::render {
     class Pipeline final {
     public:
-        explicit Pipeline(std::string name);
+        explicit Pipeline(std::string name, Container *container);
 
         ~Pipeline();
 
-        void Render(const std::vector<Renderable *> &renderables, State &state);
-
-        void Reset(bool multisample);
+        void Run(State &state);
 
         void Clear();
 
-        void SetRenderingTechnique(TechniqueType type);
+        void InsertStep(step::Base *step);
 
-        [[nodiscard]] Technique *GetRenderingTechnique() const;
-
-        void InsertStep(AbstractProcessing *step, AbstractProcessing *requiredStep = nullptr);
-
-        void RemoveStep(const AbstractProcessing *step);
+        void RemoveStep(const step::Base *step);
 
         void Print() const;
 
         [[nodiscard]] bool Empty() const;
 
-        [[nodiscard]] AbstractProcessing *GetStep(uint number);
+        [[nodiscard]] step::Base *GetStep(uint number);
 
-        [[nodiscard]] AbstractProcessing *GetStep(const std::string &name) const;
+        [[nodiscard]] step::Base *GetStep(const std::string &name) const;
 
         [[nodiscard]] buffer::FrameBuffer *GetOutputBuffer() const;
 
@@ -50,23 +41,24 @@ namespace soil::video::render {
         void SetName(std::string Name);
 
         [[nodiscard]] std::string GetName() const;
+        [[nodiscard]] step::Context &GetContext();
 
     protected:
-        void find(std::vector<AbstractProcessing *>::iterator &itr, const AbstractProcessing *step);
+        void find(std::vector<step::Base *>::iterator &itr, const step::Base *step);
 
     private:
         std::string name_;
         bool renderToScreen_;
+        Container *container_;
 
-        RenderStep *renderSceneToTextureStep_;
 
         /* Stage Texture */
         buffer::FrameBuffer *multisampleSceneTextureFrameBuffer_;
         buffer::FrameBuffer *sceneTextureFrameBuffer_;
 
         buffer::FrameBuffer *outputBuffer_;
-        std::vector<AbstractProcessing *> processingSteps_;
-        Context context_;
+        std::vector<step::Base *> processingSteps_;
+        step::Context context_;
     };
 } // namespace soil::video::render
 

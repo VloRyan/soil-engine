@@ -23,7 +23,7 @@ namespace soil::video::render::instance {
 
         void AddChangedInstance(Instance *instance);
 
-        void AddInstance(Instance *instance);
+        void PrepareInstance(Instance *instance);
 
         bool RemoveInstance(Instance *instance);
 
@@ -31,15 +31,18 @@ namespace soil::video::render::instance {
 
         [[nodiscard]] size_t GetInstanceSize() const;
 
-        [[nodiscard]] size_t GetPreparedInstancesCount() const;
+        [[nodiscard]] size_t GetInstancesCount() const;
+        [[nodiscard]] size_t GetDirtyInstancesCount() const;
 
         virtual void Update(const glm::vec3 &viewerPos);
 
+        [[nodiscard]] virtual std::vector<Instance *> &GetInstances();
+
     protected:
         std::vector<Instance *> dirtyInstances_;
-        std::vector<Instance *> preparedInstances_;
+        std::vector<Instance *> instances_;
 
-        buffer::Object *perInstanceBuffer_;
+        buffer::Object *buffer_;
         size_t instanceSize_;
     };
 } // namespace soil::video::render::instance

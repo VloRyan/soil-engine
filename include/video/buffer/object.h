@@ -45,7 +45,7 @@ namespace soil::video::buffer {
 
         [[nodiscard]] uint GetBufferSize() const;
 
-        void SetData(const void *data, gl_size_t dataSize);
+        virtual void SetData(const void *data, gl_size_t dataSize);
 
         [[nodiscard]] const void *GetData() const;
 
@@ -72,7 +72,7 @@ namespace soil::video::buffer {
         [[nodiscard]] Cursor *GetCursor();
 
     protected:
-        void create();
+        virtual void create();
 
         virtual void uploadData(const void *data, gl_size_t dataSize);
 

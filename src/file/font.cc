@@ -1,9 +1,9 @@
 #include "file/font.h"
 
 #include <fstream>
+#include <ranges>
 #include <utility>
 #include <vector>
-#include "exception.h"
 #include "util/files.h"
 #include "util/strings.h"
 
@@ -12,14 +12,18 @@ namespace soil::file {
         fileName_(std::move(fileName)), lineHeight_(0), base_(0), spaceWidth_(0), padding_(0), imageSize_(0) {}
 
     Font::~Font() {
-        for (auto &itr : characterMap_) {
-            delete itr.second;
+        for (const auto *letter : characterMap_ | std::views::values) {
+            delete letter;
         }
     }
 
-    glm::vec4 Font::getPadding() const { return padding_; }
+    glm::vec4 Font::getPadding() const {
+        return padding_;
+    }
 
-    float Font::getSpaceWidth() const { return spaceWidth_; }
+    float Font::getSpaceWidth() const {
+        return spaceWidth_;
+    }
 
     video::model::Letter *Font::getCharacter(const uint id) {
         if (const auto itr = characterMap_.find(id); itr != characterMap_.end()) {
@@ -28,19 +32,33 @@ namespace soil::file {
         return nullptr;
     }
 
-    std::string Font::getTextureFile() const { return textureFile_; }
+    std::string Font::getTextureFile() const {
+        return textureFile_;
+    }
 
-    float Font::getHorizontalPadding() { return padding_[1] + padding_[3]; }
+    float Font::getHorizontalPadding() {
+        return padding_[1] + padding_[3];
+    }
 
-    float Font::getVerticalPadding() { return padding_[0] + padding_[2]; }
+    float Font::getVerticalPadding() {
+        return padding_[0] + padding_[2];
+    }
 
-    uint Font::getImageSize() const { return imageSize_; }
+    uint Font::getImageSize() const {
+        return imageSize_;
+    }
 
-    std::string Font::getFileName() const { return fileName_; }
+    std::string Font::getFileName() const {
+        return fileName_;
+    }
 
-    float Font::getLineHeight() const { return lineHeight_; }
+    float Font::getLineHeight() const {
+        return lineHeight_;
+    }
 
-    float Font::getBase() const { return base_; }
+    float Font::getBase() const {
+        return base_;
+    }
 
     Font *Font::Load(std::string fontFilePath) {
         bool isFontFile = false;
@@ -53,13 +71,13 @@ namespace soil::file {
             isFontFile = true;
         }
         if (!isFontFile) {
-            throw Exception("No .fnt file found for expression '" + fontFilePath + "'.");
+            throw std::runtime_error("No .fnt file found for expression '" + fontFilePath + "'.");
         }
         std::ifstream ifs;
         ifs.open(fontFilePath, std::ios::in);
         if (ifs.fail()) {
             std::string message = "Failed to open file: " + fontFilePath;
-            throw Exception(message);
+            throw std::runtime_error(message);
         }
 
         auto *fontFile = new Font(fontFilePath);
@@ -115,7 +133,7 @@ namespace soil::file {
                     auto msg = std::string("Invalid state(Part: ") + part;
                     msg += " Key: " + key;
                     msg += " Value: " + value + ")";
-                    throw Exception(msg);
+                    throw std::runtime_error(msg);
                 }
             }
             valueStartsWithDQuote = value.starts_with('\"'); // starts with "
@@ -149,7 +167,7 @@ namespace soil::file {
         const std::string paddingStr = getValue("padding", map);
         const std::vector<std::string> parts = util::Strings::split(paddingStr, ",");
         if (parts.size() != 4) {
-            throw Exception("Invalid padding size: " + std::to_string(parts.size()));
+            throw std::runtime_error("Invalid padding size: " + std::to_string(parts.size()));
         }
         for (uint i = 0U; i < static_cast<uint>(parts.size()); i++) {
             fontFile->padding_[static_cast<glm::vec4::length_type>(i)] = std::stof(parts[i]);
@@ -162,8 +180,8 @@ namespace soil::file {
         fontFile->base_ = static_cast<float>(getIntValue("base", map));
     }
 
-    void Font::loadChars(Font *fontFile, std::unordered_map<std::string, std::string> &map) {
-        // DO NOTHING
+    void Font::loadChars(Font *, std::unordered_map<std::string, std::string> &) {
+        // do nothing
     }
 
     void Font::loadPage(Font *fontFile, std::unordered_map<std::string, std::string> &map) {

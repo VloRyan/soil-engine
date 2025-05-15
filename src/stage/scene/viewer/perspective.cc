@@ -9,16 +9,19 @@ namespace soil::stage::scene::viewer {
         right_({1.0F, 0.0F, 0.0F}), up_({0.0F, 1.0F, 0.0F}), rotate_(0.0F), velocity_(0.0F), fovY_(60.0F), nearZ_(0.1F),
         farZ_(1000.0F), perspective_(0.0F), view_(1.0F), frustum_(new world::collision::Frustum(glm::mat4(1.0F))) {
         SetRotate(rotate_);
-        pipeline_ = new video::render::Pipeline("Perspective_Pipeline");
-        pipeline_->Reset(false);
-        pipeline_->Print();
     }
 
-    Perspective::~Perspective() { delete frustum_; }
+    Perspective::~Perspective() {
+        delete frustum_;
+    }
 
-    glm::mat4 Perspective::GetProjectionMatrix() const { return perspective_; }
+    glm::mat4 Perspective::GetProjectionMatrix() const {
+        return perspective_;
+    }
 
-    glm::mat4 Perspective::GetViewMatrix() const { return view_; }
+    glm::mat4 Perspective::GetViewMatrix() const {
+        return view_;
+    }
 
     void Perspective::SetPerspective(const float fovY, const float aspect, const float nearZ, const float farZ) {
         fovY_ = fovY;
@@ -106,13 +109,21 @@ namespace soil::stage::scene::viewer {
         viewChanged_ = true;
     }
 
-    glm::vec3 Perspective::GetDirection() const { return direction_; }
+    glm::vec3 Perspective::GetDirection() const {
+        return direction_;
+    }
 
-    glm::vec3 Perspective::GetUp() const { return up_; }
+    glm::vec3 Perspective::GetUp() const {
+        return up_;
+    }
 
-    glm::vec3 Perspective::GetRight() const { return right_; }
+    glm::vec3 Perspective::GetRight() const {
+        return right_;
+    }
 
-    glm::vec3 Perspective::GetRotate() const { return this->rotate_; }
+    glm::vec3 Perspective::GetRotate() const {
+        return this->rotate_;
+    }
 
     void Perspective::SetRotate(const glm::vec3 rot) {
         rotate_ = rot;
@@ -124,16 +135,15 @@ namespace soil::stage::scene::viewer {
         viewChanged_ = true;
     }
 
-    world::collision::Frustum *Perspective::GetFrustum() { return frustum_; }
+    world::collision::Frustum *Perspective::GetFrustum() {
+        return frustum_;
+    }
 
     void Perspective::Handle(const WindowEvent &event) {
         if (event.GetCause() == WindowEvent::SizeChanged) {
             const float aspect =
                 static_cast<float>(event.GetWindow()->GetSize().x) / static_cast<float>(event.GetWindow()->GetSize().y);
             SetPerspective(fovY_, aspect, nearZ_, farZ_);
-            if (pipeline_->GetOutputBuffer() != nullptr) {
-                pipeline_->GetOutputBuffer()->Resize(event.GetWindow()->GetSize());
-            }
         }
     }
 } // namespace soil::stage::scene::viewer

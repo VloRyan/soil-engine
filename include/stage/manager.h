@@ -5,18 +5,6 @@
 #include "input/manager.h"
 #include "resources.h"
 
-/*namespace soil {
-    class Window;
-}
-
-namespace soil::input {
-    class Manager;
-}
-
-namespace soil::stage::scene {
-    class Scene;
-}
-*/
 namespace soil::stage {
     class Stage;
 
@@ -27,6 +15,7 @@ namespace soil::stage {
         ~Manager() override;
 
         int AddStage(Stage *stage);
+        void SetCurrent(const Stage *stage);
 
         void Init(Window *window, input::Manager *inputManager, Resources *resources);
 

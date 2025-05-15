@@ -7,12 +7,9 @@
 #include "stage/scene/viewer/node.h"
 
 namespace soil::video::render {
-    Pipeline::Pipeline(std::string name) :
-        name_(std::move(name)), renderToScreen_(true), renderSceneToTextureStep_(nullptr),
-        multisampleSceneTextureFrameBuffer_(nullptr), sceneTextureFrameBuffer_(nullptr), outputBuffer_(nullptr) {
-        context_.SetProperties(new Properties());
-        SetRenderingTechnique(TechniqueType::Forward);
-    }
+    Pipeline::Pipeline(std::string name, Container *container) :
+        name_(std::move(name)), renderToScreen_(true), container_(container),
+        multisampleSceneTextureFrameBuffer_(nullptr), sceneTextureFrameBuffer_(nullptr), outputBuffer_(nullptr) {}
 
     Pipeline::~Pipeline() {
         PLOG_DEBUG << "Delete Pipeline: " << name_;
@@ -25,65 +22,43 @@ namespace soil::video::render {
         multisampleSceneTextureFrameBuffer_ = nullptr;
         sceneTextureFrameBuffer_ = nullptr;
         outputBuffer_ = nullptr;
-        renderSceneToTextureStep_ = nullptr;
     }
 
-    void Pipeline::Reset(const bool multisample) {
-        PLOG_DEBUG << "Reset Pipeline: " << name_ << ", multisample: " << std::to_string(multisample);
-        processingSteps_.clear();
-        delete renderSceneToTextureStep_;
-        renderSceneToTextureStep_ = new RenderStep(sceneTextureFrameBuffer_, "Render");
-        InsertStep(renderSceneToTextureStep_, nullptr);
-    }
-
-    void Pipeline::Render(const std::vector<Renderable *> &renderables, State &state) {
-        context_.SetState(state);
-        for (AbstractProcessing *step : processingSteps_) {
-            // START_MEASURE_TIME(name_ + "-> " + step->GetName());
-            step->Process(context_, renderables);
-            // STOP_MEASURE_TIME(name_ + "-> " + step->GetName());
+    void Pipeline::Run(State &state) {
+        context_.State = &state;
+        context_.Container = container_;
+        for (step::Base *step : processingSteps_) {
+            step->Process(context_);
         }
     }
 
-    Technique *Pipeline::GetRenderingTechnique() const { return context_.GetTechnique(); }
-
-    void Pipeline::SetRenderingTechnique(const TechniqueType type) {
-        auto *technique = Technique::GetTechnique(type);
-        context_.SetTechnique(technique);
-    }
-
-    void Pipeline::InsertStep(AbstractProcessing *step, AbstractProcessing *requiredStep) {
-        if (requiredStep != nullptr) {
-            if (step == requiredStep) {
-                throw Exception("Self-Reference");
-            }
+    void Pipeline::InsertStep(step::Base *step) {
+        if (step->GetRequiredStep() != nullptr) {
             auto itr = processingSteps_.begin();
-            find(itr, requiredStep);
+            find(itr, step->GetRequiredStep());
 
             if (itr == processingSteps_.end()) {
-                throw Exception("Can't find required step");
+                throw std::runtime_error("Can't find required step");
             }
             const auto afterRequiredStep = ++itr;
             processingSteps_.insert(afterRequiredStep, step);
         } else {
-            processingSteps_.insert(processingSteps_.begin(), step);
+            processingSteps_.push_back(step);
         }
-        step->requiredStep_ = requiredStep;
-        step->onAttach();
     }
 
-    void Pipeline::RemoveStep(const AbstractProcessing *step) {
+    void Pipeline::RemoveStep(const step::Base *step) {
         auto itr = processingSteps_.begin();
         find(itr, step);
 
         if (itr == processingSteps_.end()) {
-            throw Exception("Can't find required step");
+            throw std::runtime_error("Can't find required step");
         }
         processingSteps_.erase(itr);
         delete step;
     }
 
-    void Pipeline::find(std::vector<AbstractProcessing *>::iterator &itr, const AbstractProcessing *step) {
+    void Pipeline::find(std::vector<step::Base *>::iterator &itr, const step::Base *step) {
         for (; itr != processingSteps_.end(); ++itr) {
             if (step == *itr) {
                 return;
@@ -91,7 +66,7 @@ namespace soil::video::render {
         }
     }
 
-    AbstractProcessing *Pipeline::GetStep(const uint number) {
+    step::Base *Pipeline::GetStep(const uint number) {
         auto itr = processingSteps_.begin();
         uint counter = 0;
         for (; itr != processingSteps_.end(); ++itr) {
@@ -103,35 +78,53 @@ namespace soil::video::render {
         return nullptr;
     }
 
-    AbstractProcessing *Pipeline::GetStep(const std::string &name) const {
+    step::Base *Pipeline::GetStep(const std::string &name) const {
         for (auto *step : processingSteps_) {
-            if (step->GetName() == name) {
+            if (step->GetId() == name) {
                 return step;
             }
         }
         return nullptr;
     }
 
-    buffer::FrameBuffer *Pipeline::GetOutputBuffer() const { return outputBuffer_; }
+    buffer::FrameBuffer *Pipeline::GetOutputBuffer() const {
+        return outputBuffer_;
+    }
 
-    void Pipeline::SetOutputBuffer(buffer::FrameBuffer *buffer) { outputBuffer_ = buffer; }
+    void Pipeline::SetOutputBuffer(buffer::FrameBuffer *buffer) {
+        outputBuffer_ = buffer;
+    }
 
-    bool Pipeline::IsRenderToScreen() const { return renderToScreen_; }
+    bool Pipeline::IsRenderToScreen() const {
+        return renderToScreen_;
+    }
 
-    void Pipeline::SetRenderToScreen(const bool RenderToScreen) { renderToScreen_ = RenderToScreen; }
+    void Pipeline::SetRenderToScreen(const bool RenderToScreen) {
+        renderToScreen_ = RenderToScreen;
+    }
 
-    void Pipeline::SetName(std::string Name) { name_ = std::move(Name); }
+    void Pipeline::SetName(std::string Name) {
+        name_ = std::move(Name);
+    }
 
-    std::string Pipeline::GetName() const { return name_; }
+    std::string Pipeline::GetName() const {
+        return name_;
+    }
 
-    bool Pipeline::Empty() const { return processingSteps_.empty(); }
+    step::Context &Pipeline::GetContext() {
+        return context_;
+    }
+
+    bool Pipeline::Empty() const {
+        return processingSteps_.empty();
+    }
 
     void Pipeline::Print() const {
         uint counter = 0;
         PLOG_INFO << name_ << ":";
         for (auto *step : processingSteps_) {
             ++counter;
-            PLOG_INFO << "    " << counter << ": " << step->GetName();
+            PLOG_INFO << "    " << counter << ": " << step->GetId();
         }
     }
 } // namespace soil::video::render

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base.h"
-#include "exception.h"
 
 namespace soil::util {
     std::string Strings::to_string(const bool value, std::array<std::string, 2> options) {
@@ -20,6 +19,7 @@ namespace soil::util {
         }
         return options[1];
     }
+
     std::string Strings::to_string(const float value, const int precision) {
         std::stringstream stream;
         stream << std::fixed << std::setprecision(precision) << value;
@@ -123,7 +123,9 @@ namespace soil::util {
         return str;
     }
 
-    bool Strings::equals(const std::string &str1, const std::string &str2) { return str1 == str2; }
+    bool Strings::equals(const std::string &str1, const std::string &str2) {
+        return str1 == str2;
+    }
 
     bool Strings::equalsIgnoreCase(const std::string &str1, const std::string &str2) {
         toLower(str1);
@@ -155,12 +157,14 @@ namespace soil::util {
         return retList;
     }
 
-    bool Strings::to_bool(const std::string &str) { return str == "true"; }
+    bool Strings::to_bool(const std::string &str) {
+        return str == "true";
+    }
 
     glm::vec2 Strings::to_vec2(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 2) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + "' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + "' : " + str);
         }
         glm::vec2 returnValue;
         for (glm::vec2::length_type i = 0; i < 2; i++) {
@@ -172,7 +176,8 @@ namespace soil::util {
     glm::vec3 Strings::to_vec3(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 3) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + delimiter + "#' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter +
+                                     "#' : " + str);
         }
         glm::vec3 returnValue;
         for (glm::vec3::length_type i = 0; i < 3; i++) {
@@ -184,8 +189,8 @@ namespace soil::util {
     glm::vec4 Strings::to_vec4(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 4) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + delimiter + "#" + delimiter +
-                            "#' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter + "#" +
+                                     delimiter + "#' : " + str);
         }
         glm::vec4 returnValue;
         for (glm::vec4::length_type i = 0; i < 4; i++) {
@@ -197,7 +202,7 @@ namespace soil::util {
     glm::uvec2 Strings::to_uvec2(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 2) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + "' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + "' : " + str);
         }
         glm::uvec2 returnValue;
         for (glm::uvec2::length_type i = 0; i < 2; i++) {
@@ -209,7 +214,8 @@ namespace soil::util {
     glm::uvec3 Strings::to_uvec3(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 3) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + delimiter + "#' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter +
+                                     "#' : " + str);
         }
         glm::uvec3 returnValue;
         for (glm::uvec3::length_type i = 0; i < 3; i++) {
@@ -221,8 +227,8 @@ namespace soil::util {
     glm::uvec4 Strings::to_uvec4(const std::string &str, const std::string &delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 4) {
-            throw Exception("String format does not match format '#" + delimiter + "#" + delimiter + "#" + delimiter +
-                            "#' : " + str);
+            throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter + "#" +
+                                     delimiter + "#' : " + str);
         }
         glm::uvec4 returnValue;
         for (glm::uvec4::length_type i = 0; i < 4; i++) {

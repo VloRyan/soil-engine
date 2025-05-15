@@ -8,7 +8,6 @@
 #include "video/shader/cache.h"
 #include "video/texture/manager.h"
 
-#include "stage/scene/component/aabb.h"
 #include "video/buffer/fb.h"
 #include "video/render/state.h"
 #include "window.h"
@@ -22,11 +21,11 @@ namespace soil::video {
             window_->Open();
         }
         if (const int retVal = gl3wInit(); retVal != GL3W_OK) {
-            throw Exception("failed to initialize GL3W with code " + std::to_string(retVal));
+            throw std::runtime_error("failed to initialize GL3W with code " + std::to_string(retVal));
         }
         if (gl3wIsSupported(OPEN_GL_MAJOR_VERSION, OPEN_GL_MINOR_VERSION) == 0) {
-            throw Exception("OpenGL " + std::to_string(OPEN_GL_MAJOR_VERSION) + "." +
-                            std::to_string(OPEN_GL_MINOR_VERSION) + " not supported.");
+            throw std::runtime_error("OpenGL " + std::to_string(OPEN_GL_MAJOR_VERSION) + "." +
+                                     std::to_string(OPEN_GL_MINOR_VERSION) + " not supported.");
         }
 #ifdef DEBUG
         GLint flags = 0;
@@ -34,7 +33,7 @@ namespace soil::video {
         if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) != 0) {
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            glDebugMessageCallback(Manager::debugOutput, nullptr);
+            glDebugMessageCallback(debugOutput, nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         } else {
             PLOG_ERROR << "OPENGL_DEBUG_CONTEXT failed";
@@ -64,7 +63,9 @@ namespace soil::video {
         initState();
     }
 
-    void Manager::Update() { textureManager_.Update(); }
+    void Manager::Update() {
+        textureManager_.Update();
+    }
 
     void Manager::BeginRender() {
         GetState().SetFramebuffer(nullptr);
@@ -72,7 +73,9 @@ namespace soil::video {
         glClear(COLOR_AND_DEPTH_BUFFER_BIT);
     }
 
-    void Manager::EndRender() const { window_->SwapBuffers(); }
+    void Manager::EndRender() const {
+        window_->SwapBuffers();
+    }
 
     void Manager::NewUniformBufferObject(const std::string &name, const gl_size_t size, const int target) {
         auto *ubo = new buffer::UniformBufferObject(buffer::Object::UsageType::Dynamic);
@@ -104,30 +107,41 @@ namespace soil::video {
         state_.SetStencilTest(false);
     }
 
-    mesh::Mesh *Manager::GetMesh(const mesh::Definition &definition) {
-        return meshCache_.GetOrPut(definition, [definition, this](const std::string &name) {
-            return mesh::Mesh::New(nextMeshId++, definition.Identifier, definition.Type);
-        });
+    mesh::Data *Manager::GetMesh(const mesh::Prefab::Definition &definition) {
+        return meshCache_.GetOrPut(definition,
+                                   [this](const mesh::Prefab::Definition &def) { return mesh::Prefab::New(def.Type); });
     }
 
-    shader::Shader *Manager::GetShader(const std::string &name) { return shaderCache_.GetByName(name); }
+    shader::Shader *Manager::GetShader(const std::string &name) {
+        return shaderCache_.GetByName(name);
+    }
 
-    shader::InstanceShader *Manager::GetIShader(const std::string &name) { return shaderCache_.GetByName2(name); }
+    shader::InstanceShader *Manager::GetIShader(const std::string &name) {
+        return shaderCache_.GetByName2(name);
+    }
 
-    void Manager::PrepareShader(const std::string &name, const std::string &path) { shaderCache_.Prepare(name, path); }
+    void Manager::PrepareShader(const std::string &name, const std::string &path) {
+        shaderCache_.Prepare(name, path);
+    }
 
-    void Manager::PrepareShader(shader::Shader *shader) { shaderCache_.Prepare(shader->GetName(), shader); }
+    void Manager::PrepareShader(shader::Shader *shader) {
+        shaderCache_.Prepare(shader->GetName(), shader);
+    }
 
     void Manager::PrepareIShader(shader::InstanceShader *shader) {
         shaderCache_.PrepareInstanceShader(shader->GetName(), shader);
     }
 
-    texture::Manager &Manager::Texture() { return textureManager_; }
+    texture::Manager &Manager::Texture() {
+        return textureManager_;
+    }
 
-    render::State &Manager::GetState() { return state_; }
+    render::State &Manager::GetState() {
+        return state_;
+    }
 
     void APIENTRY Manager::debugOutput(const GLenum source, const GLenum type, const GLuint id, const GLenum severity,
-                                       const GLsizei length, const GLchar *message, const void *userParam) {
+                                       const GLsizei length, const GLchar *message, const void *) {
         // ignore non-significant error/warning codes
         if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
         /* Pixel-path performance warning: Pixel transfer is synchronized with 3D

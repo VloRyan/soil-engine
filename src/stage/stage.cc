@@ -1,5 +1,8 @@
 
 #include "stage/stage.h"
+
+#include <stdexcept>
+
 #include "stage/scene/scene.h"
 
 namespace soil::stage {
@@ -60,9 +63,13 @@ namespace soil::stage {
         }
     }
 
-    Resources &Stage::GetResources() const { return *resources_; }
+    Resources &Stage::GetResources() const {
+        return *resources_;
+    }
 
-    video::buffer::FrameBuffer *Stage::GetFrameBuffer() const { return frameBuffer_; }
+    video::buffer::FrameBuffer *Stage::GetFrameBuffer() const {
+        return frameBuffer_;
+    }
 
     void Stage::SetFrameBuffer(video::buffer::FrameBuffer *const frameBuffer, video::render::Quad *quad) {
         frameBuffer_ = frameBuffer;
@@ -74,5 +81,7 @@ namespace soil::stage {
 #endif
     }
 
-    video::render::Quad *Stage::GetQuad() const { return quad_; }
+    video::render::Quad *Stage::GetQuad() const {
+        return quad_;
+    }
 } // namespace soil::stage

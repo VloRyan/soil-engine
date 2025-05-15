@@ -1,7 +1,7 @@
 #ifndef SOIL_INPUT_MOUSE_PICKER_H_
 #define SOIL_INPUT_MOUSE_PICKER_H_
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 #include "stage/scene/viewer/node.h"
 
 namespace soil::input::mouse {

@@ -4,7 +4,9 @@
 
 namespace soil::video::buffer {
     Vbo::Vbo(const UsageType usage, const AccessType access) :
-        Object(Types::Vertex, usage, access), directWrite_(usage != UsageType::Static) {}
+        Object(Types::Vertex, usage, access), directWrite_(usage != UsageType::Static) {
+        Object::create();
+    }
 
     Vbo::~Vbo() {
         if (directWrite_) {
@@ -12,7 +14,7 @@ namespace soil::video::buffer {
             if (!glUnmapBuffer(getGLBufferType(getBufferType()))) {
                 PLOG_ERROR << "Data corrupted!";
             }
-            cursor_ = nullptr;
+            data_ = nullptr;
         }
     }
 
@@ -30,6 +32,8 @@ namespace soil::video::buffer {
             if (!glUnmapBuffer(getGLBufferType(getBufferType()))) {
                 PLOG_ERROR << "Data corrupted!";
             }
+            data_ = nullptr;
+            delete cursor_;
             cursor_ = nullptr;
         }
         constexpr GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;

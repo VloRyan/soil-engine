@@ -1,14 +1,11 @@
 #include "video/buffer/object.h"
 #include <plog/Log.h>
 #include "GL/gl3w.h"
-#include "exception.h"
 
 namespace soil::video::buffer {
     Object::Object(const Types bufferType, const UsageType usage, const AccessType access) :
         data_(nullptr), cursor_(nullptr), id_(0), bufferSize_(0), bufferType_(bufferType), usage_(usage),
-        access_(access) {
-        create();
-    }
+        access_(access) {}
 
     Object::~Object() {
         if (!IsCreated()) {
@@ -19,6 +16,7 @@ namespace soil::video::buffer {
                    << std::to_string(static_cast<int>(bufferType_));
         glDeleteBuffers(1, &id_);
         delete cursor_;
+        delete[] data_;
         id_ = 0;
         bufferSize_ = 0;
     }
@@ -52,10 +50,10 @@ namespace soil::video::buffer {
             glBufferSubData(getGLBufferType(getBufferType()), 0, bufferSize_, data_);
             auto *newBuffer = new byte[newBufferSize];
             memcpy(newBuffer, data_, bufferSize_);
-            delete data_;
+            delete[] data_;
             data_ = newBuffer;
         } else {
-            delete data_;
+            delete[] data_;
             data_ = new byte[newBufferSize];
         }
         bufferSize_ = newBufferSize;
@@ -65,6 +63,7 @@ namespace soil::video::buffer {
         Reserve(dataSize);
         if (data != nullptr) {
             auto *cursor = GetCursor();
+            cursor->MoveTo(0);
             cursor->Write(data, dataSize);
             Flush();
         }
@@ -99,7 +98,7 @@ namespace soil::video::buffer {
             case UsageType::Static:
                 return GL_STATIC_DRAW;
             default:
-                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+                throw std::runtime_error("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
             }
         case AccessType::Read:
             switch (this->GetUsage()) {
@@ -110,7 +109,7 @@ namespace soil::video::buffer {
             case UsageType::Static:
                 return GL_STATIC_READ;
             default:
-                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+                throw std::runtime_error("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
             }
         case AccessType::Copy:
             switch (this->GetUsage()) {
@@ -121,10 +120,10 @@ namespace soil::video::buffer {
             case UsageType::Static:
                 return GL_STATIC_COPY;
             default:
-                throw Exception("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
+                throw std::runtime_error("unknown usage type: " + std::to_string(static_cast<uint>(this->GetUsage())));
             }
         default:
-            throw Exception("unknown access type: " + std::to_string(static_cast<uint>(this->GetAccess())));
+            throw std::runtime_error("unknown access type: " + std::to_string(static_cast<uint>(this->GetAccess())));
         }
     }
 
@@ -141,17 +140,21 @@ namespace soil::video::buffer {
         case Types::DrawIndirect:
             return GL_DRAW_INDIRECT_BUFFER;
         }
-        throw Exception("Unknown buffer type: " + std::to_string(static_cast<uint>(this->getBufferType())));
+        throw std::runtime_error("Unknown buffer type: " + std::to_string(static_cast<uint>(this->getBufferType())));
     }
 
-    void Object::Bind() const { BindAs(getBufferType()); }
+    void Object::Bind() const {
+        BindAs(getBufferType());
+    }
 
-    void Object::Unbind() const { UnbindAs(getBufferType()); }
+    void Object::Unbind() const {
+        UnbindAs(getBufferType());
+    }
 
     void Object::BindAs(const Types type) const {
 #ifdef DEBUG
         if (!IsCreated()) {
-            throw engine::Exception("Can not bind buffer object because it is not created!");
+            throw std::runtime_error("Can not bind buffer object because it is not created!");
         }
 #endif
         const GLenum glType = getGLBufferType(type);
@@ -163,28 +166,46 @@ namespace soil::video::buffer {
         glBindBuffer(glType, 0);
     }
 
-    Object::AccessType Object::GetAccess() const { return access_; }
+    Object::AccessType Object::GetAccess() const {
+        return access_;
+    }
 
-    uint Object::GetBufferSize() const { return bufferSize_; }
+    uint Object::GetBufferSize() const {
+        return bufferSize_;
+    }
 
-    Object::Types Object::getBufferType() const { return bufferType_; }
+    Object::Types Object::getBufferType() const {
+        return bufferType_;
+    }
 
-    const void *Object::GetData() const { return data_; }
+    const void *Object::GetData() const {
+        return data_;
+    }
 
-    uint Object::GetId() const { return id_; }
+    uint Object::GetId() const {
+        return id_;
+    }
 
-    Object::UsageType Object::GetUsage() const { return usage_; }
+    Object::UsageType Object::GetUsage() const {
+        return usage_;
+    }
 
-    bool Object::IsUsage(const UsageType desired) const { return usage_ == desired; }
+    bool Object::IsUsage(const UsageType desired) const {
+        return usage_ == desired;
+    }
 
-    bool Object::IsCreated() const { return id_ != 0; }
+    bool Object::IsCreated() const {
+        return id_ != 0;
+    }
 
-    void Object::BindToTarget(const uint index) const { BindToTarget(index, getBufferType()); }
+    void Object::BindToTarget(const uint index) const {
+        BindToTarget(index, getBufferType());
+    }
 
     void Object::BindToTarget(const uint index, const Types target) const {
 #ifdef DEBUG
         if (!IsCreated()) {
-            throw engine::Exception("bindToTarget: BufferObject is not created!");
+            throw std::runtime_error("bindToTarget: BufferObject is not created!");
         }
 #endif
         switch (target) {
@@ -192,7 +213,7 @@ namespace soil::video::buffer {
         case Types::Uniform:
             break;
         default:
-            throw Exception("Invalid target for binding: " + std::to_string(static_cast<uint>(target)));
+            throw std::runtime_error("Invalid target for binding: " + std::to_string(static_cast<uint>(target)));
         }
         const GLenum glTarget = getGLBufferType(target);
         glBindBufferBase(glTarget, index, GetId());

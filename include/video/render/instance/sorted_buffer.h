@@ -3,7 +3,6 @@
 #define SOIL_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
 #include "buffer.h"
 
-
 namespace soil::video::render::instance {
     class SortedBuffer final : public Buffer {
     public:
@@ -33,9 +32,12 @@ namespace soil::video::render::instance {
         SortedBuffer(buffer::Object *buffer, size_t instanceSize, SortType sortType);
 
         void Update(const glm::vec3 &viewerPos) override;
+        [[nodiscard]] glm::vec3 GetRefPos() const;
+        void SetRefPos(const glm::vec3 &ref_pos);
 
     private:
         SortType sortType_;
+        glm::vec3 refPos;
     };
 } // namespace soil::video::render::instance
 

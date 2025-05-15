@@ -23,6 +23,14 @@ namespace soil::video::shader {
     static const std::string COLOR_CORRECTION = "ColorCorrection";
     static const std::string LIGHTING_PASS = "LightingPass";
 
+    enum class DrawMode : std::uint8_t {
+        Points = GL_POINTS,
+        Lines = GL_LINES,
+        Triangles = GL_TRIANGLES,
+        TriangleStrip = GL_TRIANGLE_STRIP,
+        Quads = GL_QUADS,
+    };
+
     class Shader {
     public:
         explicit Shader(const std::string &name, const std::string &path);
@@ -126,6 +134,8 @@ namespace soil::video::shader {
         std::string GetName() const;
 
         static void DrawArrays(uint mode, int count, int indexOffset = 0);
+
+        virtual void Prepare();
 
     private:
         virtual void Link();

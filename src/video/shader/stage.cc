@@ -2,8 +2,6 @@
 #include <algorithm>
 #include <fstream>
 #include "GL/gl3w.h"
-
-#include "exception.h"
 #include "plog/Log.h"
 #include "util/files.h"
 
@@ -27,7 +25,7 @@ namespace soil::video::shader {
             std::ifstream in(includeFile);
             if (!in.is_open()) {
                 std::string message = "Impossible to open the include file '" + includeFilename + "'";
-                throw Exception(message);
+                throw std::runtime_error(message);
             }
             size_t length = 0;
             std::string includeLine;
@@ -54,7 +52,7 @@ namespace soil::video::shader {
         std::ifstream in(fileName);
         if (!in.is_open()) {
             std::string message = "Impossible to open the shader file '" + fileName + "'";
-            throw Exception(message);
+            throw std::runtime_error(message);
         }
         while (std::getline(in, line)) {
             if (line.empty()) {
@@ -84,7 +82,7 @@ namespace soil::video::shader {
         if (stage == nullptr) {
             /* Return NULL on failure */
             std::string message = "Impossible to compile the shader file '" + fileName + "'";
-            throw Exception(message);
+            throw std::runtime_error(message);
         }
         return stage; /* Return the buffer */
     }
@@ -141,5 +139,7 @@ namespace soil::video::shader {
         glAttachShader(programId, id_);
     }
 
-    uint Stage::GetId() const { return id_; }
+    uint Stage::GetId() const {
+        return id_;
+    }
 } // namespace soil::video::shader

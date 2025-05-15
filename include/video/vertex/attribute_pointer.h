@@ -50,7 +50,7 @@ namespace soil::video::vertex {
 
         [[nodiscard]] bool IsNormalize() const;
 
-        [[nodiscard]] static size_t GetSizeOfDataType(DataType type);
+        [[nodiscard]] static GLsizei GetSizeOfDataType(DataType type);
 
     private:
         buffer::Object *vbo_;

@@ -1,9 +1,6 @@
 #include "window.h"
-
 #include <ios>
 #include <sstream>
-
-#include "exception.h"
 
 namespace soil {
     Window::Window(const WindowParameter &args) :
@@ -32,7 +29,7 @@ namespace soil {
             const int code = glfwGetError(nullptr);
             std::stringstream stream;
             stream << std::hex << code;
-            throw Exception("Create window failed(0x" + stream.str() + ")");
+            throw std::runtime_error("Create window failed(0x" + stream.str() + ")");
         }
         glfwMakeContextCurrent(glfwWindow_);
         stateFlags_ = static_cast<short>(WindowState::Open) + static_cast<short>(WindowState::Focused);
@@ -48,13 +45,21 @@ namespace soil {
         stateFlags_ = static_cast<short>(WindowState::Closed);
     }
 
-    bool Window::IsClosed() const { return stateFlags_ == static_cast<short>(WindowState::Closed); }
+    bool Window::IsClosed() const {
+        return stateFlags_ == static_cast<short>(WindowState::Closed);
+    }
 
-    void Window::SwapBuffers() const { glfwSwapBuffers(glfwWindow_); }
+    void Window::SwapBuffers() const {
+        glfwSwapBuffers(glfwWindow_);
+    }
 
-    bool Window::IsWindowed() const { return parameter_.Type == WindowType::Windowed; }
+    bool Window::IsWindowed() const {
+        return parameter_.Type == WindowType::Windowed;
+    }
 
-    bool Window::HasState(WindowState stateFlag) const { return stateFlags_[static_cast<short>(stateFlag)]; }
+    bool Window::HasState(WindowState stateFlag) const {
+        return stateFlags_[static_cast<short>(stateFlag)];
+    }
 
     void Window::registerCallbacks() {
         static auto *instance = this;
@@ -76,11 +81,17 @@ namespace soil {
             glfwWindow_, [](GLFWwindow *) { instance->stateFlags_ = static_cast<short>(WindowState::Closed); });
     }
 
-    GLFWwindow *Window::GetGLFWWindow() const { return glfwWindow_; }
+    GLFWwindow *Window::GetGLFWWindow() const {
+        return glfwWindow_;
+    }
 
-    const glm::ivec2 &Window::GetSize() const { return parameter_.Size; }
+    const glm::ivec2 &Window::GetSize() const {
+        return parameter_.Size;
+    }
 
-    const glm::ivec2 &Window::GetRenderSize() const { return parameter_.RenderSizeAspect; }
+    const glm::ivec2 &Window::GetRenderSize() const {
+        return parameter_.RenderSizeAspect;
+    }
 
     glm::vec2 Window::CenterMouseCursor() const {
         glm::uvec2 centerPosition;
@@ -107,9 +118,13 @@ namespace soil {
         fire(event);
     }
 
-    void Window::SetTitle(const std::string &title) const { glfwSetWindowTitle(glfwWindow_, title.c_str()); }
+    void Window::SetTitle(const std::string &title) const {
+        glfwSetWindowTitle(glfwWindow_, title.c_str());
+    }
 
-    const WindowParameter &Window::GetParameter() const { return parameter_; }
+    const WindowParameter &Window::GetParameter() const {
+        return parameter_;
+    }
 
     void Window::UpdateStatistics(const Statistics &newStats) {
         this->statistics_ = newStats;
@@ -117,5 +132,7 @@ namespace soil {
         fire(event);
     }
 
-    const Statistics &Window::GetStatistics() const { return statistics_; }
+    const Statistics &Window::GetStatistics() const {
+        return statistics_;
+    }
 } // namespace soil

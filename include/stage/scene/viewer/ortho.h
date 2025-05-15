@@ -5,9 +5,10 @@
 
 namespace soil::stage::scene::viewer {
     enum class OrthoType { OrthoHeight, Full };
+
     class Ortho final : public Node {
     public:
-        explicit Ortho(scene::Node *parent, glm::ivec2 resolution, float orthoSize);
+        explicit Ortho(scene::Node *parent, glm::ivec2 resolution);
 
         ~Ortho() override = default;
 
@@ -42,7 +43,7 @@ namespace soil::stage::scene::viewer {
         float farZ_;
         world::collision::Frustum *frustum_;
         float orthoSize_;
-        OrthoType orthoType_{OrthoType::Full};
+        OrthoType orthoType_;
     };
 } // namespace soil::stage::scene::viewer
 

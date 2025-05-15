@@ -1,5 +1,4 @@
 #include "engine.h"
-#include "exception.h"
 #include "input/manager.h"
 #include "plog/Formatters/TxtFormatter.h"
 #include "plog/Initializers/ConsoleInitializer.h"
@@ -17,7 +16,7 @@ namespace soil {
             const int code = glfwGetError(nullptr);
             std::stringstream stream;
             stream << std::hex << code;
-            throw Exception("failed to init GLFW(0x" + stream.str() + ")");
+            throw std::runtime_error("failed to init GLFW(0x" + stream.str() + ")");
         }
 
         videoManager_->Init(window_);
@@ -81,16 +80,28 @@ namespace soil {
         glfwTerminate();
     }
 
-    void Engine::Stop() const { window_->Close(); }
+    void Engine::Stop() const {
+        window_->Close();
+    }
 
-    input::Manager *Engine::GetInputManager() const { return inputManager_; }
+    input::Manager *Engine::GetInputManager() const {
+        return inputManager_;
+    }
 
-    video::Manager *Engine::GetVideoManager() const { return videoManager_; }
+    video::Manager *Engine::GetVideoManager() const {
+        return videoManager_;
+    }
 
-    stage::Manager *Engine::GetStageManager() const { return stageManager_; }
+    stage::Manager *Engine::GetStageManager() const {
+        return stageManager_;
+    }
 
-    sound::Manager *Engine::GetSoundManager() const { return soundManager_; }
+    sound::Manager *Engine::GetSoundManager() const {
+        return soundManager_;
+    }
 
-    Window *Engine::GetWindow() const { return window_; }
+    Window *Engine::GetWindow() const {
+        return window_;
+    }
 
 } // namespace soil

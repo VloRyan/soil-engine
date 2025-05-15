@@ -3,6 +3,11 @@ project(soil_engine CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 
+option(BUILD_SAMPLES "Build samples" OFF)
+
+#TODO
+add_compile_definitions(DEBUG)
+
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(gl3w REQUIRED)
@@ -21,11 +26,12 @@ add_library(${PROJECT_NAME}
         include/sound/listener.h
         include/sound/manager.h
         include/sound/source.h
-        include/stage/scene/component/renderable.hpp
+        include/stage/scene/render/feature.hpp
+        include/stage/scene/render/type.hpp
         include/util/pointer_cache.hpp
+        include/video/render/step/context.hpp
         src/engine.cc
         src/event/event.cc
-        src/exception.cc
         src/file/font.cc
         src/id.cc
         src/input/event.cc
@@ -46,12 +52,15 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/aabb.cc
         src/stage/scene/component/bounding_volume.cc
         src/stage/scene/component/component.cc
+        src/stage/scene/component/instance_data.cc
         src/stage/scene/component/listener.cc
-        src/stage/scene/component/renderable_instance.cc
+        src/stage/scene/component/mesh_component.cc
         src/stage/scene/component/sound.cc
         src/stage/scene/grid_scene.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
+        src/stage/scene/render/plain.cc
+        src/stage/scene/render/instancing.cc
         src/stage/scene/scene.cc
         src/stage/scene/space/quad_tree.cc
         src/stage/scene/viewer/node.cc
@@ -71,21 +80,20 @@ add_library(${PROJECT_NAME}
         src/video/event.cc
         src/video/manager.cc
         src/video/mesh/cache.cc
-        src/video/mesh/mesh.cc
+        src/video/mesh/data.cc
+        src/video/mesh/prefab.cc
         src/video/model/letter.cc
         src/video/render/batch.cc
-        src/video/render/forward_rendering.cc
         src/video/render/instance/buffer.cc
-        src/video/render/instance/instance.cc
         src/video/render/instance/sorted_buffer.cc
         src/video/render/pipeline.cc
-        src/video/render/processing/abstract_processing.cc
-        src/video/render/processing/context.cc
-        src/video/render/processing/render_step.cc
         src/video/render/properties.cc
         src/video/render/quad.cc
         src/video/render/state.cc
-        src/video/render/technique.cc
+        src/video/render/step/base.cc
+        src/video/render/step/bind_buffer.cc
+        src/video/render/step/render.cc
+        src/video/render/vertex_array.cc
         src/video/shader/cache.cc
         src/video/shader/definition.cc
         src/video/shader/shader.cc
@@ -96,11 +104,16 @@ add_library(${PROJECT_NAME}
         src/video/vertex/attribute_pointer.cc
         src/video/vertex/vao.cc
         src/video/vertex/vao_creator.cc
-        src/video/vertex/vertex.cc
         src/window.cc
         src/window_event.cc
         src/world/collision/frustum.cc
         src/world/entity/object_3d.cc
+        src/video/render/container.cc
+        include/video/render/container.h
+        src/video/render/renderable.cc
+        src/stage/scene/component/visual_component.cc
+        src/video/render/instance/instance.cc
+
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -127,10 +140,10 @@ target_sources(
         include/input/mouse
         include/input/mouse/picker.h
         include/log.h
-        include/sound/file.h
-        include/sound/manager.h
         include/sound/buffer.h
+        include/sound/file.h
         include/sound/listener.h
+        include/sound/manager.h
         include/sound/source.h
         include/sound/wave.h
         include/stage/event/component.h
@@ -140,14 +153,19 @@ target_sources(
         include/stage/scene/component/aabb.h
         include/stage/scene/component/bounding_volume.h
         include/stage/scene/component/component.h
+        include/stage/scene/component/instance_data.h
         include/stage/scene/component/listener.h
-        include/stage/scene/component/renderable.hpp
-        include/stage/scene/component/renderable_instance.h
+        include/stage/scene/component/mesh_component.h
         include/stage/scene/component/sound.h
+        include/stage/scene/component/visual_component.h
         include/stage/scene/debug_drawer.h
         include/stage/scene/grid_scene.h
         include/stage/scene/input.h
         include/stage/scene/node.h
+        include/stage/scene/render/feature.hpp
+        include/stage/scene/render/instancing.h
+        include/stage/scene/render/type.hpp
+        include/stage/scene/render/plain.h
         include/stage/scene/scene.h
         include/stage/scene/space/quad_tree.h
         include/stage/scene/viewer/node.h
@@ -168,7 +186,7 @@ target_sources(
         include/video/manager.h
         include/video/mesh
         include/video/mesh/cache.h
-        include/video/mesh/mesh.h
+        include/video/mesh/data.h
         include/video/model/letter.h
         include/video/render/batch.h
         include/video/render/forward_rendering.h
@@ -176,14 +194,17 @@ target_sources(
         include/video/render/instance/instance.h
         include/video/render/instance/sorted_buffer.h
         include/video/render/pipeline.h
-        include/video/render/processing/abstract_processing.h
-        include/video/render/processing/context.h
-        include/video/render/processing/render_step.h
+        include/video/render/container.h
         include/video/render/properties.h
         include/video/render/quad.h
         include/video/render/renderable.h
         include/video/render/state.h
+        include/video/render/step/base.h
+        include/video/render/step/bind_buffer.h
+        include/video/render/step/context.hpp
+        include/video/render/step/render.h
         include/video/render/technique.h
+        include/video/render/vertex_array.h
         include/video/shader/cache.h
         include/video/shader/definition.h
         include/video/shader/instance_shader.h
@@ -210,5 +231,8 @@ if (NOT BUILD_TESTING STREQUAL OFF)
     add_subdirectory(test)
 endif ()
 
-install(TARGETS ${PROJECT_NAME} FILE_SET public_headers)
+if (BUILD_SAMPLES STREQUAL ON)
+    add_subdirectory(samples)
+endif ()
 
+install(TARGETS ${PROJECT_NAME} FILE_SET public_headers)

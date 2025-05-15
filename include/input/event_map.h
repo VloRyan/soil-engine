@@ -6,7 +6,6 @@
 #include "constants.hpp"
 #include "event.h"
 
-
 namespace soil::input {
     struct KeyEventMapping {
         KeyEventMapping(Keys key, Event::State state, std::function<void(const Event &)> action);
@@ -44,12 +43,12 @@ namespace soil::input {
 
         void Handle(const Event &event) override;
 
-        void AddKeyMapping(Keys key, Event::State state, const std::function<void(const Event &)> &action);
+        EventMap &AddKeyMapping(Keys key, Event::State state, const std::function<void(const Event &)> &action);
 
-        void AddMouseButtonMapping(MouseButton button, Event::State state,
-                                   const std::function<void(const Event &)> &action);
+        EventMap &AddMouseButtonMapping(MouseButton button, Event::State state,
+                                        const std::function<void(const Event &)> &action);
 
-        void AddMouseWheelMapping(MouseWheelDirection direction, const std::function<void(const Event &)> &action);
+        EventMap &AddMouseWheelMapping(MouseWheelDirection direction, const std::function<void(const Event &)> &action);
 
     private:
         std::vector<KeyEventMapping> keyMappings_;

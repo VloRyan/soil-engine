@@ -7,8 +7,9 @@ namespace soil::input {
 
     EventMap::~EventMap() = default;
 
-    void EventMap::AddKeyMapping(Keys key, Event::State state, const std::function<void(const Event &)> &action) {
+    EventMap &EventMap::AddKeyMapping(Keys key, Event::State state, const std::function<void(const Event &)> &action) {
         keyMappings_.emplace_back(key, state, action);
+        return *this;
     }
 
     void EventMap::Handle(const Event &event) {
@@ -40,9 +41,10 @@ namespace soil::input {
         }
     }
 
-    void EventMap::AddMouseButtonMapping(const MouseButton button, const Event::State state,
-                                         const std::function<void(const Event &)> &action) {
+    EventMap &EventMap::AddMouseButtonMapping(const MouseButton button, const Event::State state,
+                                              const std::function<void(const Event &)> &action) {
         mouseButtonMappings_.emplace_back(button, state, action);
+        return *this;
     }
 
     KeyEventMapping::KeyEventMapping(const Keys key, const Event::State state,
@@ -61,9 +63,10 @@ namespace soil::input {
         return event.GetMouseButton() == button_ && event.GetState() == state_;
     }
 
-    void EventMap::AddMouseWheelMapping(MouseWheelDirection direction,
-                                        const std::function<void(const Event &)> &action) {
+    EventMap &EventMap::AddMouseWheelMapping(MouseWheelDirection direction,
+                                             const std::function<void(const Event &)> &action) {
         mouseWheelMappings_.emplace_back(direction, action);
+        return *this;
     }
 
     MouseWheelEventMapping::MouseWheelEventMapping(const MouseWheelDirection direction,

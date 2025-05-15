@@ -5,6 +5,8 @@
 
 #include "stage/event/node.h"
 
+#include <stdexcept>
+
 #include "stage/scene/scene.h"
 
 namespace soil::stage::scene {
@@ -41,7 +43,9 @@ namespace soil::stage::scene {
         }
     }
 
-    void Node::SetScene(Scene *root) { scene_ = root; }
+    void Node::SetScene(Scene *root) {
+        scene_ = root;
+    }
 
     void Node::AddChild(Node *node) {
         if (node->parent_ == this) {
@@ -65,19 +69,25 @@ namespace soil::stage::scene {
         }
     }
 
-    bool Node::isScene() const { return type_ == Type::Scene; }
+    bool Node::isScene() const {
+        return type_ == Type::Scene;
+    }
 
     void Node::SetUpdateType(const UpdateType type) {
         if (type == updateType_) {
             return;
         }
         updateType_ = type;
-        SetDirty(DirtyCauses::UpdateType);
+        fire(event::Node(this, event::Node::ChangeType::UpdateType));
     }
 
-    Node::UpdateType Node::GetUpdateType() const { return updateType_; }
+    Node::UpdateType Node::GetUpdateType() const {
+        return updateType_;
+    }
 
-    int Node::GetId() const { return id_; }
+    int Node::GetId() const {
+        return id_;
+    }
 
     void Node::SetParent(Node *parent) {
         if (parent_ == parent) {
@@ -89,7 +99,7 @@ namespace soil::stage::scene {
             }
 #ifdef DEBUG
             if (parent->GetScene() == nullptr) {
-                throw std::invalid_argument("parent->root is null");
+                throw std::runtime_error("parent->root is null");
             }
 #endif
             scene_ = parent->scene_;
@@ -103,15 +113,20 @@ namespace soil::stage::scene {
         }
     }
 
-    std::string Node::GetName() const { return name_; }
+    std::string Node::GetName() const {
+        return name_;
+    }
 
-    void Node::SetName(const std::string &name) { name_ = name; }
+    void Node::SetName(const std::string &name) {
+        name_ = name;
+    }
 
-    Scene *Node::GetScene() const { return scene_; }
+    Scene *Node::GetScene() const {
+        return scene_;
+    }
 
     void Node::SetPosition(const glm::vec3 pos) {
-        const auto relPos = pos;
-        Object3d::SetPosition(relPos);
+        Object3d::SetPosition(pos);
         SetDirty(DirtyCauses::Matrix);
     }
 
@@ -175,13 +190,21 @@ namespace soil::stage::scene {
         SetState(State::Normal);
     }
 
-    bool Node::IsDirty() const { return state_ == State::Dirty; }
+    bool Node::IsDirty() const {
+        return state_ == State::Dirty;
+    }
 
-    bool Node::IsDirtyCause(DirtyCauses cause) const { return dirtyCause_[static_cast<int>(cause)]; }
+    bool Node::IsDirtyCause(DirtyCauses cause) const {
+        return dirtyCause_[static_cast<int>(cause)];
+    }
 
-    Node::State Node::GetState() const { return state_; }
+    Node::State Node::GetState() const {
+        return state_;
+    }
 
-    bool Node::IsState(const State state) const { return state_ == state; }
+    bool Node::IsState(const State state) const {
+        return state_ == state;
+    }
 
     void Node::SetState(const State state) {
         if (state_ == state) {
@@ -196,11 +219,17 @@ namespace soil::stage::scene {
         SetState(State::Dirty);
     }
 
-    Node::Type Node::GetType() const { return type_; }
+    Node::Type Node::GetType() const {
+        return type_;
+    }
 
-    Node *Node::GetParent() const { return parent_; }
+    Node *Node::GetParent() const {
+        return parent_;
+    }
 
-    const std::vector<Node *> &Node::GetChildren() const { return children_; }
+    const std::vector<Node *> &Node::GetChildren() const {
+        return children_;
+    }
 
     void Node::addComponent(component::Component *comp) {
         if (this == comp->GetParent()) {
@@ -240,6 +269,13 @@ namespace soil::stage::scene {
         }
     }
 
+    bool Node::HasComponent(component::Component::Type type) const {
+        if (components_.size() <= static_cast<int>(type)) {
+            return false;
+        }
+        return !components_[static_cast<int>(type)].empty();
+    }
+
     void Node::Handle(const event::Component &event) {
         if (event.GetChangeType() == event::Component::ChangeType::State && event.GetOrigin()->IsDirty()) {
             SetDirty(DirtyCauses::Component);
@@ -249,7 +285,9 @@ namespace soil::stage::scene {
         }
     }
 
-    std::bitset<4> Node::GetReceiveTypes() const { return receiveTypeFlags_; }
+    std::bitset<4> Node::GetReceiveTypes() const {
+        return receiveTypeFlags_;
+    }
 
     component::Component *Node::GetComponent(const component::Component::Type type) const {
         const auto &compsOfType = GetComponents(type);

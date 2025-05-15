@@ -1,22 +1,30 @@
-
 #include "video/render/instance/buffer.h"
 
-#include "exception.h"
+#include <stdexcept>
 
 namespace soil::video::render::instance {
-    Buffer::Buffer(buffer::Object *buffer, const size_t instanceSize) :
-        perInstanceBuffer_(buffer), instanceSize_(instanceSize) {}
+    Buffer::Buffer(buffer::Object *buffer, const size_t instanceSize) : buffer_(buffer), instanceSize_(instanceSize) {}
 
     Buffer::~Buffer() {
-        preparedInstances_.clear();
+        instances_.clear();
         dirtyInstances_.clear();
     }
 
-    buffer::Object *Buffer::GetPerInstanceBuffer() const { return perInstanceBuffer_; }
+    buffer::Object *Buffer::GetPerInstanceBuffer() const {
+        return buffer_;
+    }
 
-    size_t Buffer::GetInstanceSize() const { return instanceSize_; }
+    size_t Buffer::GetInstanceSize() const {
+        return instanceSize_;
+    }
 
-    size_t Buffer::GetPreparedInstancesCount() const { return preparedInstances_.size(); }
+    size_t Buffer::GetInstancesCount() const {
+        return instances_.size();
+    }
+
+    size_t Buffer::GetDirtyInstancesCount() const {
+        return dirtyInstances_.size();
+    }
 
     void Buffer::Update(const glm::vec3 &viewerPos) {
         if (dirtyInstances_.empty()) {
@@ -36,17 +44,21 @@ namespace soil::video::render::instance {
 
         for (auto *instance : dirtyInstances_) {
             if (instance->GetIndex() == -1) {
-                if (maxInstancesPerDraw == preparedInstances_.size()) {
-                    throw Exception("Buffer is too small");
+                if (maxInstancesPerDraw == instances_.size()) {
+                    throw std::runtime_error("Buffer is too small");
                 }
-                instance->SetIndex(static_cast<int>(preparedInstances_.size()));
-                preparedInstances_.push_back(instance);
+                instance->SetIndex(static_cast<int>(instances_.size()));
+                instances_.push_back(instance);
             }
             cursor->MoveTo(instanceSize * instance->GetIndex());
-            instance->WriteData(cursor, instance->GetIndex());
+            instance->WriteData(cursor);
         }
         dirtyInstances_.clear();
         perInstanceBuffer->Flush();
+    }
+
+    std::vector<Instance *> &Buffer::GetInstances() {
+        return instances_;
     }
 
     void Buffer::AddChangedInstance(Instance *instance) {
@@ -62,17 +74,9 @@ namespace soil::video::render::instance {
         dirtyInstances_.push_back(instance);
     }
 
-    void Buffer::AddInstance(Instance *instance) {
-        if (instance->GetIndex() != -1) {
-            return;
-        }
+    void Buffer::PrepareInstance(Instance *instance) {
         for (const auto &dirtyInstance : dirtyInstances_) {
             if (dirtyInstance == instance) {
-                return;
-            }
-        }
-        for (const auto &prepInstance : preparedInstances_) {
-            if (prepInstance == instance) {
                 return;
             }
         }
@@ -86,15 +90,15 @@ namespace soil::video::render::instance {
                 break;
             }
         }
-        for (auto i = 0; i < preparedInstances_.size(); ++i) {
-            if (preparedInstances_[i] == instance) {
-                if (preparedInstances_[i] != preparedInstances_.back()) {
-                    preparedInstances_[i] = preparedInstances_.back();
-                    preparedInstances_[i]->SetIndex(i);
-                    dirtyInstances_.push_back(preparedInstances_[i]);
+        for (auto i = 0; i < instances_.size(); ++i) {
+            if (instances_[i] == instance) {
+                if (instances_[i] != instances_.back()) {
+                    instances_[i] = instances_.back();
+                    instances_[i]->SetIndex(i);
+                    dirtyInstances_.push_back(instances_[i]);
                 }
                 instance->SetIndex(-1);
-                preparedInstances_.pop_back();
+                instances_.pop_back();
                 return true;
             }
         }

@@ -5,7 +5,7 @@
 #include <GL/glcorearb.h>
 #include <plog/Log.h>
 
-#include "video/mesh/mesh.h"
+#include "video/mesh/data.h"
 #include "window.h"
 
 namespace soil::video::render {
@@ -14,9 +14,15 @@ namespace soil::video::render {
         framebuffer_(nullptr), viewPort_({0}) {}
 
     void State::Apply(const StateDef &def) {
-        this->SetBlend(def.Blend);
-        this->SetDepthTest(def.DepthTest);
-        this->SetStencilTest(def.StencilTest);
+        if (def.Blend.has_value()) {
+            this->SetBlend(def.Blend.value());
+        }
+        if (def.DepthTest.has_value()) {
+            this->SetDepthTest(def.DepthTest.value());
+        }
+        if (def.StencilTest.has_value()) {
+            this->SetStencilTest(def.StencilTest.value());
+        }
     }
 
     void State::WriteUbo(const int target, const std::function<void(buffer::Cursor *cursor)> &writeFunc) {
@@ -38,9 +44,13 @@ namespace soil::video::render {
         stencilTest_ = glIsEnabled(GL_STENCIL_TEST);
     }
 
-    bool State::GetBlend() const { return blend_; }
+    bool State::GetBlend() const {
+        return blend_;
+    }
 
-    bool State::GetDepthTest() const { return depthTest_; }
+    bool State::GetDepthTest() const {
+        return depthTest_;
+    }
 
     void State::SetBlend(const bool blend) {
         if (blend == blend_) {
@@ -72,7 +82,9 @@ namespace soil::video::render {
 #endif
     }
 
-    bool State::IsStencilTest() const { return stencilTest_; }
+    bool State::IsStencilTest() const {
+        return stencilTest_;
+    }
 
     void State::SetStencilTest(const bool stencilTest) {
         stencilTest_ = stencilTest;
@@ -90,11 +102,17 @@ namespace soil::video::render {
 #endif
     }
 #ifdef DEBUG
-    void State::ResetChangeCounter() { changes_ = 0; }
+    void State::ResetChangeCounter() {
+        changes_ = 0;
+    }
 #endif
-    void State::RegisterUbo(const int target, buffer::UniformBufferObject *ubo) { uboMap_[target] = ubo; }
+    void State::RegisterUbo(const int target, buffer::UniformBufferObject *ubo) {
+        uboMap_[target] = ubo;
+    }
 
-    buffer::FrameBuffer *State::GetFramebuffer() const { return framebuffer_; }
+    buffer::FrameBuffer *State::GetFramebuffer() const {
+        return framebuffer_;
+    }
 
     void State::SetFramebuffer(buffer::FrameBuffer *const framebuffer) {
         if (framebuffer_ == framebuffer) {
@@ -111,7 +129,9 @@ namespace soil::video::render {
 #endif
     }
 
-    glm::ivec2 State::GetViewPort() const { return viewPort_; }
+    glm::ivec2 State::GetViewPort() const {
+        return viewPort_;
+    }
 
     void State::SetViewPort(const glm::ivec2 &viewPort) {
         if (viewPort_ == viewPort) {
