@@ -1,6 +1,9 @@
 #include "stage/manager.h"
 
 #include "input/manager.h"
+
+#include <stdexcept>
+
 #include "stage/stage.h"
 #include "window.h"
 
@@ -8,7 +11,7 @@
 
 namespace soil::stage {
     Manager::Manager() :
-        currentStage_(-1), window_(nullptr), inputManager_(nullptr), resources_(nullptr), nextStageId_(0) {}
+        currentStage_(-1), resources_(nullptr), window_(nullptr), inputManager_(nullptr), nextStageId_(0) {}
 
     Manager::~Manager() {
         if (window_ != nullptr) {
@@ -20,6 +23,16 @@ namespace soil::stage {
         for (const auto *stage : stages_) {
             delete stage;
         }
+    }
+
+    void Manager::SetCurrent(const Stage *stage) {
+        for (auto i = 0; i < stages_.size(); i++) {
+            if (stages_[i] == stage) {
+                currentStage_ = i;
+                return;
+            }
+        }
+        throw std::runtime_error("Stage not found");
     }
 
     int Manager::AddStage(Stage *stage) {
@@ -74,7 +87,9 @@ namespace soil::stage {
         stages_[currentStage_]->Handle(event);
     }
 
-    Resources &Manager::GetResources() const { return *resources_; }
+    Resources &Manager::GetResources() const {
+        return *resources_;
+    }
 
 
 } // namespace soil::stage

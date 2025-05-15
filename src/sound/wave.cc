@@ -1,8 +1,6 @@
 #include "sound/wave.h"
-
-#include "exception.h"
-
 #include <al.h>
+#include <stdexcept>
 
 namespace soil::sound {
     File *Wave::LoadFile(const std::string &filename) {
@@ -11,11 +9,11 @@ namespace soil::sound {
         try {
             file = fopen(filename.c_str(), "rb");
             if (file == nullptr) {
-                throw Exception("Failed to open file: " + filename);
+                throw std::runtime_error("Failed to open file: " + filename);
             }
             file = fopen(filename.c_str(), "rb");
             if (file == nullptr) {
-                throw Exception(filename);
+                throw std::runtime_error(filename);
             }
             auto *audioFile = new File(filename);
 
@@ -27,7 +25,7 @@ namespace soil::sound {
             audioFile->Data = buffer;
             fclose(file);
             return audioFile;
-        } catch ([[maybe_unused]] Exception &ex) {
+        } catch ([[maybe_unused]] std::runtime_error &ex) {
             // clean up memory if wave loading fails
             if (file != nullptr) {
                 fclose(file);
@@ -48,7 +46,7 @@ namespace soil::sound {
         ALsizei frequency = 0;
 
         if (wavFile == nullptr) {
-            throw Exception("Invalid FILE handle");
+            throw std::runtime_error("Invalid FILE handle");
         }
         rewind(wavFile);
         // Read in the first chunk into the struct
@@ -58,7 +56,7 @@ namespace soil::sound {
         if (riff_header.chunkID[0] != 'R' || riff_header.chunkID[1] != 'I' || riff_header.chunkID[2] != 'F' ||
             riff_header.chunkID[3] != 'F' || riff_header.format[0] != 'W' || riff_header.format[1] != 'A' ||
             riff_header.format[2] != 'V' || riff_header.format[3] != 'E') {
-            throw Exception("Invalid RIFF or WAVE Header");
+            throw std::runtime_error("Invalid RIFF or WAVE Header");
         }
 
         // Read in the 2nd chunk for the wave info
@@ -66,7 +64,7 @@ namespace soil::sound {
         // check for fmt tag in memory
         if (wave_format.subChunkID[0] != 'f' || wave_format.subChunkID[1] != 'm' || wave_format.subChunkID[2] != 't' ||
             wave_format.subChunkID[3] != ' ') {
-            throw Exception("Invalid Wave Format");
+            throw std::runtime_error("Invalid Wave Format");
         }
 
         // check for extra parameters;
@@ -79,7 +77,7 @@ namespace soil::sound {
         // check for data tag in memory
         if (wave_data.subChunkID[0] != 'd' || wave_data.subChunkID[1] != 'a' || wave_data.subChunkID[2] != 't' ||
             wave_data.subChunkID[3] != 'a') {
-            throw Exception("Invalid data header");
+            throw std::runtime_error("Invalid data header");
         }
 
         // Get position before data
@@ -118,7 +116,7 @@ namespace soil::sound {
             if (feof(file) != 0) {
                 return EOF;
             }
-            throw Exception("error loading WAVE data into struct!");
+            throw std::runtime_error("error loading WAVE data into struct!");
         }
         if (feof(file) != 0) {
             return EOF;

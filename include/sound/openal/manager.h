@@ -20,7 +20,7 @@ namespace soil::sound::openal {
         Source *GetSource(const std::string &fileName) override;
 
         Buffer *GetBuffer(const std::string &fileName) override;
-        [[nodiscard]] Listener *GetListener() const;
+        [[nodiscard]] Listener *GetListener() const override;
 
     private:
         static Buffer *loadAudioFile(const std::string &filename);

@@ -2,6 +2,7 @@
 #define ENGINE_EVENT_OBSERVABLE_H
 #include <event/handler.hpp>
 #include <exception.h>
+#include <stdexcept>
 #include <vector>
 
 namespace soil::event {
@@ -12,7 +13,9 @@ namespace soil::event {
 
         virtual ~Observable() = default;
 
-        virtual void AddListener(Handler<T> *listener) { listeners_.push_back(listener); }
+        virtual void AddListener(Handler<T> *listener) {
+            listeners_.push_back(listener);
+        }
 
         virtual void RemoveListener(Handler<T> *listener) {
             for (auto itr = listeners_.begin(); itr < listeners_.end(); ++itr) {
@@ -21,7 +24,7 @@ namespace soil::event {
                     return;
                 }
             }
-            throw Exception("RemoveListener failed");
+            throw std::runtime_error("RemoveListener failed");
         }
 
     protected:

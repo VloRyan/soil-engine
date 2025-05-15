@@ -4,7 +4,8 @@
 #include <functional>
 #include <string>
 #include "base.h"
-#include "mesh.h"
+#include "data.h"
+#include "prefab.h"
 
 namespace soil::video::mesh {
     class Cache final {
@@ -13,16 +14,17 @@ namespace soil::video::mesh {
 
         ~Cache();
 
-        Mesh *GetOrPut(const Definition &definition, const std::function<Mesh *(std::string name)> &func);
+        Data *GetOrPut(const Prefab::Definition &definition,
+                       const std::function<Data *(const Prefab::Definition &definition)> &newFunc);
 
-        Mesh *Get(const Definition &definition) const;
+        Data *Get(const Prefab::Definition &definition) const;
 
         Cache(Cache const &) = delete;
 
         void operator=(Cache const &) = delete;
 
     private:
-        HashMap<std::string, Mesh *> meshes_;
+        HashMap<std::string, Data *> meshes_;
     };
 } // namespace soil::video::mesh
 

@@ -10,7 +10,6 @@
 #include "video/render/state.h"
 #include "window_event.h"
 
-
 namespace soil::stage {
     namespace scene {
         class Scene;

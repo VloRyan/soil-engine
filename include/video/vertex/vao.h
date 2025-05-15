@@ -18,7 +18,7 @@ namespace soil::video::vertex {
         size_t AddAttributePointer(buffer::Object *buffer, AttributePointer::DataType dataType, int elementSize,
                                    int elementStride = 0, size_t offset = 0, bool perInstance = false);
 
-        void Create(const void *indices, uint indexSize);
+        void CreateWithEbo(const void *indices, IndexType indexType, uint indexCount);
 
         void Unload();
 
@@ -31,10 +31,13 @@ namespace soil::video::vertex {
         [[nodiscard]] const std::vector<AttributePointer *> &GetAttribPointer() const;
 
         [[nodiscard]] buffer::Ebo *GetEbo() const;
+        [[nodiscard]] buffer::Object *GetVbo() const;
+        void SetVbo(buffer::Object *vbo);
 
     private:
         uint id_;
         buffer::Ebo *ebo_;
+        buffer::Object *vbo_;
         std::vector<AttributePointer *> attribPointer_;
     };
 } // namespace soil::video::vertex

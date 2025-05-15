@@ -1,9 +1,9 @@
 #include "video/texture/data.h"
 
 #include <cstring>
+#include <stdexcept>
 #include <string>
 #include "GL/gl3w.h"
-#include "exception.h"
 
 namespace soil::video::texture {
     Data::Data(const byte *data, const glm::ivec2 size, const int format, const int type) :
@@ -15,14 +15,16 @@ namespace soil::video::texture {
         copyData(other.Bytes);
     }
 
-    Data::~Data() { delete[] Bytes; }
+    Data::~Data() {
+        delete[] Bytes;
+    }
 
     void Data::copyData(const byte *data) {
         if (data == nullptr) {
             return;
         }
         if (Type != GL_UNSIGNED_BYTE) {
-            throw Exception("type " + std::to_string(Type) + " is not supported yet.");
+            throw std::runtime_error("type " + std::to_string(Type) + " is not supported yet.");
         }
         const uint numPixel = Size.x * Size.y;
         constexpr uint sizeComponent = sizeof(byte);
@@ -31,7 +33,6 @@ namespace soil::video::texture {
         Bytes = new byte[dataSize];
         memcpy(Bytes, data, dataSize);
     }
-
 
     int Data::getComponentsPerPixel(const int format) {
         switch (format) {
@@ -48,7 +49,7 @@ namespace soil::video::texture {
                 return 4;
             }
         default:
-            throw Exception("unknown format: " + std::to_string(format));
+            throw std::runtime_error("unknown format: " + std::to_string(format));
         }
     }
 } // namespace soil::video::texture

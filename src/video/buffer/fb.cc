@@ -84,7 +84,7 @@ namespace soil::video::buffer {
             return 0;
         }
         if (depthBufferId_ != 0U) {
-            throw Exception("depth buffer exists");
+            throw std::runtime_error("depth buffer exists");
         }
 
         GLenum internalFormat = GL_DEPTH_COMPONENT;
@@ -118,7 +118,7 @@ namespace soil::video::buffer {
             return nullptr;
         }
         if (depthBufferId_ != 0U) {
-            throw Exception("Depthbuffer exists");
+            throw std::runtime_error("Depthbuffer exists");
         }
         PLOG_DEBUG.printf("createDepthTexture (%dx%d, %d)", size_.x, size_.y, onlyDepth);
         // Create floating point depth buffer
@@ -148,7 +148,7 @@ namespace soil::video::buffer {
             return 0;
         }
         if (colorBufferId_ != 0U) {
-            throw Exception("colorbuffer already Exists");
+            throw std::runtime_error("colorbuffer already Exists");
         }
 
         constexpr GLenum internalFormat = GL_RGBA16F;
@@ -207,27 +207,41 @@ namespace soil::video::buffer {
         return sharedTexture;
     }
 
-    void FrameBuffer::Bind() const { glBindFramebuffer(GL_FRAMEBUFFER, id_); }
+    void FrameBuffer::Bind() const {
+        glBindFramebuffer(GL_FRAMEBUFFER, id_);
+    }
 
-    void FrameBuffer::Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+    void FrameBuffer::Unbind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
-    void FrameBuffer::Clear() const { glClear(clearBufferBits_); }
+    void FrameBuffer::Clear() const {
+        glClear(clearBufferBits_);
+    }
 
     texture::Texture* FrameBuffer::GetColorBufferTexture(const int index) const {
         if (index >= colorBufferVector_.size()) {
-            throw Exception("Index out of bounds: index(" + std::to_string(index) + ") size(" +
-                            std::to_string(colorBufferVector_.size()) + ")");
+            throw std::runtime_error("Index out of bounds: index(" + std::to_string(index) + ") size(" +
+                                     std::to_string(colorBufferVector_.size()) + ")");
         }
         return colorBufferVector_.at(index);
     }
 
-    texture::Texture* FrameBuffer::GetDepthTexture() const { return m_DepthTexture; }
+    texture::Texture* FrameBuffer::GetDepthTexture() const {
+        return m_DepthTexture;
+    }
 
-    uint FrameBuffer::GetDepthBufferId() const { return depthBufferId_; }
+    uint FrameBuffer::GetDepthBufferId() const {
+        return depthBufferId_;
+    }
 
-    uint FrameBuffer::GetId() const { return id_; }
+    uint FrameBuffer::GetId() const {
+        return id_;
+    }
 
-    glm::ivec2 FrameBuffer::GetSize() const { return size_; }
+    glm::ivec2 FrameBuffer::GetSize() const {
+        return size_;
+    }
 
     void FrameBuffer::CheckState() {
         const GLenum state = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -236,17 +250,17 @@ namespace soil::video::buffer {
         }
         switch (state) {
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            throw Exception("INCOMPLETE_ATTACHMENT");
+            throw std::runtime_error("INCOMPLETE_ATTACHMENT");
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            throw Exception("INCOMPLETE_MISSING_ATTACHMENT");
+            throw std::runtime_error("INCOMPLETE_MISSING_ATTACHMENT");
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-            throw Exception("INCOMPLETE_DRAW_BUFFER");
+            throw std::runtime_error("INCOMPLETE_DRAW_BUFFER");
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-            throw Exception("INCOMPLETE_READ_BUFFER");
+            throw std::runtime_error("INCOMPLETE_READ_BUFFER");
         case GL_FRAMEBUFFER_UNSUPPORTED:
-            throw Exception("UNSUPPORTED");
+            throw std::runtime_error("UNSUPPORTED");
         default:
-            throw Exception("UNKNOWN");
+            throw std::runtime_error("UNKNOWN");
         }
     }
 

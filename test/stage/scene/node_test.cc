@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "stage/manager.h"
 #include "stage/scene/scene.h"
+#include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
 
 namespace soil::stage::scene {
@@ -10,14 +11,19 @@ namespace soil::stage::scene {
 
     class NodeTest : public testing::Test {
     protected:
-        static void SetUpTestSuite() { sm = new Manager(); }
+        static void SetUpTestSuite() {
+            sm = new Manager();
+        }
 
-        static void TearDownTestSuite() { delete sm; }
+        static void TearDownTestSuite() {
+            delete sm;
+        }
 
         void SetUp() override {
             const auto stage = new Stage(sm);
             scene = new Scene(stage);
         }
+
         Scene *scene = nullptr;
     };
 

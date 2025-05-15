@@ -1,20 +1,21 @@
 #include "video/shader/cache.h"
 
+#include <ranges>
 #include <stdexcept>
 
 namespace soil::video::shader {
     Cache::~Cache() {
-        for (const auto &entry : shaders_) {
-            delete entry.second;
+        for (const auto *shader : shaders_ | std::views::values) {
+            delete shader;
         }
     }
 
     void Cache::ForEach(const std::function<void(Shader *)> &callback) const {
-        for (const auto &entry : shaders_) {
-            callback(entry.second);
+        for (auto *shader : shaders_ | std::views::values) {
+            callback(shader);
         }
-        for (const auto &entry : instanceShaders_) {
-            callback(entry.second);
+        for (auto *shader : instanceShaders_ | std::views::values) {
+            callback(shader);
         }
     }
 
@@ -33,9 +34,9 @@ namespace soil::video::shader {
     }
 
     Shader *Cache::GetById(const int id) const {
-        for (const auto &entry : shaders_) {
-            if (entry.second->GetId() == id) {
-                return entry.second;
+        for (auto *shader : shaders_ | std::views::values) {
+            if (shader->GetId() == id) {
+                return shader;
             }
         }
         return nullptr;
@@ -70,7 +71,7 @@ namespace soil::video::shader {
     Shader *Cache::Create(const std::string &name, const Definition &shaderDef) {
 #ifdef DEBUG
         if (shaders_.contains(name)) {
-            throw engine::Exception("Shader " + name + " already cached");
+            throw std::runtime_error("Shader " + name + " already cached");
         }
 #endif
         auto *shader = new Shader(shaderDef);

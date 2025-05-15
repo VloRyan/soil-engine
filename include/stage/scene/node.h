@@ -17,7 +17,6 @@
 namespace soil::stage::scene {
     class Scene;
 
-
     class Node : public world::entity::Object3d, public input::EventHandler, public WindowEventHandler {
     public:
         enum class State : std::uint8_t {
@@ -38,7 +37,6 @@ namespace soil::stage::scene {
             Matrix = 0,
             Component,
             Data,
-            UpdateType,
         };
 
         enum class Type : std::uint8_t {
@@ -93,6 +91,8 @@ namespace soil::stage::scene {
         }
 
         void RemoveComponent(component::Component *comp);
+
+        [[nodiscard]] bool HasComponent(component::Component::Type type) const;
 
         [[nodiscard]] std::bitset<4> GetReceiveTypes() const;
 

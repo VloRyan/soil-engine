@@ -1,8 +1,11 @@
 #include "world/collision/frustum.h"
-#include "exception.h"
+
+#include <stdexcept>
 
 namespace soil::world::collision {
-    Frustum::Frustum(const glm::mat4 &viewProjection) : planes_() { SetViewProjection(viewProjection); }
+    Frustum::Frustum(const glm::mat4 &viewProjection) : planes_() {
+        SetViewProjection(viewProjection);
+    }
 
     void Frustum::SetViewProjection(const glm::mat4 &viewProjection) {
         // Extract frustum planes from matrix
@@ -122,7 +125,9 @@ namespace soil::world::collision {
         return dist >= -ratio;
     }
 
-    glm::vec4 Frustum::GetPlane(Planes plane) const { return planes_[static_cast<int>(plane)]; }
+    glm::vec4 Frustum::GetPlane(Planes plane) const {
+        return planes_[static_cast<int>(plane)];
+    }
 
     glm::vec3 Frustum::GetPoint(Points point) const {
         glm::vec4 nearPlane = GetPlane(Planes::Near);
@@ -150,7 +155,7 @@ namespace soil::world::collision {
             return intersectionPoint(farPlane, rightPlane, bottomPlane);
 
         default:
-            throw Exception("unknown Point");
+            throw std::runtime_error("unknown Point");
         }
     }
 

@@ -23,7 +23,7 @@ namespace soil::video {
 
         void EndRender() const;
 
-        [[nodiscard]] mesh::Mesh *GetMesh(const mesh::Definition &definition);
+        [[nodiscard]] mesh::Data *GetMesh(const mesh::Prefab::Definition &definition);
 
         shader::Shader *GetShader(const std::string &name);
 

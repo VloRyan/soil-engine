@@ -2,8 +2,12 @@
 #ifndef SOIL_STAGE_SCENE_SCENE_H
 #define SOIL_STAGE_SCENE_SCENE_H
 #include "node.h"
+#include "render/instancing.h"
+#include "render/type.hpp"
 #include "stage/manager.h"
 #include "stage/resources.h"
+#include "video/render/container.h"
+#include "video/render/pipeline.h"
 #include "viewer/node.h"
 
 namespace soil::stage {
@@ -29,8 +33,6 @@ namespace soil::stage::scene {
 
         void Handle(const WindowEvent &event) override;
 
-        [[nodiscard]] const std::vector<viewer::Node *> &GetViewer() const;
-
         int GetNextId();
 
         void AddChild(Node *child) override;
@@ -40,6 +42,17 @@ namespace soil::stage::scene {
         virtual void Render(video::render::State &state);
 
         [[nodiscard]] Stage *GetStage() const;
+
+        [[nodiscard]] virtual int GetUboMatricesBindingTarget() const;
+        virtual void SetUboMatricesBindingTarget(int ubo_matrices_binding_target);
+        [[nodiscard]] virtual video::render::Pipeline *GetPipeline() const;
+        virtual void SetPipeline(video::render::Pipeline *pipeline);
+        virtual void SetBeforeRenderViewer(
+            const std::function<void(viewer::Node *node, video::render::Pipeline *pipeline)> &before_render_viewer);
+        [[nodiscard]] render::Feature *GetRenderFeature(render::Type type);
+        [[nodiscard]] render::Instancing *Instancing();
+
+        viewer::Node *GetViewer() const;
 
     protected:
         void RemoveChild(Node *node) override;
@@ -62,15 +75,20 @@ namespace soil::stage::scene {
         [[nodiscard]] static Node *computeTopDirtyNode(Node *current);
 
         Stage *stage_;
-        std::vector<viewer::Node *> viewer_;
+        viewer::Node *viewer_;
         std::vector<Node *> activeUpdateNodes_;
         std::vector<Node *> dirtyNodes_;
         std::vector<Node *> dirtyNodes2_;
         std::vector<Node *> *dirtyNodesPtr_;
         std::vector<Node *> inputEventReceiverNodes_;
         std::vector<Node *> windowEventReceiverNodes_;
+        std::unordered_map<render::Type, render::Feature *> renderFeatures_;
+        video::render::Container *renderContainer_;
         int nextId_;
         glm::mat4 worldTransform_;
+        int uboMatricesBindingTarget_;
+        video::render::Pipeline *pipeline_;
+        std::function<void(viewer::Node *node, video::render::Pipeline *pipeline)> beforeRenderViewer_;
     };
 } // namespace soil::stage::scene
 

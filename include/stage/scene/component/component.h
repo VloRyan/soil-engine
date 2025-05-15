@@ -12,7 +12,7 @@ namespace soil::stage::scene::component {
     class Component {
     public:
         enum class Type : std::uint8_t {
-            Renderable = 0,
+            Visual = 0,
             BoundingVolume,
             Interaction,
             Sound,
@@ -31,6 +31,7 @@ namespace soil::stage::scene::component {
         virtual ~Component();
 
         virtual void SetParent(Node *parent);
+        [[nodiscard]] Node *GetParent() const;
 
         [[nodiscard]] Type GetType() const;
 
@@ -43,8 +44,6 @@ namespace soil::stage::scene::component {
         [[nodiscard]] std::string GetName() const;
 
         void SetName(const std::string &name);
-
-        [[nodiscard]] Node *GetParent() const;
 
         void SetDirty();
 

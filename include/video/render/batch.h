@@ -1,17 +1,25 @@
 
 #ifndef SOIL_VIDEO_RENDER_BATCH_H
 #define SOIL_VIDEO_RENDER_BATCH_H
-#include <video/shader/instance_shader.h>
 
 #include "instance/buffer.h"
 #include "renderable.h"
-#include "video/mesh/mesh.h"
+#include "video/mesh/data.h"
 #include "video/vertex/vao.h"
 
 namespace soil::video::render {
-    class Batch final : public Renderable {
+    struct BatchDescriptor {
+        vertex::Vao *Vao{nullptr};
+        shader::Shader *Shader{nullptr};
+        int InstanceSize{0};
+        int PreserveInstances{100};
+        shader::DrawMode DrawMode{shader::DrawMode::Triangles};
+        std::vector<vertex::VertexAttribDescriptor> VertexAttribDescriptors{};
+    };
+
+    class Batch : public Renderable {
     public:
-        Batch(const mesh::Mesh &mesh, shader::InstanceShader *shader, bool opaque, int preserveInstances = 10000);
+        explicit Batch(const BatchDescriptor &descriptor);
 
         ~Batch() override;
 
@@ -25,17 +33,16 @@ namespace soil::video::render {
 
         void Render() override;
 
-        [[nodiscard]] bool IsOpaque() const override;
-
-        static std::string MakeKey(const mesh::Mesh &mesh, const shader::InstanceShader *shader, bool opaque);
+        [[nodiscard]] virtual vertex::Vao *GetVao() const;
+        [[nodiscard]] virtual shader::DrawMode GetDrawMode() const;
+        [[nodiscard]] virtual shader::Shader *GetShader() const;
 
     private:
+        buffer::Object *instanceVbo_;
         instance::Buffer *instanceBuffer_;
-        shader::InstanceShader *shader_;
+        shader::Shader *shader_;
         vertex::Vao *vao_;
-        uint indexCount_;
-        vertex::IndexType indexType_;
-        bool opaque_;
+        shader::DrawMode drawMode_;
     };
 } // namespace soil::video::render
 

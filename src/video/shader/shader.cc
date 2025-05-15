@@ -2,7 +2,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <utility>
 #include "GL/gl3w.h"
-#include "exception.h"
 #include "plog/Log.h"
 #include "util/files.h"
 
@@ -43,14 +42,18 @@ namespace soil::video::shader {
         PLOG_DEBUG.printf("Deleted shader %s", name_.c_str());
     }
 
-    void Shader::SetName(std::string Name) { name_ = std::move(Name); }
+    void Shader::SetName(std::string Name) {
+        name_ = std::move(Name);
+    }
 
-    std::string Shader::GetName() const { return name_; }
+    std::string Shader::GetName() const {
+        return name_;
+    }
 
     void Shader::Create() {
 #ifdef DEBUG
         if (id_ != 0) {
-            throw engine::Exception("shader program already created.");
+            throw std::runtime_error("shader program already created.");
         }
 #endif
         // create the shader program
@@ -61,7 +64,9 @@ namespace soil::video::shader {
         Link();
     }
 
-    uint Shader::GetId() const { return id_; }
+    uint Shader::GetId() const {
+        return id_;
+    }
 
     void Shader::Use() {
         if (id_ == 0) {
@@ -111,7 +116,7 @@ namespace soil::video::shader {
 
     void Shader::Link() {
         if (this->GetId() == 0) {
-            throw Exception("ShaderProgram is not created. Use create() before link().");
+            throw std::runtime_error("ShaderProgram is not created. Use create() before link().");
         }
         /* Link our program, and set it as being actively used */
         glLinkProgram(this->GetId());
@@ -131,7 +136,7 @@ namespace soil::video::shader {
             }
             glDeleteProgram(this->GetId());
             id_ = 0;
-            throw Exception(errorMessage);
+            throw std::runtime_error(errorMessage);
         }
         glUseProgram(this->GetId());
         this->linked_ = true;
@@ -142,10 +147,9 @@ namespace soil::video::shader {
         shaderStages_.clear();
     }
 
-    bool Shader::IsLinked() const { return this->linked_; }
-
-    // <editor-fold default-state="collapsed" desc="Draw">
-
+    bool Shader::IsLinked() const {
+        return this->linked_;
+    }
 
     void Shader::DrawElements(const uint mode, const GLsizei indexCount, const vertex::IndexType indexType) {
         const GLenum glIndexType = GetGLIndexType(indexType);
@@ -154,13 +158,14 @@ namespace soil::video::shader {
         ++drawCount_;
     }
 
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="DrawInstanced">
-
     void Shader::DrawArrays(const uint mode, const int count, const int indexOffset) {
         glDrawArrays(mode, indexOffset, count);
         vertexCount_ += count;
         ++drawCount_;
+    }
+
+    void Shader::Prepare() {
+        Use();
     }
 
     void Shader::DrawElementsInstanced(const uint mode, const uint indexCount, const vertex::IndexType indexType,
@@ -176,9 +181,6 @@ namespace soil::video::shader {
         const GLenum glIndexType = GetGLIndexType(indexType);
         glDrawElementsIndirect(mode, glIndexType, static_cast<void *>(nullptr));
     }
-
-    // </editor-fold>
-    // <editor-fold default-state="collapsed" desc="SetUniform">
 
     void Shader::SetUniform(const std::string &name, const int value) {
         const UniformLocation location = GetUniformLocation(name);
@@ -325,7 +327,7 @@ namespace soil::video::shader {
 
     void Shader::SetUniform(const UniformLocation location, glm::mat4 value, const bool transpose) const {
 #ifdef DEBUG
-        if (locator == -1) {
+        if (location == -1) {
             PLOG_ERROR << GetName() << ": Uniform locator does not exist.";
             return;
         }
@@ -335,7 +337,7 @@ namespace soil::video::shader {
 
     void Shader::SetUniform(const UniformLocation location, const float value) const {
 #ifdef DEBUG
-        if (locator == -1) {
+        if (location == -1) {
             PLOG_ERROR << GetName() << ": Uniform locator does not exist.";
             return;
         }
@@ -353,9 +355,6 @@ namespace soil::video::shader {
 #endif
         glProgramUniformHandleui64ARB(GetId(), GetUniformLocation(name), handle);
     }
-
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Texture">
 
     void Shader::SetTextures2d(const std::vector<texture::Texture *> &textures, const std::string &uniformName,
                                const byte maxTextures) {
@@ -435,8 +434,6 @@ namespace soil::video::shader {
         glUniform1i(location, textureUnit); // 0 for GL_TEXTURE0
     }
 
-    // </editor-fold>
-
     const void *Shader::GetBufferOffset(const GLenum indexType, const uint offset) {
         switch (indexType) {
         case GL_UNSIGNED_INT:
@@ -465,18 +462,26 @@ namespace soil::video::shader {
         }
     }
 
-    uint Shader::GetDrawCount() { return drawCount_; }
+    uint Shader::GetDrawCount() {
+        return drawCount_;
+    }
 
-    uint Shader::GetVerticeCount() { return vertexCount_; }
+    uint Shader::GetVerticeCount() {
+        return vertexCount_;
+    }
 
     void Shader::ResetCounter() {
         vertexCount_ = 0;
         drawCount_ = 0;
     }
 
-    std::vector<Stage *> Shader::GetShaderStages() const { return shaderStages_; }
+    std::vector<Stage *> Shader::GetShaderStages() const {
+        return shaderStages_;
+    }
 
-    void Shader::SetPatchVertices(const int value) { glPatchParameteri(GL_PATCH_VERTICES, value); }
+    void Shader::SetPatchVertices(const int value) {
+        glPatchParameteri(GL_PATCH_VERTICES, value);
+    }
 
     void Shader::DispatchCompute(const uint num_groups_x, const uint num_groups_y, const uint num_groups_z) {
         glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);

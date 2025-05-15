@@ -4,7 +4,7 @@
 #include "input/manager.h"
 #include "sound/manager.h"
 #include "video/manager.h"
-#include "video/mesh/mesh.h"
+#include "video/mesh/data.h"
 #include "video/shader/instance_shader.h"
 
 namespace soil::stage {
@@ -22,9 +22,9 @@ namespace soil::stage {
 
         Resources &operator=(Resources &&other) noexcept = delete;
 
-        [[nodiscard]] video::mesh::Mesh *GetMesh(const video::mesh::Definition &definition) const;
+        [[nodiscard]] video::mesh::Data *GetMesh(const video::mesh::Prefab::Definition &definition) const;
 
-        [[nodiscard]] video::shader::InstanceShader *GetShader(const std::string &name) const;
+        [[nodiscard]] video::shader::Shader *GetShader(const std::string &name) const;
 
         [[nodiscard]] sound::Source *GetSource(const std::string &name) const;
 

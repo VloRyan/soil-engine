@@ -1,7 +1,8 @@
 #include "video/vertex/attribute_pointer.h"
+
+#include <stdexcept>
 #include <string>
 #include "GL/gl3w.h"
-#include "exception.h"
 
 namespace soil::video::vertex {
     AttributePointer::AttributePointer(buffer::Object *vbo, const DataType dataType, const int elementSize,
@@ -53,11 +54,11 @@ namespace soil::video::vertex {
         case UInt64:
             return GL_UNSIGNED_INT64_ARB;
         default:
-            throw Exception("Unknown data type: " + std::to_string(static_cast<uint>(this->GetDataType())));
+            throw std::runtime_error("Unknown data type: " + std::to_string(static_cast<uint>(this->GetDataType())));
         }
     }
 
-    size_t AttributePointer::GetSizeOfDataType(const DataType type) {
+    GLsizei AttributePointer::GetSizeOfDataType(const DataType type) {
         switch (type) {
         case Double:
             return sizeof(double);
@@ -72,27 +73,47 @@ namespace soil::video::vertex {
         case UInt64:
             return sizeof(std::uint64_t);
         default:
-            throw Exception("Unknown data type: " + std::to_string(static_cast<int>(type)));
+            throw std::runtime_error("Unknown data type: " + std::to_string(static_cast<int>(type)));
         }
     }
 
-    AttributePointer::DataType AttributePointer::GetDataType() const { return dataType_; }
+    AttributePointer::DataType AttributePointer::GetDataType() const {
+        return dataType_;
+    }
 
-    byte AttributePointer::GetDivisor() const { return divisor_; }
+    byte AttributePointer::GetDivisor() const {
+        return divisor_;
+    }
 
-    int AttributePointer::GetElementSize() const { return elementSize_; }
+    int AttributePointer::GetElementSize() const {
+        return elementSize_;
+    }
 
-    GLsizei AttributePointer::GetElementStride() const { return elementStride_; }
+    GLsizei AttributePointer::GetElementStride() const {
+        return elementStride_;
+    }
 
-    size_t AttributePointer::GetOffset() const { return offset_; }
+    size_t AttributePointer::GetOffset() const {
+        return offset_;
+    }
 
-    bool AttributePointer::IsPerInstance() const { return divisor_ != 0U; }
+    bool AttributePointer::IsPerInstance() const {
+        return divisor_ != 0U;
+    }
 
-    void AttributePointer::SetDataType(const DataType DataType) { dataType_ = DataType; }
+    void AttributePointer::SetDataType(const DataType DataType) {
+        dataType_ = DataType;
+    }
 
-    buffer::Object *AttributePointer::GetVbo() const { return vbo_; }
+    buffer::Object *AttributePointer::GetVbo() const {
+        return vbo_;
+    }
 
-    void AttributePointer::SetNormalize(const bool Normalize) { normalize_ = Normalize; }
+    void AttributePointer::SetNormalize(const bool Normalize) {
+        normalize_ = Normalize;
+    }
 
-    bool AttributePointer::IsNormalize() const { return normalize_; }
+    bool AttributePointer::IsNormalize() const {
+        return normalize_;
+    }
 } // namespace soil::video::vertex

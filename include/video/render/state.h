@@ -2,15 +2,16 @@
 #ifndef SOIL_VIDEO_RENDER_STATE_H
 #define SOIL_VIDEO_RENDER_STATE_H
 #include <functional>
+#include <optional>
 #include <video/buffer/fb.h>
 #include <video/buffer/ubo.h>
 #include "window.h"
 
 namespace soil::video::render {
     struct StateDef {
-        bool Blend{false};
-        bool DepthTest{false};
-        bool StencilTest{false};
+        std::optional<bool> Blend{};
+        std::optional<bool> DepthTest{};
+        std::optional<bool> StencilTest{};
     };
 
     class State {
@@ -41,7 +42,6 @@ namespace soil::video::render {
 #endif
         void RegisterUbo(int target, buffer::UniformBufferObject *ubo);
 
-        // buffer::UniformBufferObject* GetUbo(const std::string &name);
         [[nodiscard]] buffer::FrameBuffer *GetFramebuffer() const;
 
         void SetFramebuffer(buffer::FrameBuffer *framebuffer);

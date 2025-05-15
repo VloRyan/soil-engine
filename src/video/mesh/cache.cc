@@ -1,26 +1,31 @@
 #include "video/mesh/cache.h"
+
 #include <plog/Log.h>
+#include <ranges>
 
 namespace soil::video::mesh {
     Cache::~Cache() {
-        for (const auto &entry : meshes_) {
-            delete entry.second;
+        for (const auto &mesh : meshes_ | std::views::values) {
+            delete mesh;
         }
     }
 
-    Mesh *Cache::GetOrPut(const Definition &definition, const std::function<Mesh *(std::string name)> &func) {
+    Data *Cache::GetOrPut(const Prefab::Definition &definition,
+                          const std::function<Data *(const Prefab::Definition &definition)> &newFunc) {
         std::string cacheKey = definition.ToString();
         if (const auto itr = meshes_.find(cacheKey); itr != meshes_.end()) {
             return itr->second;
         }
-        auto *const mesh = func(cacheKey);
+        auto *meshData = newFunc(definition);
+        if (meshData == nullptr) {
+            throw std::runtime_error("newFunc returned NULL");
+        }
         PLOG_DEBUG.printf("Cache mesh with key %s", cacheKey.c_str());
-        meshes_.insert(std::pair(cacheKey, mesh));
-        mesh->id_ = static_cast<int>(meshes_.size());
-        return mesh;
+        meshes_.insert({cacheKey, meshData});
+        return meshData;
     }
 
-    Mesh *Cache::Get(const Definition &definition) const {
+    Data *Cache::Get(const Prefab::Definition &definition) const {
         const std::string cacheKey = definition.ToString();
         if (const auto itr = meshes_.find(cacheKey); itr != meshes_.end()) {
             return itr->second;

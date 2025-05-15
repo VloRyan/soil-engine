@@ -5,15 +5,12 @@
 #include "window.h"
 
 namespace soil::stage::scene::viewer {
-    Ortho::Ortho(scene::Node *parent, const glm::ivec2 resolution, const float orthoSize) :
+    Ortho::Ortho(scene::Node *parent, const glm::ivec2 resolution) :
         Node(parent, {ReceiverType::Window}), projection_(glm::mat4(1)),
         view_(glm::lookAt(glm::vec3(0.F), glm::vec3(0.0F, 0.0F, -1.0F), glm::vec3(0.0F, 1.0F, 0.0F))),
         direction_(0.0F, 0.0F, -1.0F), right_(1.0F, 0.0F, 0.0F), up_(0.0F, 1.0F, 0.0F), nearZ_(-0.1F), farZ_(1000.F),
-        frustum_(new world::collision::Frustum(glm::mat4(1.0F))), orthoSize_(orthoSize) {
+        frustum_(new world::collision::Frustum(glm::mat4(1.0F))), orthoSize_(10), orthoType_(OrthoType::Full) {
         SetProjection({resolution.x, resolution.y, farZ_});
-        pipeline_ = new video::render::Pipeline("GUI_Pipeline");
-        pipeline_->Reset(false);
-        pipeline_->Print();
     }
 
     void Ortho::SetProjection(const glm::vec3 size) {
@@ -53,11 +50,17 @@ namespace soil::stage::scene::viewer {
         frustum_->SetViewProjection(GetProjectionMatrix() * GetViewMatrix());
     }
 
-    glm::mat4 Ortho::GetViewMatrix() const { return view_; }
+    glm::mat4 Ortho::GetViewMatrix() const {
+        return view_;
+    }
 
-    glm::mat4 Ortho::GetProjectionMatrix() const { return projection_; }
+    glm::mat4 Ortho::GetProjectionMatrix() const {
+        return projection_;
+    }
 
-    world::collision::Frustum *Ortho::GetFrustum() { return frustum_; }
+    world::collision::Frustum *Ortho::GetFrustum() {
+        return frustum_;
+    }
 
     void Ortho::SetPosition(const glm::vec3 pos) {
         Node::SetPosition(pos);
@@ -70,9 +73,14 @@ namespace soil::stage::scene::viewer {
             UpdateDirty();
         }
     }
-    OrthoType Ortho::GetOrthoType() const { return orthoType_; }
 
-    void Ortho::SetOrthoType(const OrthoType ortho_type) { orthoType_ = ortho_type; }
+    OrthoType Ortho::GetOrthoType() const {
+        return orthoType_;
+    }
+
+    void Ortho::SetOrthoType(const OrthoType ortho_type) {
+        orthoType_ = ortho_type;
+    }
 
     void Ortho::UpdateDirty() {
         Node::UpdateDirty();
@@ -89,9 +97,6 @@ namespace soil::stage::scene::viewer {
     void Ortho::Handle(const WindowEvent &event) {
         if (event.GetCause() == WindowEvent::SizeChanged) {
             SetProjection(glm::vec3(event.GetWindow()->GetSize().x, event.GetWindow()->GetSize().y, farZ_));
-            if (pipeline_->GetOutputBuffer() != nullptr) {
-                pipeline_->GetOutputBuffer()->Resize(event.GetWindow()->GetSize());
-            }
         }
     }
 } // namespace soil::stage::scene::viewer

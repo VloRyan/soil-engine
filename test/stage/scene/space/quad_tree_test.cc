@@ -3,6 +3,7 @@
 #include "gmock/gmock-matchers.h"
 #include "stage/scene/component/aabb.h"
 #include "stage/scene/node.h"
+#include "stage/scene/space/quad_tree.h"
 
 
 #include "glm/glm.hpp"
@@ -14,9 +15,14 @@ namespace soil::stage::scene::space {
 
     class QuadTreeTest : public testing::Test {
     protected:
-        static void SetUpTestSuite() { sm = new Manager(); }
+        static void SetUpTestSuite() {
+            sm = new Manager();
+        }
 
-        static void TearDownTestSuite() { delete sm; }
+        static void TearDownTestSuite() {
+            delete sm;
+        }
+
         void SetUp() override {
             const auto stage = new Stage(sm);
             scene = new Scene(stage);

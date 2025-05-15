@@ -3,27 +3,38 @@
 #include "plog/Log.h"
 
 namespace soil::video::vertex {
-    Vao::Vao() : id_(0), ebo_(nullptr) {}
+    Vao::Vao() : id_(0), ebo_(nullptr), vbo_(nullptr) {}
 
     Vao::~Vao() {
         Unload();
         for (const auto *ptr : attribPointer_) {
             delete ptr;
         }
+        delete ebo_;
+        delete vbo_;
     }
 
-    void Vao::Create(const void *indices, const uint indexSize) {
+    void Vao::CreateWithEbo(const void *indices, const IndexType indexType, const uint indexCount) {
         if (IsCreated()) {
             return;
         }
         glGenVertexArrays(1, &this->id_);
         this->Bind();
+        auto indexSize = 0L;
+        switch (indexType) {
+        case IndexType::TYPE_USHORT:
+            indexSize = static_cast<long>(sizeof(GLushort)) * indexCount;
+            break;
+        case IndexType::TYPE_UINT:
+            indexSize = static_cast<long>(sizeof(GLuint)) * indexCount;
+            break;
+        }
         // Element buffer
-        if (indexSize > 0) {
+        if (indexCount > 0) {
             if (indices != nullptr) {
-                ebo_ = new buffer::Ebo();
+                ebo_ = new buffer::Ebo(indexType);
             } else {
-                ebo_ = new buffer::Ebo(buffer::Ebo::UsageType::Dynamic);
+                ebo_ = new buffer::Ebo(indexType, buffer::Ebo::UsageType::Dynamic);
             }
             ebo_->SetData(indices, indexSize);
         }
@@ -50,6 +61,11 @@ namespace soil::video::vertex {
                                     const bool perInstance) {
         const auto divisor = perInstance ? 1 : 0;
         auto *vPointer = new AttributePointer(buffer, dataType, elementSize, elementStride, divisor, offset);
+        if (IsCreated()) {
+            Bind();
+            vPointer->Set(attribPointer_.size());
+            Unbind();
+        }
         attribPointer_.push_back(vPointer);
         return elementSize * AttributePointer::GetSizeOfDataType(dataType) + offset;
     }
@@ -63,13 +79,31 @@ namespace soil::video::vertex {
         glBindVertexArray(this->id_);
     }
 
-    void Vao::Unbind() { glBindVertexArray(0); }
+    void Vao::Unbind() {
+        glBindVertexArray(0);
+    }
 
-    buffer::Ebo *Vao::GetEbo() const { return ebo_; }
+    buffer::Ebo *Vao::GetEbo() const {
+        return ebo_;
+    }
 
-    uint Vao::GetId() const { return id_; }
+    buffer::Object *Vao::GetVbo() const {
+        return vbo_;
+    }
 
-    const std::vector<AttributePointer *> &Vao::GetAttribPointer() const { return attribPointer_; }
+    void Vao::SetVbo(buffer::Object *const vbo) {
+        vbo_ = vbo;
+    }
 
-    bool Vao::IsCreated() const { return id_ > 0; }
+    uint Vao::GetId() const {
+        return id_;
+    }
+
+    const std::vector<AttributePointer *> &Vao::GetAttribPointer() const {
+        return attribPointer_;
+    }
+
+    bool Vao::IsCreated() const {
+        return id_ > 0;
+    }
 } // namespace soil::video::vertex

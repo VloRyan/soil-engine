@@ -1,8 +1,9 @@
 
 #ifndef SOIL_STAGE_SCENE_GRID_SCENE_H
 #define SOIL_STAGE_SCENE_GRID_SCENE_H
+#include "component/bounding_volume.h"
+#include "space/quad_tree.h"
 #include "stage/scene/scene.h"
-
 
 namespace soil::stage::scene {
     class GridScene : public Scene {
