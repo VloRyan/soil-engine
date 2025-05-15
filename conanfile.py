@@ -18,11 +18,12 @@ class SoilEngineRecipe(ConanFile):
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False], "skip_test": {True, False}}
-    default_options = {"shared": False, "fPIC": True, "skip_test": False}
+    options = {"shared": [True, False], "fPIC": [True, False], "skip_test": {True, False},
+               "build_samples": {True, False}}
+    default_options = {"shared": False, "fPIC": True, "skip_test": False, "build_samples": False}
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*"
+    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*", "samples/*"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -58,6 +59,10 @@ class SoilEngineRecipe(ConanFile):
             cmake.configure()
         else:
             cmake.configure(variables={"BUILD_TESTING": "OFF"})
+
+        if self.options.build_samples:
+            cmake.configure(variables={"BUILD_SAMPLES": "ON"})
+            
         cmake.build()
         if do_tests:
             test_folder = os.path.join("test")
