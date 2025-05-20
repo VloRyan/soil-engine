@@ -17,7 +17,7 @@ namespace soil_samples::instancing {
             uint TextureIndex{0};
         };
 
-        ShapeInstance(const std::string& batchKey, bool isOpaque);
+        ShapeInstance(bool isOpaque);
 
         ~ShapeInstance() override = default;
 
@@ -29,6 +29,7 @@ namespace soil_samples::instancing {
         virtual void SetColor(const glm::vec4& color);
 
         static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;
+        static inline std::string BATCH_KEY = "Shape";
         void UpdateMatrix(const glm::mat4& matrix) override;
 
     protected:

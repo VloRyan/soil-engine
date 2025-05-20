@@ -14,6 +14,9 @@ namespace soil_samples::basic {
         void Handle(const soil::WindowEvent& event) override;
 
     private:
+        void initInput(soil::stage::scene::Scene* scene);
+        void initBackground(soil::stage::scene::Scene* scene, const std::string& textureName) const;
+        void initCarrots(soil::stage::scene::Scene* scene, const std::string& textureName);
         std::array<Shape*, 4> shapes_;
         bool printStatistics_;
     };

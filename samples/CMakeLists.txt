@@ -13,8 +13,6 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/basic/stage.h
         src/common/rotation_node.cc
         src/common/rotation_node.h
-        src/common/statistic_scene.cc
-        src/common/statistic_scene.h
         src/instancing/shader.cc
         src/instancing/shader.h
         src/instancing/shape_instance.cc
