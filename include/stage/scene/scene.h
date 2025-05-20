@@ -3,7 +3,6 @@
 #define SOIL_STAGE_SCENE_SCENE_H
 #include "node.h"
 #include "render/instancing.h"
-#include "render/type.hpp"
 #include "stage/manager.h"
 #include "stage/resources.h"
 #include "video/render/container.h"
@@ -49,10 +48,20 @@ namespace soil::stage::scene {
         virtual void SetPipeline(video::render::Pipeline *pipeline);
         virtual void SetBeforeRenderViewer(
             const std::function<void(viewer::Node *node, video::render::Pipeline *pipeline)> &before_render_viewer);
-        [[nodiscard]] render::Feature *GetRenderFeature(render::Type type);
-        [[nodiscard]] render::Instancing *Instancing();
 
-        viewer::Node *GetViewer() const;
+        [[nodiscard]] viewer::Node *GetViewer() const;
+
+        template <class T>
+        T AddComponentFeature(T feature) {
+            using type = std::remove_pointer_t<T>;
+            static_assert(std::is_base_of_v<ComponentFeature, type>, "comp must be derived from ComponentFeature");
+            componentFeatures_.push_back(feature);
+            feature->OnAddedToScene(this);
+            return feature;
+        }
+
+        virtual void RemoveComponentFeature(ComponentFeature *feature);
+        [[nodiscard]] virtual video::render::Container *GetRenderContainer() const;
 
     protected:
         void RemoveChild(Node *node) override;
@@ -82,7 +91,7 @@ namespace soil::stage::scene {
         std::vector<Node *> *dirtyNodesPtr_;
         std::vector<Node *> inputEventReceiverNodes_;
         std::vector<Node *> windowEventReceiverNodes_;
-        std::unordered_map<render::Type, render::Feature *> renderFeatures_;
+        std::vector<ComponentFeature *> componentFeatures_;
         video::render::Container *renderContainer_;
         int nextId_;
         glm::mat4 worldTransform_;

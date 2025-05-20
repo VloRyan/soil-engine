@@ -56,12 +56,12 @@ add_library(${PROJECT_NAME}
         src/stage/scene/render/instancing.cc
         src/stage/scene/render/plain.cc
         src/stage/scene/scene.cc
-        src/stage/scene/volume/feature.cc
-        src/stage/scene/volume/frustum_culling.cc
-        src/world/volume/quad_tree.cc
         src/stage/scene/viewer/node.cc
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
+        src/stage/scene/volume/container.cc
+        src/stage/scene/volume/feature.cc
+        src/stage/scene/volume/frustum_culling.cc
         src/stage/stage.cc
         src/util/files.cc
         src/util/strings.cc
@@ -105,12 +105,11 @@ add_library(${PROJECT_NAME}
         src/video/vertex/vao_creator.cc
         src/window.cc
         src/window_event.cc
-        src/world/collision/frustum.cc
         src/world/entity/object_3d.cc
-        src/world/volume/quad_tree.cc
         src/world/volume/aabb.cc
-        src/stage/scene/volume/container.cc
-        include/stage/scene/volume/container.h
+        src/world/volume/frustum.cc
+        src/world/volume/quad_tree.cc
+        src/world/volume/quad_tree.cc
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -159,14 +158,12 @@ target_sources(
         include/stage/scene/render/plain.h
         include/stage/scene/render/type.hpp
         include/stage/scene/scene.h
-        include/world/volume/container.h
-        include/stage/scene/volume/feature.h
-        include/stage/scene/volume/frustum_culling.h
-        include/stage/scene/volume/container.h
-        include/world/volume/quad_tree.h
         include/stage/scene/viewer/node.h
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
+        include/stage/scene/volume/container.h
+        include/stage/scene/volume/feature.h
+        include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
         include/util/files.h
         include/util/pointer_cache.hpp
@@ -216,11 +213,13 @@ target_sources(
         include/video/vertex/vertex.h
         include/window.h
         include/window_event.h
-        include/world/collision/frustum.h
         include/world/entity/object_3d.h
-        include/world/volume/container.h
-        include/world/volume/quad_tree.h
         include/world/volume/aabb.h
+        include/world/volume/container.h
+        include/world/volume/container.h
+        include/world/volume/frustum.h
+        include/world/volume/quad_tree.h
+        include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
 )
 

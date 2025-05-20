@@ -231,7 +231,7 @@ namespace soil::video::texture {
         } else {
             fileTop = "Texture/cubemap/" + name + "/" + name + "_up" + ext;
             if (!util::Files::Exists(fileTop)) {
-                throw std::runtime_error("Cubemap textures not found");
+                throw std::runtime_error("CubeMap textures not found");
             }
             fileBottom = "Texture/cubemap/" + name + "/" + name + "_dn" + ext;
             fileLeft = "Texture/cubemap/" + name + "/" + name + "_lf" + ext;
@@ -289,7 +289,7 @@ namespace soil::video::texture {
         const uint format = static_cast<uint>(ilGetInteger(IL_IMAGE_FORMAT));
         const uint type = static_cast<uint>(ilGetInteger(IL_IMAGE_TYPE));
 
-        // Cubemap texture have origin top left
+        // CubeMap texture have origin top left
         iluFlipImage();
 
         glTexImage2D(target, 0, static_cast<GLint>(getGLFormat(internalFormat)), width, height, 0, format, type,

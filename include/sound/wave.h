@@ -13,19 +13,19 @@ namespace soil::sound {
      */
     struct RIFF_Header {
         char chunkID[4];
-        uint32_t chunkSize; // size not including chunkSize or chunkID
+        std::uint32_t chunkSize; // size not including chunkSize or chunkID
         char format[4];
     };
 
     struct WAVE_Format {
         char subChunkID[4];
-        uint32_t subChunkSize;
-        uint16_t wFormatTag;
-        uint16_t wChannels;
-        uint32_t dwSamplesPerSec;
-        uint32_t dwAvgBytesPerSec;
-        uint16_t wBlockAlign;
-        uint16_t wBitsPerSample;
+        std::uint32_t subChunkSize;
+        std::uint16_t wFormatTag;
+        std::uint16_t wChannels;
+        std::uint32_t dwSamplesPerSec;
+        std::uint32_t dwAvgBytesPerSec;
+        std::uint16_t wBlockAlign;
+        std::uint16_t wBitsPerSample;
     };
 
     /**
@@ -33,7 +33,7 @@ namespace soil::sound {
      */
     struct WAVE_Data {
         char subChunkID[4]; // should contain the word data
-        uint32_t subChunk2Size; // Stores the size of the data block
+        std::uint32_t subChunk2Size; // Stores the size of the data block
     };
 
     class Wave {

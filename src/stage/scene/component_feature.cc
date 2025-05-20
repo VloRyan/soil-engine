@@ -1,7 +1,7 @@
 #include "stage/scene/component_feature.h"
 
 namespace soil::stage::scene {
-    ComponentFeature::ComponentFeature(const UpdateType type) : updateType_(type) {}
+    ComponentFeature::ComponentFeature(UpdateType type) : updateType_(type) {}
 
     void ComponentFeature::OnAddedToScene(Scene* scene) {}
 

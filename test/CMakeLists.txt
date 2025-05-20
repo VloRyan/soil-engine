@@ -4,7 +4,7 @@ project(test_soil_engine CXX)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
-        stage/scene/space/quad_tree_test.cc
+        world/volume/quad_tree_test.cc
         stage/scene/node_test.cc
         world/collision/frustum_test.cc
         video/render/instance/buffer_test.cc

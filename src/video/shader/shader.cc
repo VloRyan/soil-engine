@@ -347,7 +347,7 @@ namespace soil::video::shader {
 
     void Shader::SetUniformHandle(const std::string &name, const uint handle) {
 #ifdef DEBUG
-        UniformLocation location = GetUniformLocation(name);
+        const UniformLocation location = GetUniformLocation(name);
         if (location == UNIFORM_NOT_FOUND) {
             PLOG_ERROR << GetName() << ": Uniform '" << name << "' does not exist.";
             return;

@@ -3,8 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "feature.hpp"
-#include "stage/scene/component/visual_component.h"
+#include "feature.h"
 #include "video/render/batch.h"
 #include "video/render/vertex_array.h"
 
@@ -25,10 +24,10 @@ namespace soil::stage::scene::render {
 
         Instancing() = default;
         ~Instancing() override;
-        void ComponentAdded(component::VisualComponent *component) override;
-        void ComponentChanged(component::VisualComponent *component) override;
-        void ComponentRemoved(component::VisualComponent *component) override;
-        void Update(video::render::Container *container) override;
+        void ComponentAdded(component::Component *component) override;
+        void ComponentChanged(component::Component *component) override;
+        void ComponentRemoved(component::Component *component) override;
+        void Update() override;
         void AddRenderBatch(const std::string &key, const BatchCreationArgs &args);
 
     protected:

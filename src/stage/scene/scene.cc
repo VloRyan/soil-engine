@@ -18,8 +18,6 @@ namespace soil::stage::scene {
         dirtyNodesPtr_(&dirtyNodes_), renderContainer_(new video::render::Container()),
         nextId_(GetId() * SCENE_NODE_OFFSET), worldTransform_(1), uboMatricesBindingTarget_(-1), pipeline_(nullptr) {
         SetScene(this);
-        renderFeatures_[render::Type::Plain] = new render::Plain();
-        renderFeatures_[render::Type::Instancing] = new render::Instancing();
 
         pipeline_ = new video::render::Pipeline("renderScene" + std::to_string(GetId()), renderContainer_);
         pipeline_->InsertStep(
@@ -37,8 +35,11 @@ namespace soil::stage::scene {
         if (pipeline_ == nullptr || viewer_ == nullptr) {
             return;
         }
-        for (auto *feature : renderFeatures_ | std::views::values) {
-            feature->Update(renderContainer_);
+        for (auto *feature : componentFeatures_) {
+            if (feature->GetUpdateType() != ComponentFeature::UpdateType::Render) {
+                continue;
+            }
+            feature->Update();
         }
         if (uboMatricesBindingTarget_ != -1) {
             state.WriteUbo(uboMatricesBindingTarget_, [this](video::buffer::Cursor *cursor) {
@@ -78,6 +79,12 @@ namespace soil::stage::scene {
         lastDirtyNodes->clear();
         if (viewer_ != nullptr) {
             viewer_->Update();
+        }
+        for (auto *feature : componentFeatures_) {
+            if (feature->GetUpdateType() != ComponentFeature::UpdateType::AfterScene) {
+                continue;
+            }
+            feature->Update();
         }
     }
 
@@ -143,6 +150,9 @@ namespace soil::stage::scene {
                 activeUpdateNodes_.push_back(node);
             }
         }
+
+        node->ForEachComponent([this](component::Component *comp) { AddComponent(comp); });
+
         dirtyNodesPtr_->push_back(node);
         if (node->GetReceiveTypes()[static_cast<short>(ReceiverType::Window)]) {
             windowEventReceiverNodes_.push_back(node);
@@ -190,16 +200,20 @@ namespace soil::stage::scene {
         beforeRenderViewer_ = before_render_viewer;
     }
 
-    render::Feature *Scene::GetRenderFeature(const render::Type type) {
-        return renderFeatures_[type];
-    }
-
-    render::Instancing *Scene::Instancing() {
-        return dynamic_cast<render::Instancing *>(GetRenderFeature(render::Type::Instancing));
-    }
-
     viewer::Node *Scene::GetViewer() const {
         return viewer_;
+    }
+
+    void Scene::RemoveComponentFeature(ComponentFeature *feature) {
+        for (auto itr = componentFeatures_.begin(); itr != componentFeatures_.end(); ++itr) {
+            if (*itr == feature) {
+                componentFeatures_.erase(itr);
+            }
+        }
+    }
+
+    video::render::Container *Scene::GetRenderContainer() const {
+        return renderContainer_;
     }
 
     void Scene::Handle(const event::Component &event) {
@@ -217,38 +231,20 @@ namespace soil::stage::scene {
     }
 
     void Scene::ComponentAdded(component::Component *component) {
-        switch (component->GetType()) {
-        case component::Component::Type::Visual:
-            if (auto *vComp = dynamic_cast<component::VisualComponent *>(component); vComp != nullptr) {
-                renderFeatures_[vComp->GetRenderType()]->ComponentAdded(vComp);
-            }
-            break;
-        default:; // do nothing
+        for (auto *feature : componentFeatures_) {
+            feature->ComponentAdded(component);
         }
     }
 
     void Scene::ComponentRemoved(component::Component *component) {
-        switch (component->GetType()) {
-        case component::Component::Type::Visual:
-            if (auto *vComp = dynamic_cast<component::VisualComponent *>(component); vComp != nullptr) {
-                renderFeatures_[vComp->GetRenderType()]->ComponentRemoved(vComp);
-            }
-            break;
-        default:;
+        for (auto *feature : componentFeatures_) {
+            feature->ComponentRemoved(component);
         }
     }
 
     void Scene::ComponentStateChanged(component::Component *component) {
-        if (component->GetState() != component::Component::State::Normal) {
-            return;
-        }
-        switch (component->GetType()) {
-        case component::Component::Type::Visual:
-            if (auto *vComp = dynamic_cast<component::VisualComponent *>(component); vComp != nullptr) {
-                renderFeatures_[vComp->GetRenderType()]->ComponentChanged(vComp);
-            }
-            break;
-        default:; // do nothing
+        for (auto *feature : componentFeatures_) {
+            feature->ComponentChanged(component);
         }
     }
 

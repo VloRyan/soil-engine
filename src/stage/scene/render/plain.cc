@@ -1,24 +1,22 @@
 #include "stage/scene/render/plain.h"
-
-#include <algorithm>
 #include <stdexcept>
 
 namespace soil::stage::scene::render {
-    void Plain::Update(video::render::Container* container) {
+    void Plain::Update() {
         for (auto* comp : added_) {
             if (comp->IsOpaque()) {
-                container->Add(comp->GetRenderable(), video::render::Container::OPAQUE);
+                container_->Add(comp->GetRenderable(), video::render::Container::OPAQUE);
             } else {
-                container->Add(comp->GetRenderable(), video::render::Container::NON_OPAQUE);
+                container_->Add(comp->GetRenderable(), video::render::Container::NON_OPAQUE);
             }
         }
         added_.clear();
 
         for (auto* comp : removed_) {
             if (comp->IsOpaque()) {
-                container->Remove(comp->GetRenderable(), video::render::Container::OPAQUE);
+                container_->Remove(comp->GetRenderable(), video::render::Container::OPAQUE);
             } else {
-                container->Remove(comp->GetRenderable(), video::render::Container::NON_OPAQUE);
+                container_->Remove(comp->GetRenderable(), video::render::Container::NON_OPAQUE);
             }
         }
         removed_.clear();
@@ -30,64 +28,62 @@ namespace soil::stage::scene::render {
                 continue;
             }
             if (comp->IsOpaque()) {
-                auto& renderables = container->GetPerDef(video::render::Container::OPAQUE);
+                auto& renderables = container_->GetPerDef(video::render::Container::OPAQUE);
                 if (index < renderables.size() && renderables[index] == renderable) {
                     continue; // all good
                 }
-                if (!container->Remove(renderable, video::render::Container::NON_OPAQUE)) {
+                if (!container_->Remove(renderable, video::render::Container::NON_OPAQUE)) {
                     throw std::runtime_error("failed to remove renderable");
                 }
-                container->Add(renderable, video::render::Container::OPAQUE);
+                container_->Add(renderable, video::render::Container::OPAQUE);
             } else {
-                auto& renderables = container->GetPerDef(video::render::Container::NON_OPAQUE);
+                auto& renderables = container_->GetPerDef(video::render::Container::NON_OPAQUE);
                 if (index < renderables.size() && renderables[index] == renderable) {
                     continue; // all good
                 }
-                if (!container->Remove(renderable, video::render::Container::OPAQUE)) {
+                if (!container_->Remove(renderable, video::render::Container::OPAQUE)) {
                     throw std::runtime_error("failed to remove renderable");
                 }
-                container->Add(renderable, video::render::Container::NON_OPAQUE);
+                container_->Add(renderable, video::render::Container::NON_OPAQUE);
             }
         }
         changed_.clear();
     }
 
-    void Plain::ComponentAdded(component::VisualComponent* component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Plain) {
-            throw std::runtime_error("component is not plain render type");
-        }
-#endif
-        if (component->GetRenderable() == nullptr) {
+    void Plain::ComponentAdded(component::Component* component) {
+        if (!IsVisualComponentOf(component, render::Type::Plain)) {
             return;
         }
-        added_.push_back(component);
+        auto* vComp = dynamic_cast<component::VisualComponent*>(component);
+        if (vComp->GetRenderable() == nullptr) {
+            return;
+        }
+        added_.push_back(vComp);
     }
 
-    void Plain::ComponentRemoved(component::VisualComponent* component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Plain) {
-            throw std::runtime_error("component is not plain render type");
-        }
-#endif
-        if (component->GetRenderable() == nullptr) {
+    void Plain::ComponentRemoved(component::Component* component) {
+        if (!IsVisualComponentOf(component, Type::Plain)) {
             return;
         }
-        removed_.push_back(component);
+        auto* vComp = dynamic_cast<component::VisualComponent*>(component);
+        if (vComp->GetRenderable() == nullptr) {
+            return;
+        }
+        removed_.push_back(vComp);
     }
 
-    void Plain::ComponentChanged(component::VisualComponent* component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Plain) {
-            throw std::runtime_error("component is not plain render type");
-        }
-#endif
-        if (component->GetRenderable() == nullptr) {
+    void Plain::ComponentChanged(component::Component* component) {
+        if (!component->IsDirty() || !IsVisualComponentOf(component, Type::Plain)) {
             return;
         }
-        if (std::ranges::any_of(changed_, [component](const auto c) { return c == component; }) == true) {
+        auto* vComp = dynamic_cast<component::VisualComponent*>(component);
+        if (vComp->GetRenderable() == nullptr) {
             return;
         }
-        changed_.push_back(component);
+        if (!vComp->IsVisible() || vComp->IsCulled()) {
+            removed_.push_back(vComp);
+            return;
+        }
+        changed_.push_back(vComp);
     }
 } // namespace soil::stage::scene::render
