@@ -2,7 +2,7 @@
 #ifndef SOIL_VIDEO_TEXTURE_PARAMETER_H
 #define SOIL_VIDEO_TEXTURE_PARAMETER_H
 
-
+#include "GL/glcorearb.h"
 #include "texture.h"
 
 namespace soil::video::texture {

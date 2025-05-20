@@ -3,14 +3,12 @@
 #include "video/render/container.h"
 #include "video/render/properties.h"
 #include "video/render/state.h"
-#include "video/render/technique.h"
 
 namespace soil::video::render::step {
     struct Context {
         render::Properties *Properties{nullptr};
         render::State *State{nullptr};
-        render::Container *Container{nullptr};
-        std::unordered_map<std::string, std::vector<Renderable *> *> NamedRenderables{};
+        render::Container *RenderContainer{nullptr};
     };
 } // namespace soil::video::render::step
 

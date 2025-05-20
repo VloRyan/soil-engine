@@ -4,6 +4,7 @@
 
 #include <bitset>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -79,6 +80,7 @@ namespace soil::stage::scene {
 
         [[nodiscard]] component::Component *GetComponent(component::Component::Type type) const;
 
+        void ForEachComponent(const std::function<void(component::Component *)> &func) const;
         [[nodiscard]] std::vector<component::Component *> GetComponents(component::Component::Type type) const;
 
         template <class T>

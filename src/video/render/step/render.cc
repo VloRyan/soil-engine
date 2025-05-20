@@ -6,7 +6,7 @@ namespace soil::video::render::step {
 
     void Render::Process(Context &context) {
         context.State->Apply(stateDef_);
-        const auto &renderables = context.Container->GetPerDef(renderDef_);
+        const auto &renderables = context.RenderContainer->GetPerDef(renderDef_);
         for (const auto &renderable : renderables) {
             renderable->Render();
         }

@@ -1,7 +1,6 @@
 #ifndef SOIL_VIDEO_VERTEX_VAO_H_
 #define SOIL_VIDEO_VERTEX_VAO_H_
 #include <vector>
-#include "base.h"
 #include "video/buffer/ebo.h"
 #include "video/buffer/object.h"
 #include "video/vertex/attribute_pointer.h"

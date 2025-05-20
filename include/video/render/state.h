@@ -5,7 +5,6 @@
 #include <optional>
 #include <video/buffer/fb.h>
 #include <video/buffer/ubo.h>
-#include "window.h"
 
 namespace soil::video::render {
     struct StateDef {

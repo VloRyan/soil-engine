@@ -151,7 +151,6 @@ namespace soil::stage::scene {
     }
 
     void Node::fire(const event::Node &evnt) const {
-        // Observable::fire(evnt);
         if (scene_ != nullptr) {
             scene_->Handle(evnt);
         }
@@ -295,6 +294,14 @@ namespace soil::stage::scene {
             return nullptr;
         }
         return compsOfType[0];
+    }
+
+    void Node::ForEachComponent(const std::function<void(component::Component *)> &func) const {
+        for (auto &t : components_) {
+            for (auto *c : t) {
+                func(c);
+            }
+        }
     }
 
     std::vector<component::Component *> Node::GetComponents(const component::Component::Type type) const {

@@ -2,7 +2,7 @@
 
 namespace soil::stage::scene::component {
     VisualComponent::VisualComponent(const render::Type renderType, const bool opaque, const bool visible) :
-        Component(Type::Visual), renderType_(renderType), visible_(visible), opaque_(opaque) {}
+        Component(Type::Visual), renderType_(renderType), visible_(visible), opaque_(opaque), culled_(false) {}
 
     render::Type VisualComponent::GetRenderType() const {
         return renderType_;
@@ -29,6 +29,18 @@ namespace soil::stage::scene::component {
             return;
         }
         opaque_ = opaque;
+        SetDirty();
+    }
+
+    bool VisualComponent::IsCulled() const {
+        return culled_;
+    }
+
+    void VisualComponent::SetCulled(const bool culled) {
+        if (culled_ == culled) {
+            return;
+        }
+        culled_ = culled;
         SetDirty();
     }
 } // namespace soil::stage::scene::component

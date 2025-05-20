@@ -6,7 +6,7 @@
 #include "file.h"
 
 namespace soil::sound {
-    /*
+    /**
      * Struct that holds the RIFF data of the Wave file.
      * The RIFF data is the metadata information that holds,
      * the ID, size and format of the wave file
@@ -28,7 +28,7 @@ namespace soil::sound {
         uint16_t wBitsPerSample;
     };
 
-    /*
+    /**
      * Struct to hold the data of the wave file
      */
     struct WAVE_Data {

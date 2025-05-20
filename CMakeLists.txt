@@ -22,23 +22,16 @@ add_library(${PROJECT_NAME}
         include/event/handler.hpp
         include/event/observable.hpp
         include/input/constants.hpp
-        include/sound/buffer.h
-        include/sound/listener.h
-        include/sound/manager.h
-        include/sound/source.h
-        include/stage/scene/render/feature.hpp
         include/stage/scene/render/type.hpp
         include/util/pointer_cache.hpp
         include/video/render/step/context.hpp
         src/engine.cc
         src/event/event.cc
         src/file/font.cc
-        src/id.cc
         src/input/event.cc
         src/input/event_map.cc
         src/input/manager.cc
         src/input/mouse/picker.cc
-        src/log.cc
         src/sound/file.cc
         src/sound/openal/buffer.cc
         src/sound/openal/listener.cc
@@ -49,20 +42,23 @@ add_library(${PROJECT_NAME}
         src/stage/event/node.cc
         src/stage/manager.cc
         src/stage/resources.cc
-        src/stage/scene/component/aabb.cc
         src/stage/scene/component/bounding_volume.cc
         src/stage/scene/component/component.cc
         src/stage/scene/component/instance_data.cc
         src/stage/scene/component/listener.cc
         src/stage/scene/component/mesh_component.cc
         src/stage/scene/component/sound.cc
-        src/stage/scene/grid_scene.cc
+        src/stage/scene/component/visual_component.cc
+        src/stage/scene/component_feature.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
-        src/stage/scene/render/plain.cc
+        src/stage/scene/render/feature.cc
         src/stage/scene/render/instancing.cc
+        src/stage/scene/render/plain.cc
         src/stage/scene/scene.cc
-        src/stage/scene/space/quad_tree.cc
+        src/stage/scene/volume/feature.cc
+        src/stage/scene/volume/frustum_culling.cc
+        src/world/volume/quad_tree.cc
         src/stage/scene/viewer/node.cc
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
@@ -84,11 +80,14 @@ add_library(${PROJECT_NAME}
         src/video/mesh/prefab.cc
         src/video/model/letter.cc
         src/video/render/batch.cc
+        src/video/render/container.cc
         src/video/render/instance/buffer.cc
+        src/video/render/instance/instance.cc
         src/video/render/instance/sorted_buffer.cc
         src/video/render/pipeline.cc
         src/video/render/properties.cc
         src/video/render/quad.cc
+        src/video/render/renderable.cc
         src/video/render/state.cc
         src/video/render/step/base.cc
         src/video/render/step/bind_buffer.cc
@@ -108,12 +107,10 @@ add_library(${PROJECT_NAME}
         src/window_event.cc
         src/world/collision/frustum.cc
         src/world/entity/object_3d.cc
-        src/video/render/container.cc
-        include/video/render/container.h
-        src/video/render/renderable.cc
-        src/stage/scene/component/visual_component.cc
-        src/video/render/instance/instance.cc
-
+        src/world/volume/quad_tree.cc
+        src/world/volume/aabb.cc
+        src/stage/scene/volume/container.cc
+        include/stage/scene/volume/container.h
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -130,16 +127,13 @@ target_sources(
         include/event/event.h
         include/event/handler.hpp
         include/event/observable.hpp
-        include/exception.h
         include/file/font.h
-        include/id.h
         include/input/constants.hpp
         include/input/event.h
         include/input/event_map.h
         include/input/manager.h
         include/input/mouse
         include/input/mouse/picker.h
-        include/log.h
         include/sound/buffer.h
         include/sound/file.h
         include/sound/listener.h
@@ -150,7 +144,6 @@ target_sources(
         include/stage/event/node.h
         include/stage/manager.h
         include/stage/resources.h
-        include/stage/scene/component/aabb.h
         include/stage/scene/component/bounding_volume.h
         include/stage/scene/component/component.h
         include/stage/scene/component/instance_data.h
@@ -158,16 +151,19 @@ target_sources(
         include/stage/scene/component/mesh_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/visual_component.h
-        include/stage/scene/debug_drawer.h
-        include/stage/scene/grid_scene.h
+        include/stage/scene/component_feature.h
         include/stage/scene/input.h
         include/stage/scene/node.h
-        include/stage/scene/render/feature.hpp
+        include/stage/scene/render/feature.h
         include/stage/scene/render/instancing.h
-        include/stage/scene/render/type.hpp
         include/stage/scene/render/plain.h
+        include/stage/scene/render/type.hpp
         include/stage/scene/scene.h
-        include/stage/scene/space/quad_tree.h
+        include/world/volume/container.h
+        include/stage/scene/volume/feature.h
+        include/stage/scene/volume/frustum_culling.h
+        include/stage/scene/volume/container.h
+        include/world/volume/quad_tree.h
         include/stage/scene/viewer/node.h
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
@@ -189,12 +185,12 @@ target_sources(
         include/video/mesh/data.h
         include/video/model/letter.h
         include/video/render/batch.h
+        include/video/render/container.h
         include/video/render/forward_rendering.h
         include/video/render/instance/buffer.h
         include/video/render/instance/instance.h
         include/video/render/instance/sorted_buffer.h
         include/video/render/pipeline.h
-        include/video/render/container.h
         include/video/render/properties.h
         include/video/render/quad.h
         include/video/render/renderable.h
@@ -218,11 +214,14 @@ target_sources(
         include/video/vertex/vao.h
         include/video/vertex/vao_creator.h
         include/video/vertex/vertex.h
-        include/video/viewer.h
         include/window.h
         include/window_event.h
         include/world/collision/frustum.h
         include/world/entity/object_3d.h
+        include/world/volume/container.h
+        include/world/volume/quad_tree.h
+        include/world/volume/aabb.h
+        include/world/volume/volume.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog)

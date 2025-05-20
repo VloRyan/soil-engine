@@ -3,13 +3,10 @@
 
 #include <utility>
 
-#include "engine.h"
 #include "stage/scene/viewer/node.h"
 
 namespace soil::video::render {
-    Pipeline::Pipeline(std::string name, Container *container) :
-        name_(std::move(name)), renderToScreen_(true), container_(container),
-        multisampleSceneTextureFrameBuffer_(nullptr), sceneTextureFrameBuffer_(nullptr), outputBuffer_(nullptr) {}
+    Pipeline::Pipeline(std::string name, Container *container) : name_(std::move(name)), container_(container) {}
 
     Pipeline::~Pipeline() {
         PLOG_DEBUG << "Delete Pipeline: " << name_;
@@ -19,14 +16,11 @@ namespace soil::video::render {
     void Pipeline::Clear() {
         PLOG_DEBUG << "Clear Pipeline: " << name_;
         processingSteps_.clear();
-        multisampleSceneTextureFrameBuffer_ = nullptr;
-        sceneTextureFrameBuffer_ = nullptr;
-        outputBuffer_ = nullptr;
     }
 
     void Pipeline::Run(State &state) {
         context_.State = &state;
-        context_.Container = container_;
+        context_.RenderContainer = container_;
         for (step::Base *step : processingSteps_) {
             step->Process(context_);
         }
@@ -85,22 +79,6 @@ namespace soil::video::render {
             }
         }
         return nullptr;
-    }
-
-    buffer::FrameBuffer *Pipeline::GetOutputBuffer() const {
-        return outputBuffer_;
-    }
-
-    void Pipeline::SetOutputBuffer(buffer::FrameBuffer *buffer) {
-        outputBuffer_ = buffer;
-    }
-
-    bool Pipeline::IsRenderToScreen() const {
-        return renderToScreen_;
-    }
-
-    void Pipeline::SetRenderToScreen(const bool RenderToScreen) {
-        renderToScreen_ = RenderToScreen;
     }
 
     void Pipeline::SetName(std::string Name) {

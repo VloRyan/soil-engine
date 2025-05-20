@@ -118,7 +118,7 @@ namespace soil::video::shader {
         if (this->GetId() == 0) {
             throw std::runtime_error("ShaderProgram is not created. Use create() before link().");
         }
-        /* Link our program, and set it as being actively used */
+        // Link our program, and set it as being actively used
         glLinkProgram(this->GetId());
         GLint IsLinked;
         glGetProgramiv(this->GetId(), GL_LINK_STATUS, &IsLinked);
@@ -140,7 +140,7 @@ namespace soil::video::shader {
         }
         glUseProgram(this->GetId());
         this->linked_ = true;
-        /*After link shaderStage will not be needed explicit and can be deleted*/
+        // After link shaderStage will not be needed explicit and can be deleted
         for (const Stage *stage : shaderStages_) {
             delete stage;
         }

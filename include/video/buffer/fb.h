@@ -1,7 +1,6 @@
 #ifndef SOIL_VIDEO_BUFFER_FRAMEBUFFER_H
 #define SOIL_VIDEO_BUFFER_FRAMEBUFFER_H
 #include <vector>
-#include "base.h"
 #include "video/texture/parameter.h"
 #include "video/texture/texture.h"
 

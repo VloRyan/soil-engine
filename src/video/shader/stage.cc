@@ -80,11 +80,10 @@ namespace soil::video::shader {
         buffer[offset] = '\0';
         Stage *stage = compile(buffer, type);
         if (stage == nullptr) {
-            /* Return NULL on failure */
             std::string message = "Impossible to compile the shader file '" + fileName + "'";
             throw std::runtime_error(message);
         }
-        return stage; /* Return the buffer */
+        return stage;
     }
 
     void Stage::PrintShaderInfoLog(const uint shader) {
@@ -104,11 +103,11 @@ namespace soil::video::shader {
     }
 
     Stage *Stage::compile(const char *source, const uint type) {
-        /* Assign our handles a "name" to new shader objects */
+        // Assign our handles a "name" to new shader objects
         const uint shaderId = glCreateShader(type);
-        /* Associate the source code buffers with each handle */
+        // Associate the source code buffers with each handle
         glShaderSource(shaderId, 1, &source, nullptr);
-        /* Compile our shader objects */
+        // Compile our shader objects
         glCompileShader(shaderId);
         GLint compiled;
         glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);

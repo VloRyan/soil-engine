@@ -3,7 +3,6 @@
 
 #include "glm/glm.hpp"
 #include "stage/scene/node.h"
-#include "video/viewer.h"
 #include "world/collision/frustum.h"
 
 namespace soil::stage::scene::viewer {

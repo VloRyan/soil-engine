@@ -1,7 +1,8 @@
 #include "stage/scene/viewer/perspective.h"
 #include <cmath>
-#include "engine.h"
+
 #include "glm/gtc/matrix_transform.hpp"
+#include "window.h"
 
 namespace soil::stage::scene::viewer {
     Perspective::Perspective(scene::Node *parent) :

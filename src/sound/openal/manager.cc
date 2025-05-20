@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include "AL/al.h"
 #include "AL/alc.h"
-#include "log.h"
 #include "sound/file.h"
 #include "sound/openal/buffer.h"
 #include "sound/openal/listener.h"
@@ -47,7 +46,7 @@ namespace soil::sound::openal {
     sound::Source *Manager::GetSource(const std::string &fileName) {
         auto *const buffer = GetBuffer(fileName);
 
-        /*Create source*/
+        // Create source
         const auto source = new openal::Source(buffer);
 
         if (ALenum error = 0; (error = alGetError()) != AL_NO_ERROR) {
@@ -59,7 +58,7 @@ namespace soil::sound::openal {
     sound::Buffer *Manager::GetBuffer(const std::string &fileName) {
         std::string cacheKey = fileName;
 
-        /*Is source already loaded*/
+        // Is source already loaded
         if (const auto itr = bufferCache_.find(cacheKey); itr != bufferCache_.end()) {
             PLOG_DEBUG << "Cached buffer(" << itr->second->getId() << ") is used for file " << fileName;
             return itr->second;
@@ -93,20 +92,19 @@ namespace soil::sound::openal {
         while (error != AL_NO_ERROR) {
             switch (error) {
             case AL_INVALID_ENUM:
-                Log::Error("AL_INVALID_ENUM");
+                PLOG_ERROR << "AL_INVALID_ENUM";
                 break;
             case AL_INVALID_VALUE:
-                Log::Error("AL_INVALID_VALUE");
+                PLOG_ERROR << "AL_INVALID_VALUE";
                 break;
-
             case AL_INVALID_OPERATION:
-                Log::Error("AL_INVALID_OPERATION");
+                PLOG_ERROR << "AL_INVALID_OPERATION";
                 break;
             case AL_OUT_OF_MEMORY:
-                Log::Error("AL_OUT_OF_MEMORY");
+                PLOG_ERROR << "AL_OUT_OF_MEMORY";
                 break;
             default:
-                Log::Error("Unknown error");
+                PLOG_ERROR << "Unknown error";
             }
             error = alGetError();
         }

@@ -1,7 +1,6 @@
 #include "video/buffer/fb.h"
-#include "engine.h"
-
 #include <GL/gl3w.h>
+
 #include <thread>
 
 #include "plog/Log.h"

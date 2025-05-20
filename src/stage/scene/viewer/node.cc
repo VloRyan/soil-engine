@@ -1,5 +1,4 @@
 #include "stage/scene/viewer/node.h"
-#include "stage/scene/space/quad_tree.h"
 
 namespace soil::stage::scene::viewer {
     Node::Node(scene::Node *parent) : scene::Node(nullptr, Type::Viewer), viewChanged_(true) {
