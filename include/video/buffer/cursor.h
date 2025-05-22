@@ -1,7 +1,7 @@
 #ifndef SOIL_VIDEO_BUFFER_CURSOR_H_
 #define SOIL_VIDEO_BUFFER_CURSOR_H_
-#include <glm/glm.hpp>
 #include "base.h"
+#include "glm/glm.hpp"
 
 namespace soil::video::buffer {
     class Cursor final {

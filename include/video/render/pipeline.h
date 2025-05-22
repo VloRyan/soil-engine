@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "container.h"
-#include "video/buffer/fb.h"
 #include "video/render/step/base.h"
 
 namespace soil::video::render {
@@ -30,14 +29,6 @@ namespace soil::video::render {
 
         [[nodiscard]] step::Base *GetStep(const std::string &name) const;
 
-        [[nodiscard]] buffer::FrameBuffer *GetOutputBuffer() const;
-
-        void SetOutputBuffer(buffer::FrameBuffer *buffer);
-
-        [[nodiscard]] bool IsRenderToScreen() const;
-
-        void SetRenderToScreen(bool RenderToScreen);
-
         void SetName(std::string Name);
 
         [[nodiscard]] std::string GetName() const;
@@ -48,15 +39,7 @@ namespace soil::video::render {
 
     private:
         std::string name_;
-        bool renderToScreen_;
         Container *container_;
-
-
-        /* Stage Texture */
-        buffer::FrameBuffer *multisampleSceneTextureFrameBuffer_;
-        buffer::FrameBuffer *sceneTextureFrameBuffer_;
-
-        buffer::FrameBuffer *outputBuffer_;
         std::vector<step::Base *> processingSteps_;
         step::Context context_;
     };

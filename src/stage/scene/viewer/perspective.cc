@@ -1,18 +1,15 @@
 #include "stage/scene/viewer/perspective.h"
 #include <cmath>
-#include "engine.h"
+
 #include "glm/gtc/matrix_transform.hpp"
+#include "window.h"
 
 namespace soil::stage::scene::viewer {
     Perspective::Perspective(scene::Node *parent) :
-        Node(parent, {ReceiverType::Window}), updateVelocity_(false), moveSpeed_(), direction_({0.0F, 0.0F, -1.0F}),
-        right_({1.0F, 0.0F, 0.0F}), up_({0.0F, 1.0F, 0.0F}), rotate_(0.0F), velocity_(0.0F), fovY_(60.0F), nearZ_(0.1F),
-        farZ_(1000.0F), perspective_(0.0F), view_(1.0F), frustum_(new world::collision::Frustum(glm::mat4(1.0F))) {
+        Node(parent, {ReceiverType::Window}), updateVelocity_(false), moveSpeed_(), rotate_(0.0F), velocity_(0.0F),
+        fovY_(60.0F), perspective_(0.0F), view_(1.0F) {
+        nearZ_ = 0.1F;
         SetRotate(rotate_);
-    }
-
-    Perspective::~Perspective() {
-        delete frustum_;
     }
 
     glm::mat4 Perspective::GetProjectionMatrix() const {
@@ -23,22 +20,13 @@ namespace soil::stage::scene::viewer {
         return view_;
     }
 
-    void Perspective::SetPerspective(const float fovY, const float aspect, const float nearZ, const float farZ) {
-        fovY_ = fovY;
-        nearZ_ = nearZ;
-        farZ_ = farZ;
-        perspective_ = glm::perspective(glm::radians(fovY_), aspect, nearZ_, farZ_);
-        viewChanged_ = true;
-    }
-
     void Perspective::Look(const glm::vec3 center, const glm::vec3 up) {
         view_ = glm::lookAt(GetWorldPosition(), center, up);
         glm::mat4 invTransform = inverse(view_);
         this->right_ = glm::vec3(invTransform[0]);
         this->up_ = glm::vec3(invTransform[1]);
         this->direction_ = glm::vec3(invTransform[2]) * glm::vec3(-1.0F); // direction is inverse
-        frustum_->SetViewProjection(GetProjectionMatrix() * GetViewMatrix());
-        viewChanged_ = false;
+        frustum_->SetProjectionView(GetProjectionMatrix() * GetViewMatrix());
     }
 
     void Perspective::Move(const glm::vec3 move) {
@@ -47,7 +35,6 @@ namespace soil::stage::scene::viewer {
         localTransform[3] += glm::vec4(up_ * move[1], 0);
         localTransform[3] += glm::vec4(direction_ * move[2], 0);
         SetLocalTransform(localTransform);
-        viewChanged_ = true;
     }
 
     void Perspective::AddVelocity(glm::vec3 velocity, const bool relative) {
@@ -67,46 +54,44 @@ namespace soil::stage::scene::viewer {
             localTransform[3] += glm::vec4(velocity_, 0);
             SetLocalTransform(localTransform);
             velocity_ = glm::vec3(0.0F);
-            viewChanged_ = true;
             updateVelocity_ = false;
-        }
-        if (viewChanged_) {
-            UpdateDirty();
         }
         Node::Update();
     }
 
     void Perspective::UpdateDirty() {
         Node::UpdateDirty();
-        view_ = glm::lookAt(GetWorldPosition(), GetWorldPosition() + GetDirection(), GetUp());
-        glm::mat4 invTransform = inverse(view_);
-        right_ = glm::vec3(invTransform[0]);
-        up_ = glm::vec3(invTransform[1]);
-        direction_ = glm::vec3(invTransform[2]) * glm::vec3(-1.0F); // direction is inverse
-        viewChanged_ = false;
-        frustum_->SetViewProjection(GetProjectionMatrix() * GetViewMatrix());
+        if (IsDirtyCause(DirtyCauses::Matrix)) {
+            view_ = glm::lookAt(GetWorldPosition(), GetWorldPosition() + GetDirection(), GetUp());
+            glm::mat4 invTransform = inverse(view_);
+            right_ = glm::vec3(invTransform[0]);
+            up_ = glm::vec3(invTransform[1]);
+            direction_ = glm::vec3(invTransform[2]) * glm::vec3(-1.0F); // direction is inverse
+            frustum_->SetProjectionView(GetProjectionMatrix() * GetViewMatrix());
+        }
+    }
+
+    void Perspective::UpdateProjection(const glm::ivec2 &size) {
+        const float aspect = static_cast<float>(size.x) / static_cast<float>(size.y);
+        perspective_ = glm::perspective(glm::radians(fovY_), aspect, nearZ_, farZ_);
     }
 
     void Perspective::SetDirection(const glm::vec3 direction) {
         direction_ = direction;
-        viewChanged_ = true;
     }
 
     void Perspective::SetPosition(const glm::vec3 pos) {
         auto localTransform = GetLocalTransform();
         localTransform[3] = glm::vec4(pos, 1.0F);
         SetLocalTransform(localTransform);
-        viewChanged_ = true;
     }
 
     void Perspective::SetRight(const glm::vec3 right) {
         right_ = right;
-        viewChanged_ = true;
     }
 
     void Perspective::SetUp(const glm::vec3 up) {
         up_ = up;
-        viewChanged_ = true;
     }
 
     glm::vec3 Perspective::GetDirection() const {
@@ -132,18 +117,6 @@ namespace soil::stage::scene::viewer {
 
         right_ = glm::vec3(std::sin(rot[0] - 3.14F / 2.0F), 0, std::cos(rot[0] - 3.14F / 2.0F));
         up_ = glm::cross(right_, direction_);
-        viewChanged_ = true;
     }
 
-    world::collision::Frustum *Perspective::GetFrustum() {
-        return frustum_;
-    }
-
-    void Perspective::Handle(const WindowEvent &event) {
-        if (event.GetCause() == WindowEvent::SizeChanged) {
-            const float aspect =
-                static_cast<float>(event.GetWindow()->GetSize().x) / static_cast<float>(event.GetWindow()->GetSize().y);
-            SetPerspective(fovY_, aspect, nearZ_, farZ_);
-        }
-    }
 } // namespace soil::stage::scene::viewer

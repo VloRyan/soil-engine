@@ -3,12 +3,10 @@
 
 #include <string>
 
-#include "engine.h"
 #include "glm/glm.hpp"
 
 
 #include "common/rotation_node.h"
-#include "common/statistic_scene.h"
 #include "shader.h"
 #include "shape.h"
 #include "stage/scene/viewer/ortho.h"
@@ -17,10 +15,28 @@
 #include <plog/Log.h>
 #include <stage/scene/input.h>
 
+#include "stage/scene/render/plain.h"
+
 namespace soil_samples::basic {
     Stage::Stage(soil::stage::Manager *manager) : soil::stage::Stage(manager), printStatistics_(false) {
-        auto *scene = new common::StatisticScene(this);
+        auto *scene = new soil::stage::scene::Scene(this);
+        scene->AddComponentFeature(new soil::stage::scene::render::Plain());
 
+        initInput(scene);
+
+        auto viewer = new soil::stage::scene::viewer::Ortho(scene, GetResources().GetWindow()->GetSize());
+        viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
+
+        auto *shader = dynamic_cast<Shader *>(GetResources().GetShader(Shader::NAME));
+
+        shader->Use();
+        shader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
+
+        initBackground(scene, "Textures/soil.png");
+        initCarrots(scene, "Textures/carrot.png");
+    }
+
+    void Stage::initInput(soil::stage::scene::Scene *scene) {
         auto *inputNode = new soil::stage::scene::Input(scene);
         inputNode->GetEventMap()
             .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
@@ -32,17 +48,14 @@ namespace soil_samples::basic {
             .AddKeyMapping(soil::input::Keys::Key_3, soil::input::Event::State::Release,
                            [this](const soil::input::Event &) { shapes_[2]->SetOpaque(!shapes_[2]->IsOpaque()); })
             .AddKeyMapping(soil::input::Keys::Key_4, soil::input::Event::State::Release,
-                           [this](const soil::input::Event &) { shapes_[3]->SetOpaque(!shapes_[3]->IsOpaque()); });
+                           [this](const soil::input::Event &) { shapes_[3]->SetOpaque(!shapes_[3]->IsOpaque()); })
+            .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+                           [this](const soil::input::Event &) { printStatistics_ = !printStatistics_; });
+    }
 
-        auto viewer = new soil::stage::scene::viewer::Ortho(scene, GetResources().GetWindow()->GetSize());
-        viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
-
+    void Stage::initBackground(soil::stage::scene::Scene *scene, const std::string &textureName) const {
         auto *shader = dynamic_cast<Shader *>(GetResources().GetShader(Shader::NAME));
-
-        shader->Use();
-        shader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
-
-        auto *bgTexture = GetResources().GetTexture2D("Textures/soil.png", {});
+        auto *bgTexture = GetResources().GetTexture2D(textureName, {});
         const auto *mesh = GetResources().GetMesh({
             .Identifier = "Quad",
         });
@@ -52,8 +65,14 @@ namespace soil_samples::basic {
         bgShape->SetSize({10.F, 10.F});
         bgShape->SetTexture(bgTexture);
         bgNode->SetPosition({0.F, 0.F, -1.F});
+    }
 
-        auto *texture = GetResources().GetTexture2D("Textures/carrot.png", {});
+    void Stage::initCarrots(soil::stage::scene::Scene *scene, const std::string &textureName) {
+        auto *shader = dynamic_cast<Shader *>(GetResources().GetShader(Shader::NAME));
+        auto *texture = GetResources().GetTexture2D(textureName, {});
+        const auto *mesh = GetResources().GetMesh({
+            .Identifier = "Quad",
+        });
         float initRotation = 0.0f;
         constexpr std::array colors = {glm::vec3(1.F, 1.F, 1.F), glm::vec3(0.5F, 1.F, 1.F), glm::vec3(1.F, 0.5F, 1.F),
                                        glm::vec3(1.F, 1.F, 0.5F)};

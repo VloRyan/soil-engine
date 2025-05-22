@@ -6,7 +6,6 @@
 #include "stage/scene/component/instance_data.h"
 
 namespace soil::stage::scene::render {
-
     Instancing::~Instancing() {
         for (const auto *va : vertexArrays_) {
             delete va;
@@ -17,13 +16,14 @@ namespace soil::stage::scene::render {
         }
     }
 
-    void Instancing::ComponentAdded(component::VisualComponent *component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Instancing) {
-            throw std::runtime_error("component is not instanced type");
+    void Instancing::ComponentAdded(component::Component *component) {
+        if (!IsVisualComponentOf(component, Type::Instancing)) {
+            return;
         }
-#endif
         auto *instance = dynamic_cast<component::InstanceData *>(component);
+        if (!instance->IsVisible() || instance->IsCulled()) {
+            return;
+        }
         if (!renderBatchPerKey_.contains(instance->GetBatchKey())) {
             renderBatchPerKey_[instance->GetBatchKey()] = StateBatches();
         }
@@ -43,21 +43,19 @@ namespace soil::stage::scene::render {
         }
     }
 
-    void Instancing::ComponentChanged(component::VisualComponent *component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Instancing) {
-            throw std::runtime_error("component is not instanced type");
-        }
-#endif
-        if (!component->IsVisible()) {
-            ComponentRemoved(component);
+    void Instancing::ComponentChanged(component::Component *component) {
+        if (!component->IsDirty() || !IsVisualComponentOf(component, Type::Instancing)) {
             return;
         }
         auto *instance = dynamic_cast<component::InstanceData *>(component);
+        if (!instance->IsVisible() || instance->IsCulled()) {
+            ComponentRemoved(component);
+            return;
+        }
         if (!renderBatchPerKey_.contains(instance->GetBatchKey())) {
             throw std::runtime_error("Batch with key '" + instance->GetBatchKey() + "' unknown");
         }
-        auto &states = renderBatchPerKey_[instance->GetBatchKey()];
+        const auto &states = renderBatchPerKey_[instance->GetBatchKey()];
         if (instance->IsOpaque()) {
             if (states.NonOpaque != nullptr) {
                 if (states.NonOpaque->RemoveInstance(instance) == true) {
@@ -70,7 +68,11 @@ namespace soil::stage::scene::render {
                 ComponentAdded(component);
                 return;
             }
-            states.Opaque->AddChangedInstance(instance);
+            if (instance->GetIndex() != -1) {
+                states.Opaque->AddChangedInstance(instance);
+            } else {
+                states.Opaque->AddNewInstance(instance);
+            }
         } else {
             if (states.Opaque != nullptr) {
                 if (states.Opaque->RemoveInstance(instance) == true) {
@@ -83,17 +85,19 @@ namespace soil::stage::scene::render {
                 ComponentAdded(component);
                 return;
             }
-            states.NonOpaque->AddChangedInstance(instance);
+            if (instance->GetIndex() != -1) {
+                states.NonOpaque->AddChangedInstance(instance);
+            } else {
+                states.NonOpaque->AddNewInstance(instance);
+            }
         }
         // TODO remove batch if empty
     }
 
-    void Instancing::ComponentRemoved(component::VisualComponent *component) {
-#ifdef DEBUG
-        if (component->GetRenderType() != Type::Instancing) {
-            throw std::runtime_error("component is not instanced type");
+    void Instancing::ComponentRemoved(component::Component *component) {
+        if (!IsVisualComponentOf(component, Type::Instancing)) {
+            return;
         }
-#endif
 
         auto *instance = dynamic_cast<component::InstanceData *>(component);
         if (!renderBatchPerKey_.contains(instance->GetBatchKey())) {
@@ -108,7 +112,7 @@ namespace soil::stage::scene::render {
         // TODO remove batch if empty
     }
 
-    void Instancing::Update(video::render::Container *container) {
+    void Instancing::Update() {
         for (const auto &states : renderBatchPerKey_ | std::views::values) {
             if (states.Opaque != nullptr) {
                 states.Opaque->Update({});
@@ -118,22 +122,22 @@ namespace soil::stage::scene::render {
             }
         }
         for (auto *batch : addedOpaqueBatches_) {
-            container->Add(batch, video::render::Container::OPAQUE);
+            container_->Add(batch, video::render::Container::OPAQUE);
         }
         addedOpaqueBatches_.clear();
 
         for (auto *batch : addedNonOpaqueBatches_) {
-            container->Add(batch, video::render::Container::NON_OPAQUE);
+            container_->Add(batch, video::render::Container::NON_OPAQUE);
         }
         addedNonOpaqueBatches_.clear();
 
         for (auto *batch : removedOpaqueBatches_) {
-            container->Add(batch, video::render::Container::OPAQUE);
+            container_->Remove(batch, video::render::Container::OPAQUE);
         }
         removedOpaqueBatches_.clear();
 
         for (auto *batch : removedNonOpaqueBatches_) {
-            container->Add(batch, video::render::Container::NON_OPAQUE);
+            container_->Remove(batch, video::render::Container::NON_OPAQUE);
         }
         removedNonOpaqueBatches_.clear();
     }

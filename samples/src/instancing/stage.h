@@ -12,6 +12,9 @@ namespace soil_samples::instancing {
         void Handle(const soil::WindowEvent& event) override;
 
     private:
+        void initInput(soil::stage::scene::Scene* scene);
+        static void initBackground(soil::stage::scene::Scene* scene, int textureSlot);
+        void initCarrots(soil::stage::scene::Scene* scene, int textureSlot);
         std::array<ShapeInstance*, 4> shapes_;
         bool printStatistics_;
     };

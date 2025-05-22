@@ -1,7 +1,6 @@
 #include "video/buffer/fb.h"
-#include "engine.h"
-
 #include <GL/gl3w.h>
+
 #include <thread>
 
 #include "plog/Log.h"
@@ -118,7 +117,7 @@ namespace soil::video::buffer {
             return nullptr;
         }
         if (depthBufferId_ != 0U) {
-            throw std::runtime_error("Depthbuffer exists");
+            throw std::runtime_error("DepthBuffer exists");
         }
         PLOG_DEBUG.printf("createDepthTexture (%dx%d, %d)", size_.x, size_.y, onlyDepth);
         // Create floating point depth buffer
@@ -148,7 +147,7 @@ namespace soil::video::buffer {
             return 0;
         }
         if (colorBufferId_ != 0U) {
-            throw std::runtime_error("colorbuffer already Exists");
+            throw std::runtime_error("ColorBuffer already exists");
         }
 
         constexpr GLenum internalFormat = GL_RGBA16F;

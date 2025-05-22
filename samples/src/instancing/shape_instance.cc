@@ -19,13 +19,13 @@ namespace soil_samples::instancing {
         {.Elements = 1, .Type = soil::video::vertex::AttributePointer::DataType::UInt},
     };
 
-    ShapeInstance::ShapeInstance(const std::string& batchKey, const bool isOpaque) : InstanceData(batchKey, isOpaque) {}
+    ShapeInstance::ShapeInstance(const bool isOpaque) : InstanceData(BATCH_KEY, isOpaque) {}
 
     uint ShapeInstance::GetTextureIndex() const {
         return data_.TextureIndex;
     }
 
-    void ShapeInstance::SetTextureIndex(uint index) {
+    void ShapeInstance::SetTextureIndex(const uint index) {
         if (data_.TextureIndex == index) {
             return;
         }

@@ -17,6 +17,9 @@ namespace soil::stage::scene::component {
         [[nodiscard]] bool IsOpaque() const;
         virtual void SetOpaque(bool opaque);
 
+        [[nodiscard]] virtual bool IsCulled() const;
+        virtual void SetCulled(bool culled);
+
         [[nodiscard]] virtual video::render::Renderable* GetRenderable() = 0;
 
     protected:
@@ -26,6 +29,7 @@ namespace soil::stage::scene::component {
         render::Type renderType_;
         bool visible_;
         bool opaque_;
+        bool culled_;
     };
 } // namespace soil::stage::scene::component
 #endif // SOIL_STAGE_SCENE_COMPONENT_VISUAL_COMPONENT_HPP

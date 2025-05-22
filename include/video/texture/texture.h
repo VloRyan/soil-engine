@@ -2,7 +2,6 @@
 #define SOIL_VIDEO_TEXTURE_TEXTURE_H
 #include <glm/glm.hpp>
 #include <string>
-#include "base.h"
 
 namespace soil::video::texture {
     class Texture final {

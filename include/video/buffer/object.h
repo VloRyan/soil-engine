@@ -85,9 +85,9 @@ namespace soil::video::buffer {
         [[nodiscard]] uint getGLUsageType() const;
 
 
-        /*Local buffer*/
+        /**Local buffer*/
         byte *data_;
-        /*Cursor to current buffer(OpenGL)*/
+        /**Cursor to current buffer(OpenGL)*/
         Cursor *cursor_;
         uint id_;
         /**Size of local or OpenGl Buffer*/

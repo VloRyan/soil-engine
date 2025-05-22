@@ -9,26 +9,18 @@ namespace soil::stage::scene::viewer {
     class Ortho final : public Node {
     public:
         explicit Ortho(scene::Node *parent, glm::ivec2 resolution);
-
         ~Ortho() override = default;
-
-        void SetProjection(glm::vec3 size);
-
         void Look(glm::vec3 pos, glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
-
-        world::collision::Frustum *GetFrustum() override;
-
-        [[nodiscard]] glm::mat4 GetViewMatrix() const override;
-
-        [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
-
-        void SetPosition(glm::vec3 pos) override;
-
-        void Handle(const WindowEvent &event) override;
-
-        void Update() override;
         [[nodiscard]] OrthoType GetOrthoType() const;
         void SetOrthoType(OrthoType ortho_type);
+
+        [[nodiscard]] glm::mat4 GetViewMatrix() const override;
+        [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
+        void SetPosition(glm::vec3 pos) override;
+        void Update() override;
+
+    protected:
+        void UpdateProjection(const glm::ivec2 &size) override;
 
     private:
         void UpdateDirty() override;
@@ -36,12 +28,6 @@ namespace soil::stage::scene::viewer {
         glm::mat4 projection_;
         glm::mat4 view_;
 
-        glm::vec3 direction_;
-        glm::vec3 right_;
-        glm::vec3 up_;
-        float nearZ_;
-        float farZ_;
-        world::collision::Frustum *frustum_;
         float orthoSize_;
         OrthoType orthoType_;
     };

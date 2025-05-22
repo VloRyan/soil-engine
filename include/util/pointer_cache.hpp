@@ -6,7 +6,6 @@
 #include <memory>
 #include <mutex>
 #include "base.h"
-#include "exception.h"
 
 namespace soil::util {
     template <class Key, class Tp>
@@ -61,7 +60,7 @@ namespace soil::util {
             std::pair<Key, std::weak_ptr<Tp> > pair(key, weakPtr);
 
             if (auto insertResult = cache_.insert(pair); !insertResult.second) {
-                throw Exception("Insert failed");
+                throw std::runtime_error("Insert failed");
             }
             if (holdPointer_) {
                 holdCache_.push_back(sharedPtr);
@@ -79,7 +78,7 @@ namespace soil::util {
                     weakPtr = itrCache->second;
                 }
                 if (!weakPtr) {
-                    throw Exception("Remove failed");
+                    throw std::runtime_error("Remove failed");
                 }
                 for (auto itrHoldCache = holdCache_.begin(); itrHoldCache != holdCache_.end(); ++itrHoldCache) {
                     if (std::shared_ptr<Tp> holdPointer = *itrHoldCache; holdPointer.get() == weakPtr.lock().get()) {
@@ -91,7 +90,7 @@ namespace soil::util {
                 return;
             }
             if (const size_t numErased = cache_.erase(key); numErased != 1) {
-                throw Exception("Remove failed");
+                throw std::runtime_error("Remove failed");
             }
         }
 
@@ -105,12 +104,18 @@ namespace soil::util {
             _prune();
         }
 
-        typename HashMap<Key, std::weak_ptr<Tp> >::size_type size() const { return cache_.size(); }
+        typename HashMap<Key, std::weak_ptr<Tp> >::size_type size() const {
+            return cache_.size();
+        }
 
     protected:
-        typename HashMap<Key, std::weak_ptr<Tp> >::iterator begin() { return cache_.begin(); }
+        typename HashMap<Key, std::weak_ptr<Tp> >::iterator begin() {
+            return cache_.begin();
+        }
 
-        typename HashMap<Key, std::weak_ptr<Tp> >::iterator end() { return cache_.end(); }
+        typename HashMap<Key, std::weak_ptr<Tp> >::iterator end() {
+            return cache_.end();
+        }
 
     private:
         void _prune() {
@@ -151,11 +156,10 @@ namespace soil::util {
                 }
             }
             if (numErased != 1) {
-                throw Exception("Remove failed");
+                throw std::runtime_error("Remove failed");
             }
             delete value;
         }
-
 
         HashMap<Key, std::weak_ptr<Tp> > cache_;
         std::list<std::shared_ptr<Tp> > holdCache_;

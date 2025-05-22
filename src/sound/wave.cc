@@ -17,9 +17,9 @@ namespace soil::sound {
             }
             auto *audioFile = new File(filename);
 
-            /*Load header*/
+            // Load header
             loadHeader(file, *audioFile);
-            /*Load whole data*/
+            // Load whole data
             auto *buffer = new ALubyte[static_cast<size_t>(audioFile->DataSize)];
             loadData(file, buffer, audioFile->DataOffset, audioFile->DataSize);
             audioFile->Data = buffer;

@@ -48,7 +48,7 @@ namespace soil::video::texture {
     }
 
     Texture *Manager::GetTexture2D(const std::string &fileName, const Parameter &parameter) {
-        /* Check if texture is loaded*/
+        // Check if texture is loaded
         for (auto entry : texturesCache_) {
             const bool sameType = entry.texture->GetType() == Texture::Type::Texture2D;
             const bool sameName = !entry.texture->GetName().empty() && entry.texture->GetName() == fileName;
@@ -70,7 +70,7 @@ namespace soil::video::texture {
     Texture *Manager::GenerateTexture2D(const Data &data, const std::string &name, const Parameter &parameter) {
         logGLError("Error before loadTexture2D");
 
-        /*Open Gl stuff*/
+        // Open Gl stuff
         uint id = 0;
         glActiveTexture(GL_TEXTURE0);
         logGLError("Error after glActiveTexture");
@@ -100,7 +100,7 @@ namespace soil::video::texture {
 
     Texture *Manager::GetTextureArray2D(const std::string &fileName, const int tilesPerDim,
                                         const Parameter &parameter) {
-        /* Check if texture is loaded*/
+        // Check if texture is loaded
         for (auto entry : texturesCache_) {
             if (const bool sameType = entry.texture->GetType() == Texture::Type::TextureArray2D;
                 sameType && !entry.texture->GetName().empty() && entry.texture->GetName() == fileName) {
@@ -231,7 +231,7 @@ namespace soil::video::texture {
         } else {
             fileTop = "Texture/cubemap/" + name + "/" + name + "_up" + ext;
             if (!util::Files::Exists(fileTop)) {
-                throw std::runtime_error("Cubemap textures not found");
+                throw std::runtime_error("CubeMap textures not found");
             }
             fileBottom = "Texture/cubemap/" + name + "/" + name + "_dn" + ext;
             fileLeft = "Texture/cubemap/" + name + "/" + name + "_lf" + ext;
@@ -289,7 +289,7 @@ namespace soil::video::texture {
         const uint format = static_cast<uint>(ilGetInteger(IL_IMAGE_FORMAT));
         const uint type = static_cast<uint>(ilGetInteger(IL_IMAGE_TYPE));
 
-        /* Cubemap texture have origin top left*/
+        // CubeMap texture have origin top left
         iluFlipImage();
 
         glTexImage2D(target, 0, static_cast<GLint>(getGLFormat(internalFormat)), width, height, 0, format, type,

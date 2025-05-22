@@ -1,7 +1,6 @@
 #ifndef ENGINE_EVENT_OBSERVABLE_H
 #define ENGINE_EVENT_OBSERVABLE_H
 #include <event/handler.hpp>
-#include <exception.h>
 #include <stdexcept>
 #include <vector>
 

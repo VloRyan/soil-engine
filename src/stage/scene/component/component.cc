@@ -23,19 +23,34 @@ namespace soil::stage::scene::component {
         parent_ = parent;
     }
 
-    Component::Type Component::GetType() const { return type_; }
+    Component::Type Component::GetType() const {
+        return type_;
+    }
 
-    void Component::Update() { SetState(State::Normal); }
+    void Component::Update() {
+        SetState(State::Normal);
+    }
 
-    void Component::UpdateMatrix(const glm::mat4 &matrix) { SetState(State::Dirty); }
+    void Component::UpdateMatrix(const glm::mat4 &matrix) {
+        // TODO Why?
+        SetState(State::Dirty);
+    }
 
-    Component::State Component::GetState() const { return state_; }
+    Component::State Component::GetState() const {
+        return state_;
+    }
 
-    std::string Component::GetName() const { return name_; }
+    std::string Component::GetName() const {
+        return name_;
+    }
 
-    void Component::SetName(const std::string &name) { name_ = name; }
+    void Component::SetName(const std::string &name) {
+        name_ = name;
+    }
 
-    Node *Component::GetParent() const { return parent_; }
+    Node *Component::GetParent() const {
+        return parent_;
+    }
 
     void Component::SetState(const State state) {
         if (state == state_) {
@@ -48,7 +63,11 @@ namespace soil::stage::scene::component {
         }
     }
 
-    void Component::SetDirty() { SetState(State::Dirty); }
+    void Component::SetDirty() {
+        SetState(State::Dirty);
+    }
 
-    bool Component::IsDirty() const { return GetState() == State::Dirty; }
+    bool Component::IsDirty() const {
+        return GetState() == State::Dirty;
+    }
 } // namespace soil::stage::scene::component

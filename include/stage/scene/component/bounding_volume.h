@@ -1,13 +1,11 @@
 #ifndef SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
 #define SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
 
+#include <bitset>
 #include <glm/glm.hpp>
+#include <vector>
 #include "component.h"
-#include "stage/scene/debug_drawer.h"
-
-namespace soil::stage::scene {
-    class QuadTree;
-}
+#include "world/volume/volume.hpp"
 
 namespace soil::stage::scene::component {
     struct IntersectionResult {
@@ -15,37 +13,44 @@ namespace soil::stage::scene::component {
         glm::vec3 IntersectionPoint;
     };
 
-    class BoundingVolume : public Component {
+    class BoundingVolume : public Component, public world::volume::Volume {
     public:
         enum class ContactType {
             View = 0,
             Player = 1,
             World = 2,
         };
+        inline static std::vector<ContactType> ALL_CONTACT_TYPES = {ContactType::View, ContactType::Player,
+                                                                    ContactType::World};
 
-        explicit BoundingVolume();
+        explicit BoundingVolume(Volume* volume, const std::vector<ContactType>& contactTypes = {});
 
         ~BoundingVolume() override = default;
 
-        virtual void SetScale(glm::vec3 scale) = 0;
+        void UpdateMatrix(const glm::mat4& matrix) override;
 
-        [[nodiscard]] virtual glm::vec3 GetScale() = 0;
+        [[nodiscard]] virtual bool IsContactType(ContactType type) const;
 
-        virtual void SetDimension(glm::vec3 dimension) = 0;
+        virtual void SetContactType(ContactType type, bool value);
 
-        [[nodiscard]] virtual bool IsInsideXZ(glm::vec2 min, glm::vec2 max) const = 0;
+        [[nodiscard]] bool IsInside(const glm::vec3& min, const glm::vec3& max) const override;
+        [[nodiscard]] bool IsInsideXZ(const glm::vec3& min, const glm::vec3& max) const override;
 
-        [[nodiscard]] virtual bool ContainsXZ(glm::vec2 point) const = 0;
+        [[nodiscard]] bool Contains(const glm::vec3& point) const override;
+        [[nodiscard]] bool ContainsXZ(const glm::vec3& point) const override;
 
-        [[nodiscard]] virtual IntersectionResult IntersectsRay(glm::vec3 start, glm::vec3 dir) const = 0;
+        [[nodiscard]] world::volume::IntersectionResult IntersectsRay(const glm::vec3& start,
+                                                                      const glm::vec3& dir) const override;
 
-        [[nodiscard]] virtual IntersectionResult IntersectsRay2d(glm::vec2 start, glm::vec2 dir) const = 0;
+        [[nodiscard]] world::volume::IntersectionResult IntersectsRayXZ(const glm::vec3& start,
+                                                                        const glm::vec3& dir) const override;
 
-        virtual void DrawDebugLines(IDebugDrawer *debugDrawer) = 0;
+        void SetPosition(const glm::vec3& position) override;
+        void SetParent(Node* parent) override;
 
-        [[nodiscard]] virtual bool IsContactType(ContactType type) const = 0;
-
-        virtual void SetContactType(ContactType type, bool value) = 0;
+    protected:
+        Volume* volume_;
+        std::bitset<3> contactTypes_;
     };
 } // namespace soil::stage::scene::component
 
