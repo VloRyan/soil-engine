@@ -9,35 +9,38 @@
 
 namespace soil::stage::scene::component::text {
     struct Word {
-        std::vector<const file::Font::Character*> Characters {};
+        std::vector<const file::Font::Character*> Characters{};
 #ifdef DEBUG
-        std::string Text {};
+        std::string Text{};
 #endif
-        int Length {0};
+        int Length{0};
         void Append(const file::Font::Character* character);
     };
 
     struct Line {
-        std::vector<Word> Words {};
+        std::vector<Word> Words{};
 #ifdef DEBUG
-        std::string Text {};
+        std::string Text{};
 #endif
-        int Length {0};
+        int Length{0};
         void Append(const Word& word);
     };
 
     class AbstractText : public MeshComponent {
     public:
         struct PrefabData {
-            video::mesh::Data* MeshData {nullptr};
-            video::shader::Shader* Shader {nullptr};
-            const file::Font* Font {nullptr};
-            video::texture::Texture* FontTexture {nullptr};
+            video::mesh::Data* MeshData{nullptr};
+            video::shader::Shader* Shader{nullptr};
+            const file::Font* Font{nullptr};
+            video::texture::Texture* FontTexture{nullptr};
         };
 
         explicit AbstractText(const std::string& prefab, const std::string& text = "");
         ~AbstractText() override = default;
+
         static void InitPrefab(const std::string& name, const PrefabData& data);
+        static bool HasPrefab(const std::string& name);
+        static void RemovePrefab(const std::string& name);
 
         [[nodiscard]] virtual std::string GetText() const;
         virtual void SetText(const std::string& text);

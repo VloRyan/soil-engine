@@ -13,13 +13,6 @@ namespace soil_samples::basic {
     void Shader::Prepare(soil::video::render::State& state) {
         soil::video::shader::Shader::Prepare(state);
         SetUniform("ProjectionViewMatrix", viewer_->GetProjectionMatrix() * viewer_->GetViewMatrix());
-        /*for (auto i = 0; i < textures_.size(); i++) {
-            state.SetTexture(i, *textures_[i]);
-        }*/
-    }
-
-    void Shader::SetTextures(const std::vector<soil::video::texture::Texture*>& textures) {
-        textures_ = textures;
     }
 
 } // namespace soil_samples::basic

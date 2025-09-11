@@ -50,6 +50,7 @@ namespace soil::stage {
 
     protected:
         void addScene(scene::Scene* scene);
+        [[nodiscard]] virtual std::vector<scene::Scene*> GetScenes() const;
 
     private:
         bool loaded_;

@@ -1,5 +1,5 @@
 
-#include "letter_shader.h"
+#include "character_shader.h"
 
 namespace soil_samples::gui {
     CharacterShader::CharacterShader(const std::string& path) : Shader(NAME, path), viewer_(nullptr) {}

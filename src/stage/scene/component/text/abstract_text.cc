@@ -14,7 +14,20 @@ namespace soil::stage::scene::component::text {
     }
 
     void AbstractText::InitPrefab(const std::string& name, const PrefabData& data) {
+#ifdef DEBUG
+        if (HasPrefab(name)) {
+            throw std::runtime_error("prefab '" + name + "' already initialized");
+        }
+#endif
         PREFABS[name] = data;
+    }
+
+    void AbstractText::RemovePrefab(const std::string& name) {
+        PREFABS.erase(name);
+    }
+
+    bool AbstractText::HasPrefab(const std::string& name) {
+        return PREFABS.contains(name);
     }
 
     void AbstractText::SetText(const std::string& text) {

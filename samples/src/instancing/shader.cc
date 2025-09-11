@@ -13,8 +13,8 @@ namespace soil_samples::instancing {
         soil::video::shader::Shader::Prepare(state);
         SetUniform("ProjectionViewMatrix", viewer_->GetProjectionMatrix() * viewer_->GetViewMatrix());
         for (auto i = 0; i < textures_.size(); i++) {
-            state.SetTexture(i, *textures_[i]);
-            SetUniform("Textures[" + std::to_string(i) + "]", i);
+            // state.SetTexture(i, *textures_[i]);
+            SetUniform("Textures[" + std::to_string(i) + "]", textures_[i]->GetSlot());
         }
     }
 

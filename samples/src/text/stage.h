@@ -1,20 +1,23 @@
 #ifndef TEXT_STAGE_H
 #define TEXT_STAGE_H
+#include "common/stage.h"
 #include "instancing/shape_instance.h"
 #include "node.h"
 #include "stage/stage.h"
 
 namespace soil_samples::text {
-    class Stage final : public soil::stage::Stage {
+    class Stage final : public common::Stage {
     public:
         explicit Stage();
         ~Stage() override = default;
         void Handle(const soil::WindowEvent& event) override;
         void Update() override;
-        void Load() override;
+        void OnLoad() override;
+
+    protected:
+        void RegisterInputEvents(soil::input::EventMap& eventMap) override;
 
     private:
-        void initInput(soil::stage::scene::Scene* scene);
         void initBackground(soil::stage::scene::Scene* scene, int textureSlot);
 
         bool printStatistics_;

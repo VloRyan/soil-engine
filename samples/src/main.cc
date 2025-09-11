@@ -5,8 +5,8 @@
 #include "asset.h"
 #include "basic/shader.h"
 #include "basic/stage.h"
+#include "gui/character_shader.h"
 #include "gui/component/shape_tile_instance.h"
-#include "gui/letter_shader.h"
 #include "gui/shape_tile_instance_shader.h"
 #include "gui/shape_tile_shader.h"
 #include "gui/stage.h"
@@ -20,7 +20,7 @@
 
 int parseIntOrDefault(const std::string& s, const int defaultValue) {
     try {
-        const int i {std::stoi(s)};
+        const int i{std::stoi(s)};
         return i;
     } catch (const std::exception&) {
         return defaultValue;
@@ -30,21 +30,21 @@ int parseIntOrDefault(const std::string& s, const int defaultValue) {
 struct StageLoader {
     std::string Id;
     std::string Name;
-    std::function<soil::stage::Stage*()> Loader;
+    std::function<soil_samples::common::Stage*()> NewStage;
 };
 
 constexpr auto UBO_TARGET_MATRICES = 0;
 
 int main(const int argc, const char* argv[]) {
-    constexpr auto winParams = soil::WindowParameter {.Size = glm::ivec2(1920, 1080),
-                                                      .RenderSize = glm::ivec2(1920, 1080),
-                                                      .Type = soil::WindowType::Windowed,
-                                                      .OpenGLVersion = glm::ivec2(3, 3)};
+    constexpr auto winParams = soil::WindowParameter{.Size = glm::ivec2(1920, 1080),
+                                                     .RenderSize = glm::ivec2(1920, 1080),
+                                                     .Type = soil::WindowType::Windowed,
+                                                     .OpenGLVersion = glm::ivec2(3, 3)};
     const auto engine = soil::Engine(winParams);
     auto* vidMgr = engine.GetVideoManager();
     vidMgr->PrepareShader(new soil_samples::basic::Shader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::instancing::Shader(asset::GetPath("Shader/")));
-    vidMgr->PrepareShader(new soil_samples::text::Shader(asset::GetPath("Shader/")));
+    // vidMgr->PrepareShader(new soil_samples::text::Shader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::ShapeTileShader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::ShapeTileInstanceShader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::CharacterShader(asset::GetPath("Shader/")));
@@ -53,36 +53,31 @@ int main(const int argc, const char* argv[]) {
     constexpr uint bufferSize = 4 * sizeof(glm::mat4);
     vidMgr->NewUniformBufferObject("Matrices", bufferSize, UBO_TARGET_MATRICES);
 
-    const std::vector<StageLoader> stagesWithDesc {
+    const std::vector<StageLoader> stagesWithDesc{
+        {
+            .Id = "default",
+            .Name = "Gui",
+            .NewStage = [] { return new soil_samples::gui::Stage(); },
+        },
         {
             .Id = "basic",
             .Name = "Basic",
-            .Loader = [] { return new soil_samples::basic::Stage(); },
+            .NewStage = [] { return new soil_samples::basic::Stage(); },
         },
         {
             .Id = "instancing",
             .Name = "Instancing",
-            .Loader = [] { return new soil_samples::instancing::Stage(); },
-        },
-        {
-            .Id = "volume",
-            .Name = "Volume",
-            .Loader = [] { return new soil_samples::volume::Stage(); },
+            .NewStage = [] { return new soil_samples::instancing::Stage(); },
         },
         {
             .Id = "text",
             .Name = "Text",
-            .Loader = [] { return new soil_samples::text::Stage(); },
-        },
-        {
-            .Id = "gui",
-            .Name = "Gui",
-            .Loader = [] { return new soil_samples::gui::Stage(); },
+            .NewStage = [] { return new soil_samples::text::Stage(); },
         },
         {
             .Id = "line",
             .Name = "Line",
-            .Loader = [] { return new soil_samples::line::Stage(); },
+            .NewStage = [] { return new soil_samples::line::Stage(); },
         },
     };
 
@@ -93,34 +88,45 @@ int main(const int argc, const char* argv[]) {
     }
     if (stageIndex == -1) {
         std::vector<soil_samples::gui::Stage::MenuItemDefinition> menuItems;
-        soil_samples::gui::Stage* guiStage = nullptr;
-        for (auto option = 0; option < stagesWithDesc.size(); ++option) {
-            auto* stage = stagesWithDesc[option].Loader();
-            engine.GetStageManager()->RegisterStage(stagesWithDesc[option].Id, stage);
-            if (stagesWithDesc[option].Id == "gui") {
-                guiStage = static_cast<soil_samples::gui::Stage*>(stage);
-            } else {
-                menuItems.push_back({
-                    .Caption = stagesWithDesc[option].Name,
-                    .Value = stagesWithDesc[option].Id,
-                    .BackgroundTileName = "button",
-                    .IconTileName = "basic",
-                    .LetterSize = 0.5f,
-                    .OnClick =
-                        [&](const soil_samples::gui::menu::Item& item) {
-                            engine.GetStageManager()->SetCurrent(item.GetValue());
-                        },
-                });
+        soil_samples::gui::Stage* defaultStage = nullptr;
+        std::vector<soil::stage::Stage*> stages;
+        for (const auto& option : stagesWithDesc) {
+            if (option.Id == "default") {
+                auto* stage = option.NewStage();
+                defaultStage = dynamic_cast<soil_samples::gui::Stage*>(stage);
+                engine.GetStageManager()->RegisterStage(option.Id, defaultStage);
+                break;
             }
         }
-        if (guiStage == nullptr) {
-            throw std::runtime_error("failed to load gui stage");
+        if (defaultStage == nullptr) {
+            throw std::runtime_error("failed to get default stage");
         }
-        guiStage->Load();
-        guiStage->GenerateMenu(menuItems);
-        engine.GetStageManager()->SetCurrent("gui");
+        auto backToDefault = [&engine] { engine.GetStageManager()->SetCurrent("default"); };
+        for (const auto& option : stagesWithDesc) {
+            if (option.Id == "default") {
+                continue;
+            }
+            auto* stage = option.NewStage();
+            engine.GetStageManager()->RegisterStage(option.Id, stage);
+            stage->SetBackAction(backToDefault);
+            menuItems.push_back({
+                .Caption = option.Name,
+                .Value = option.Id,
+                .BackgroundTileName = "button",
+                .IconTileName = "basic",
+                .LetterSize = 0.5f,
+                .OnClick =
+                    [&](const soil_samples::gui::menu::Item& item) {
+                        engine.GetStageManager()->SetCurrent(item.GetValue());
+                    },
+            });
+        }
+
+        defaultStage->Load();
+        defaultStage->GenerateMenu(menuItems);
+        engine.GetStageManager()->SetCurrent("default");
     } else {
-        auto* stage = stagesWithDesc[stageIndex].Loader();
+        auto* stage = stagesWithDesc[stageIndex].NewStage();
         engine.GetStageManager()->RegisterStage(stagesWithDesc[stageIndex].Id, stage);
         engine.GetStageManager()->SetCurrent(stagesWithDesc[stageIndex].Id);
     }

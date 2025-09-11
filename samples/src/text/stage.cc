@@ -9,32 +9,34 @@
 #include "glm/glm.hpp"
 #include "instancing/shader.h"
 #include "instancing/shape_instance.h"
-#include "letter_component.h"
 #include "node.h"
 #include "shader.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
 
+#include "gui/character_shader.h"
+#include "gui/component/text.h"
+#include "stage/scene/render/plain.h"
+
 namespace soil_samples::text {
     Stage::Stage() :
         printStatistics_(false), text_(nullptr), bgNode_(nullptr), bgShape_(nullptr), description_(),
         bounceText_(nullptr), bounceTextVelocity(0.F), bounceTextGlowVelocity(0.01F) {}
 
-    void Stage::Load() {
+    void Stage::OnLoad() {
         auto* scene = AddScene(new soil::stage::scene::Scene());
         scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(scene->GetRenderContainer()));
-        initInput(scene);
 
         const auto viewer =
             scene->AddChild(new soil::stage::scene::viewer::Ortho(GetResources().GetWindow()->GetSize()));
         auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
         auto* instancing = scene->AddHook(new soil::stage::scene::render::Instancing(scene->GetRenderContainer()));
-        auto bgTexture = GetResources().GetTexture2D(asset::GetPath("Textures/crt.jpg"));
-
+        auto* bgTexture = GetResources().GetTexture2D(asset::GetPath("Textures/crt.jpg"));
+        auto& renderState = GetResources().GetRenderState();
         auto* bgShader = dynamic_cast<instancing::Shader*>(GetResources().GetShader(instancing::Shader::NAME));
-        // bgShader->SetTextures(textures);
-        GetResources().GetRenderState().SetTexture(0, *bgTexture);
+        bgShader->SetTextures({bgTexture});
+        renderState.SetTexture(0, *bgTexture);
         bgShader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
 
         instancing->AddRenderBatch(instancing::ShapeInstance::BATCH_NAME,
@@ -46,88 +48,89 @@ namespace soil_samples::text {
                                    });
         initBackground(scene, 0);
 
-        auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri"));
-        const auto* fontTexture = GetResources().GetTexture2D(fontFile->TextureFileName);
-        auto* textShader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
+        scene->AddHook(new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
 
-        textShader->Use();
-        textShader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
-        // textShader->SetTexture2d(1, fontTexture, "Texture");
-        textShader->SetUniform("Texture", 1);
+        auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
+        auto* fontTexture = GetResources().GetTexture2D(fontFile->TextureFileName);
+        renderState.SetTexture(1, *fontTexture);
 
-        instancing->AddRenderBatch(LetterComponent::BATCH_NAME,
-                                   {
-                                       .Mesh = quadMesh,
-                                       .Shader = textShader,
-                                       .VertexAttribDescriptors = LetterComponent::ATTRIBS,
-                                       .PreserveInstances = 10000,
-                                       .State = {.Blend = true, .DepthTest = false},
-                                   });
+        auto* charShader = dynamic_cast<gui::CharacterShader*>(GetResources().GetShader(Shader::NAME));
+        charShader->Use();
+        charShader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
 
+        soil::stage::scene::component::text::AbstractText::InitPrefab("TextCalibri",
+                                                                      {
+                                                                          .MeshData = quadMesh,
+                                                                          .Shader = charShader,
+                                                                          .Font = fontFile,
+                                                                          .FontTexture = fontTexture,
+                                                                      });
 
-        text_ = scene->AddChild(new Node(fontFile));
-        text_->SetText("Hello world!");
-        text_->SetLetterSize(1);
-        text_->SetMaxSize(glm::vec2(300.0f));
-        text_->SetColor(glm::vec4(0.0, .4F, .4F, .5F));
-        text_->SetBorderColor(glm::vec3(0.0, .6F, .6F));
-        text_->SetLetterOutline(glm::vec2(0.5F, 0.2F));
-        text_->SetBorderOutline(glm::vec2(0.5F, 0.2F));
+        text_ = scene->AddChild(new Node("TextCalibri", "Hello world!"));
+        text_->Text().SetCharacterSize(1);
+        text_->Text().SetMaxSize(glm::vec2(300.0f));
+        text_->Text().SetColor(glm::vec4(0.0, .4F, .4F, .5F));
+        text_->Text().SetBorderColor(glm::vec3(0.0, .6F, .6F));
+        text_->Text().SetCharacterOutline(glm::vec2(0.5F, 0.2F));
+        text_->Text().SetBorderOutline(glm::vec2(0.5F, 0.2F));
 
-        description_ = scene->AddChild(new Node(fontFile));
-        description_->SetText(
-            "Text sample\n"
-            "Press\n"
-            "    s - Show statistics and FPS\n"
-            "    t - Toggle long text (lorem ipsum)\n"
-            "    + - Increase text size\n"
-            "    - - Decrease text size\n");
-        description_->SetLetterSize(1);
-        description_->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        description_ = scene->AddChild(new Node("TextCalibri",
+                                                "Text sample\n"
+                                                "Press\n"
+                                                "    s - Show statistics and FPS\n"
+                                                "    t - Toggle long text (lorem ipsum)\n"
+                                                "    + - Increase text size\n"
+                                                "    - - Decrease text size\n"));
+        description_->Text().SetCharacterSize(0.2);
+        description_->Text().SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         const auto winSize = glm::vec2(GetResources().GetWindow()->GetSize());
         const auto winCenter = glm::vec2(winSize) * glm::vec2(.5F);
 
-        bounceText_ = scene->AddChild(new Node(fontFile));
-        bounceText_->SetText("Bouncing...");
-        bounceText_->SetLetterSize(5);
-        bounceText_->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        bounceText_->SetLetterOutline(glm::vec2(0.5F, 0.2F));
-        bounceText_->SetBorderOutline(glm::vec2(0.5F, 0.2F));
-        bounceText_->SetPosition(glm::vec3(winCenter, 0.F));
-        bounceText_->SetBorderColor(glm::vec3(1, 0, 0));
+        bounceText_ = scene->AddChild(new Node("TextCalibri", "Bouncing..."));
+        bounceText_->Text().SetCharacterSize(1);
+        bounceText_->Text().SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        bounceText_->Text().SetCharacterOutline(glm::vec2(0.5F, 0.2F));
+        bounceText_->Text().SetBorderOutline(glm::vec2(0.5F, 0.2F));
+        bounceText_->SetPosition(glm::vec3(winCenter, -0.5F));
+        bounceText_->Text().SetBorderColor(glm::vec3(1, 0, 0));
 
         bounceTextVelocity = glm::vec2(4.F, -4.F);
-        soil::stage::Stage::Load();
+
+        description_->Update();
+        bgShape_->SetSize(winSize);
+        bgNode_->SetPosition(glm::vec3(winCenter + glm::vec2(15), -1.F));
+        text_->SetPosition(glm::vec3(winCenter, -0.5F));
+        description_->SetPosition(glm::vec3(description_->Text().GetSize().x * 0.5F + 20,
+                                            winSize.y - description_->Text().GetSize().y * 0.5F, -0.5));
     }
 
-    void Stage::initInput(soil::stage::scene::Scene* scene) {
-        auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
-        inputNode->GetEventMap()
-            .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { GetResources().GetWindow()->Close(); })
+    void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
+        eventMap
             .AddKeyMapping(soil::input::Keys::Key_Plus, soil::input::Event::State::Press,
-                           [this](const soil::input::Event&) { text_->SetLetterSize(text_->GetLetterSize() + 1.F); })
+                           [this](const soil::input::Event&) {
+                               text_->Text().SetCharacterSize(text_->Text().GetCharacterSize() + 1.F);
+                           })
             .AddKeyMapping(soil::input::Keys::Key_Minus, soil::input::Event::State::Press,
                            [this](const soil::input::Event&) {
-                               if (text_->GetLetterSize() > 1.F) {
-                                   text_->SetLetterSize(text_->GetLetterSize() - 1.F);
+                               if (text_->Text().GetCharacterSize() > 1.F) {
+                                   text_->Text().SetCharacterSize(text_->Text().GetCharacterSize() - 1.F);
                                };
                            })
             .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
                            [this](const soil::input::Event&) {
                                printStatistics_ = !printStatistics_;
                                if (!printStatistics_) {
-                                   text_->SetText("Hallo world!");
+                                   text_->Text().SetText("Hallo world!");
                                }
                            })
             .AddKeyMapping(
                 soil::input::Keys::L, soil::input::Event::State::Release,
                 [this](const soil::input::Event&) {
-                    if (text_->GetText().starts_with("Lorem")) {
-                        text_->SetText("Hallo world!");
+                    if (text_->Text().GetText().starts_with("Lorem")) {
+                        text_->Text().SetText("Hallo world!");
                     } else {
-                        text_->SetText(
+                        text_->Text().SetText(
                             "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor "
                             "invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et "
                             "accusam "
@@ -155,7 +158,6 @@ namespace soil_samples::text {
         bgShape_ = bgNode_->AddComponent(new instancing::ShapeInstance(true));
         bgShape_->SetSize(winSize);
         bgShape_->SetTextureIndex(textureSlot);
-        bgNode_->SetPosition({winSize.x * 0.5F, winSize.y * 0.5F, -1.F});
         bgShape_->SetColor({.2F, .2F, .2F, 1.F});
     }
 
@@ -163,7 +165,7 @@ namespace soil_samples::text {
         soil::stage::Stage::Handle(event);
         if (printStatistics_ && event.GetCause() == soil::WindowEvent::StatisticsChanged) {
             const auto stats = event.GetWindow()->GetStatistics();
-            text_->SetText(
+            text_->Text().SetText(
                 "Hello world!\n"
                 "FPS:" +
                 std::to_string(stats.FPS) +
@@ -190,18 +192,18 @@ namespace soil_samples::text {
             const auto winSize = glm::vec2(event.GetWindow()->GetSize() - glm::ivec2(30, 30));
             const auto winCenter = glm::vec2(winSize) * glm::vec2(.5F);
             bgShape_->SetSize(winSize);
-            bgNode_->SetPosition(glm::vec3(winCenter + glm::vec2(15), -99.F));
-            text_->SetPosition(glm::vec3(winCenter, 0.F));
-            description_->SetPosition(
-                glm::vec3(description_->GetSize().x * 0.5F + 20, winSize.y - description_->GetSize().y * 0.5F, 0.F));
+            bgNode_->SetPosition(glm::vec3(winCenter + glm::vec2(15), -1.F));
+            text_->SetPosition(glm::vec3(winCenter, -0.5F));
+            description_->SetPosition(glm::vec3(description_->Text().GetSize().x * 0.5F + 20,
+                                                winSize.y - description_->Text().GetSize().y * 0.5F, -0.5));
         }
     }
 
     void Stage::Update() {
         const auto winSize = glm::vec2(GetResources().GetWindow()->GetSize() - glm::ivec2(30, 30));
-        const auto pos = glm::vec2(bounceText_->GetPosition());
-        auto newPos = pos + bounceTextVelocity;
-        auto halfSize = bounceText_->GetSize() * glm::vec2(0.5F);
+        const auto pos = bounceText_->GetPosition();
+        auto newPos = glm::vec2(pos) + bounceTextVelocity;
+        auto halfSize = bounceText_->Text().GetSize() * glm::vec2(0.5F);
         for (auto i = 0; i < 2; i++) {
             if (newPos[i] + halfSize[i] > winSize[i]) {
                 newPos[i] = winSize[i] - halfSize[i];
@@ -212,8 +214,8 @@ namespace soil_samples::text {
                 bounceTextVelocity[i] *= -1;
             }
         }
-        bounceText_->SetPosition(glm::vec3(newPos, 0.F));
-        auto outline = bounceText_->GetBorderOutline();
+        bounceText_->SetPosition(glm::vec3(newPos, pos.z));
+        auto outline = bounceText_->Text().GetBorderOutline();
         outline.x += bounceTextGlowVelocity;
         if (outline.x > 0.8F) {
             bounceTextGlowVelocity = -0.01F;
@@ -223,10 +225,10 @@ namespace soil_samples::text {
             bounceTextGlowVelocity = 0.01F;
             outline.x = 0.6F;
         }
-        bounceText_->SetBorderOutline(outline);
+        bounceText_->Text().SetBorderOutline(outline);
         const std::vector<std::string> parts = {"lorem", "ipsum", "dolor", "sit", "amet"};
         if (fastChangeIndex != -1) {
-            text_->SetText(parts[fastChangeIndex++]);
+            text_->Text().SetText(parts[fastChangeIndex++]);
             if (fastChangeIndex == parts.size()) {
                 fastChangeIndex = 0;
             }

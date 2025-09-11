@@ -17,9 +17,6 @@ namespace soil::stage {
     }
 
     void Stage::Update() {
-        if (!IsLoaded()) {
-            Load();
-        }
         for (auto* scene : scenes_) {
             scene->Update();
         }
@@ -34,6 +31,10 @@ namespace soil::stage {
     void Stage::addScene(scene::Scene* scene) {
         scene->SetStage(this);
         scenes_.emplace_back(scene);
+    }
+
+    std::vector<scene::Scene*> Stage::GetScenes() const {
+        return scenes_;
     }
 
     void Stage::Handle(const input::Event& event) {

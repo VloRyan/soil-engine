@@ -29,6 +29,9 @@ namespace soil::stage {
         if (stage == nullptr) {
             throw std::runtime_error("Stage with name " + name + " not registered");
         }
+        if (!stage->IsLoaded()) {
+            stage->Load();
+        }
         currentStage_ = stage;
     }
 

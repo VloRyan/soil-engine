@@ -17,15 +17,13 @@
 namespace soil_samples::basic {
     Stage::Stage() : shapes_(), printStatistics_(false) {}
 
-    void Stage::Load() {
+    void Stage::OnLoad() {
         auto* scene = AddScene(new soil::stage::scene::Scene());
         auto* pipeline = soil::video::render::Pipeline::NewForwardRenderingPipeline(scene->GetRenderContainer());
 
         scene->SetPipeline(pipeline);
 
         scene->AddHook(new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
-
-        initInput(scene);
 
         const auto viewer =
             scene->AddChild(new soil::stage::scene::viewer::Ortho(GetResources().GetWindow()->GetSize()));
@@ -35,25 +33,20 @@ namespace soil_samples::basic {
                                       GetResources().GetTexture2D(asset::GetPath("Textures/carrot.png"))};
 
         auto& renderState = GetResources().GetRenderState();
-        for (auto i = 0; i < textures.size(); i++) {
-            renderState.SetTexture(*textures[i]); // texture will be bound to next free slot
+        for (auto* texture : textures) {
+            renderState.SetTexture(*texture); // texture will be bound to next free slot
         }
 
         auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
         shader->Use();
         shader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
-        shader->SetTextures(textures);
 
         initBackground(scene, textures[0]->GetSlot());
         initCarrots(scene, textures[1]->GetSlot());
-        soil::stage::Stage::Load();
     }
 
-    void Stage::initInput(soil::stage::scene::Scene* scene) {
-        auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
-        inputNode->GetEventMap()
-            .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { GetResources().GetWindow()->Close(); })
+    void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
+        eventMap
             .AddKeyMapping(soil::input::Keys::Key_1, soil::input::Event::State::Release,
                            [this](const soil::input::Event&) { shapes_[0]->SetOpaque(!shapes_[0]->IsOpaque()); })
             .AddKeyMapping(soil::input::Keys::Key_2, soil::input::Event::State::Release,
@@ -118,4 +111,5 @@ namespace soil_samples::basic {
                        << std::to_string(stats.endRenderTime / stats.FPS);
         }
     }
+
 } // namespace soil_samples::basic

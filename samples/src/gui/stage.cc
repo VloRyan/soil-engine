@@ -7,12 +7,12 @@
 
 #include "basic/shader.h"
 #include "basic/shape.h"
+#include "character_shader.h"
 #include "component/shape_tile_instance.h"
 #include "component/text.h"
 #include "file/font.h"
 #include "instancing/shader.h"
 #include "label.h"
-#include "letter_shader.h"
 #include "menu/item.h"
 #include "menu/menu.h"
 #include "shape_tile_shader.h"
@@ -30,21 +30,21 @@ namespace soil_samples::gui {
 
     Stage::Stage() : printStatistics_(false), root_(nullptr), mainMenu_(nullptr) {}
 
-    void Stage::Load() {
+    void Stage::OnLoad() {
         auto* scene = AddScene(new soil::stage::scene::Scene());
         scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(scene->GetRenderContainer()));
-        initInput(scene);
+
 
         auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
         auto* fontTexture = GetResources().GetTexture2D(fontFile->TextureFileName);
 
         spriteSheet_ = soil::file::SpriteSheet::Load(asset::GetPath("Textures/Tiles/Gui.json"));
         constexpr auto texParam =
-            soil::video::texture::Parameter {.Wrap = soil::video::texture::Parameter::WrapType::REPEAT,
-                                             .MinFilter = soil::video::texture::Parameter::MinFilterType::NEAREST,
-                                             .MagFilter = soil::video::texture::Parameter::MagFilterType::NEAREST,
-                                             .Format = soil::video::texture::Texture::sRGBA,
-                                             .InternalFormat = soil::video::texture::Parameter::InternalFormat::RGBA};
+            soil::video::texture::Parameter{.Wrap = soil::video::texture::Parameter::WrapType::REPEAT,
+                                            .MinFilter = soil::video::texture::Parameter::MinFilterType::NEAREST,
+                                            .MagFilter = soil::video::texture::Parameter::MagFilterType::NEAREST,
+                                            .Format = soil::video::texture::Texture::sRGBA,
+                                            .InternalFormat = soil::video::texture::Parameter::InternalFormat::RGBA};
         auto* guiTexture =
             GetResources().GetTextureArray2D(spriteSheet_.GetTextureFile(), spriteSheet_.TilesPerDim, texParam);
         textures_ = {fontTexture, guiTexture};
@@ -71,8 +71,8 @@ namespace soil_samples::gui {
 
         root_ = scene->AddChild(new soil::stage::scene::gui::Root(GetResources().GetWindow()->GetSize()));
 
-        auto* letterShader = dynamic_cast<CharacterShader*>(GetResources().GetShader(CharacterShader::NAME));
-        letterShader->SetViewer(viewer);
+        auto* charShader = dynamic_cast<CharacterShader*>(GetResources().GetShader(CharacterShader::NAME));
+        charShader->SetViewer(viewer);
 
         component::ShapeTile::InitPrefab("gui",
                                          {
@@ -83,43 +83,41 @@ namespace soil_samples::gui {
         soil::stage::scene::component::text::AbstractText::InitPrefab("Calibri",
                                                                       {
                                                                           .MeshData = quadMesh,
-                                                                          .Shader = letterShader,
+                                                                          .Shader = charShader,
                                                                           .Font = fontFile,
                                                                           .FontTexture = fontTexture,
                                                                       });
 
         initGui();
-        soil::stage::Stage::Load();
     }
 
-    void Stage::GenerateMenu(std::vector<MenuItemDefinition> items) const {
+    void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
+        eventMap
+            .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
+                           [this](const soil::input::Event&) { GetResources().GetWindow()->Close(); })
+            .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+                           [this](const soil::input::Event&) { printStatistics_ = !printStatistics_; });
+    }
+
+    void Stage::GenerateMenu(const std::vector<MenuItemDefinition>& items) const {
         for (const auto& menuItem : items) {
             auto* item = createMenuItem(menuItem);
             mainMenu_->AddChild(item);
         }
         const auto exitButton =
-            MenuItemDefinition {.Caption = "Exit",
-                                .Value = "exit",
-                                .BackgroundTileName = "button",
-                                .IconTileName = "exit",
-                                .ToolTip = "Exit the program",
-                                .LetterSize = 0.5f,
-                                .OnClick = [this](menu::Item&) { GetResources().GetWindow()->Close(); }};
+            MenuItemDefinition{.Caption = "Exit",
+                               .Value = "exit",
+                               .BackgroundTileName = "button",
+                               .IconTileName = "exit",
+                               .ToolTip = "Exit the program",
+                               .LetterSize = 0.5f,
+                               .OnClick = [this](menu::Item&) { GetResources().GetWindow()->Close(); }};
         auto* item = createMenuItem(exitButton);
         mainMenu_->AddChild(item);
     }
 
     void Stage::Render(soil::video::render::State& state) {
         soil::stage::Stage::Render(state);
-    }
-
-    void Stage::initInput(soil::stage::scene::Scene* scene) {
-        auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
-        inputNode->GetEventMap()
-            .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { GetResources().GetWindow()->Close(); })
-            .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { printStatistics_ = !printStatistics_; });
     }
 
     void Stage::initGui() {
@@ -144,19 +142,8 @@ namespace soil_samples::gui {
         }));
         mainMenu_->SetAnchor(soil::stage::scene::gui::Rectangle::HorizontalAnchors::Center,
                              soil::stage::scene::gui::Rectangle::VerticalAnchors::Middle);
-        mainMenu_->SetRelativeSize(glm::vec2(0.5F, 0.F));
-        mainMenu_->SetAspectRatio(glm::vec2(0.0F, 1.1F));
-        mainMenu_->OnSelectionChanged([this](const int current, int) {
-            if (current != -1) {
-                const auto* item = mainMenu_->GetItem(current);
-                if (item->GetValue() == "basic") {
-                    GetResources().GetWindow()->Close();
-                }
-                if (item->GetValue() == "exit") {
-                    GetResources().GetWindow()->Close();
-                }
-            }
-        });
+        mainMenu_->SetRelativeSize(glm::vec2(0.0F, 0.6F));
+        mainMenu_->SetAspectRatio(glm::vec2(0.5F, 0.F));
     }
 
     menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {

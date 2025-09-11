@@ -66,8 +66,9 @@ namespace soil::stage::scene::viewer {
         return orthoType_;
     }
 
-    void Ortho::SetOrthoType(const OrthoType ortho_type) {
-        orthoType_ = ortho_type;
+    void Ortho::SetOrthoType(const OrthoType orthoType) {
+        orthoType_ = orthoType;
+        UpdateProjection(windowSize_);
     }
 
     void Ortho::UpdateDirty() {

@@ -29,10 +29,6 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/text/stage.h
         src/text/node.cc
         src/text/node.h
-        src/text/letter_component.cc
-        src/text/letter_component.h
-        src/text/shader.cc
-        src/text/shader.h
 
         src/gui/stage.cc
         src/gui/stage.h
@@ -51,8 +47,8 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/gui/shape_tile_instance_shader.cc
         src/gui/shape_tile_instance_shader.h
 
-        src/gui/letter_shader.cc
-        src/gui/letter_shader.h
+        src/gui/character_shader.cc
+        src/gui/character_shader.h
         src/gui/menu/menu.cc
         src/gui/menu/menu.h
         src/gui/menu/item.cc
@@ -66,6 +62,8 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/line/line_instance.h
         src/line/stage.cc
         src/line/stage.h
+        src/common/stage.cc
+        src/common/stage.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)

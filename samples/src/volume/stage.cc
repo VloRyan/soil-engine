@@ -41,7 +41,7 @@ namespace soil_samples::volume {
 
         auto* shader = dynamic_cast<basic::Shader*>(GetResources().GetShader(basic::Shader::NAME));
         shader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
-        shader->SetTextures(textures);
+        // shader->SetTextures(textures);
 
         initBackground(scene, 0);
         initCarrots(scene, 1);

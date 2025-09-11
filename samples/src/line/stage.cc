@@ -17,11 +17,9 @@ namespace soil_samples::line {
 
     Stage::Stage() : lines_(), printStatistics_(false), offset_(0) {}
 
-    void Stage::Load() {
+    void Stage::OnLoad() {
         auto* scene = AddScene(new soil::stage::scene::Scene());
         scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(scene->GetRenderContainer()));
-
-        initInput(scene);
 
         const auto viewer =
             scene->AddChild(new soil::stage::scene::viewer::Ortho(GetResources().GetWindow()->GetSize()));
@@ -38,7 +36,6 @@ namespace soil_samples::line {
 
         glLineWidth(1.F);
         initLines(scene);
-        soil::stage::Stage::Load();
     }
 
     void Stage::Update() {
@@ -94,13 +91,9 @@ namespace soil_samples::line {
         }
     }
 
-    void Stage::initInput(soil::stage::scene::Scene* scene) {
-        auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
-        inputNode->GetEventMap()
-            .AddKeyMapping(soil::input::Keys::Escape, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { GetResources().GetWindow()->Close(); })
-            .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
-                           [this](const soil::input::Event&) { printStatistics_ = !printStatistics_; });
+    void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
+        eventMap.AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+                               [this](const soil::input::Event&) { printStatistics_ = !printStatistics_; });
     }
 
     void Stage::initLines(soil::stage::scene::Scene* scene) {
