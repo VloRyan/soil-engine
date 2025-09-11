@@ -6,9 +6,9 @@
 namespace soil::world::entity {
     class Object3d {
     public:
-        Object3d(const Object3d &other) = delete;
+        Object3d(const Object3d& other) = delete;
 
-        Object3d(Object3d &&other) noexcept = delete;
+        Object3d(Object3d&& other) noexcept = delete;
 
         Object3d();
 
@@ -16,29 +16,29 @@ namespace soil::world::entity {
 
         [[nodiscard]] virtual glm::vec3 GetPosition() const;
 
-        virtual void SetPosition(glm::vec3 pos);
-
+        virtual void SetPosition(const glm::vec3& pos);
+        // TODO: GetPos always world pos- GetWorldPos -> GetPos; GetPos -> GetLocalPos
         [[nodiscard]] virtual glm::vec3 GetWorldPosition() const;
 
         [[nodiscard]] virtual glm::vec3 GetDirection() const;
 
-        virtual void SetDirection(glm::vec3 direction);
+        virtual void SetDirection(const glm::vec3& direction);
 
         [[nodiscard]] virtual glm::vec3 GetUp() const;
 
-        virtual void SetUp(glm::vec3 up);
+        virtual void SetUp(const glm::vec3& up);
 
         [[nodiscard]] virtual glm::vec3 GetRight() const;
 
-        virtual void SetRight(glm::vec3 right);
+        virtual void SetRight(const glm::vec3& right);
 
-        virtual void SetLocalTransform(const glm::mat4 &Transform);
+        virtual void SetLocalTransform(const glm::mat4& Transform);
 
-        [[nodiscard]] virtual const glm::mat4 &GetLocalTransform() const;
+        [[nodiscard]] virtual const glm::mat4& GetLocalTransform() const;
 
-        virtual void ComputeWorldTransform(const glm::mat4 &parentWorldTransform);
+        virtual void ComputeWorldTransform(const glm::mat4& parentWorldTransform);
 
-        [[nodiscard]] const glm::mat4 &GetWorldTransform() const;
+        [[nodiscard]] const glm::mat4& GetWorldTransform() const;
 
     private:
         glm::mat4 localTransform_;
@@ -46,4 +46,4 @@ namespace soil::world::entity {
     };
 } // namespace soil::world::entity
 
-#endif // SOIL_WORLD_ENTITY_OBJECT_3D_H_
+#endif

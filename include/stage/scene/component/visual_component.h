@@ -2,7 +2,7 @@
 #define SOIL_STAGE_SCENE_COMPONENT_VISUAL_COMPONENT_HPP
 #include "component.h"
 #include "stage/scene/render/type.hpp"
-#include "video/render/renderable.h"
+#include "video/render/renderable_object.h"
 
 namespace soil::stage::scene::component {
     class VisualComponent : public Component {
@@ -11,8 +11,8 @@ namespace soil::stage::scene::component {
 
         [[nodiscard]] virtual render::Type GetRenderType() const;
 
-        [[nodiscard]] bool IsVisible() const;
-        void SetVisible(bool visible);
+        [[nodiscard]] virtual bool IsVisible() const;
+        virtual void SetVisible(bool visible);
 
         [[nodiscard]] bool IsOpaque() const;
         virtual void SetOpaque(bool opaque);
@@ -20,7 +20,10 @@ namespace soil::stage::scene::component {
         [[nodiscard]] virtual bool IsCulled() const;
         virtual void SetCulled(bool culled);
 
-        [[nodiscard]] virtual video::render::Renderable* GetRenderable() = 0;
+        [[nodiscard]] virtual video::render::RenderableObject* GetRenderable() = 0;
+
+        static VisualComponent* Cast(Component* component);
+        static bool IsRenderType(Component* component, render::Type renderType);
 
     protected:
         explicit VisualComponent(render::Type renderType, bool opaque = true, bool visible = true);
@@ -32,4 +35,4 @@ namespace soil::stage::scene::component {
         bool culled_;
     };
 } // namespace soil::stage::scene::component
-#endif // SOIL_STAGE_SCENE_COMPONENT_VISUAL_COMPONENT_HPP
+#endif

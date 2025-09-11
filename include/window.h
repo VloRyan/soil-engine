@@ -13,9 +13,17 @@
 
 namespace soil {
     struct Statistics {
-        int fps;
-        int vertexCount;
-        int drawCount;
+        int FPS;
+        int VertexCount;
+        int DrawCount;
+        int StateChanges;
+
+        long updateInputTime = 0L;
+        long updateStageTime = 0L;
+        long updateVideoTime = 0L;
+        long startRenderTime = 0L;
+        long renderTime = 0L;
+        long endRenderTime = 0L;
     };
 
     enum class WindowType : std::uint8_t { Fullscreen = 0, Windowed };
@@ -73,9 +81,9 @@ namespace soil {
     private:
         std::string title_;
         WindowParameter parameter_;
-        std::bitset<4> stateFlags_;
+        std::bitset<5> stateFlags_;
         GLFWwindow *glfwWindow_;
         Statistics statistics_;
     };
 } // namespace soil
-#endif // SOIL_VIDEO_WINDOW_H_
+#endif

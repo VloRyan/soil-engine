@@ -3,7 +3,7 @@
 #include "video/vertex/vao_creator.h"
 
 namespace soil::video::render {
-    VertexArray::VertexArray(const mesh::Data &mesh) : vao_(nullptr), vbo_(nullptr), drawMode_(mesh.GetDrawMode()) {
+    VertexArray::VertexArray(const mesh::Data& mesh) : vao_(nullptr), vbo_(nullptr), drawMode_(mesh.GetDrawMode()) {
         vao_ = new vertex::Vao();
         auto usage = buffer::Object::UsageType::Static;
         if (mesh.GetData() == nullptr) {
@@ -24,13 +24,13 @@ namespace soil::video::render {
         delete vbo_;
     }
 
-    void VertexArray::Render() {
-        const auto *ebo = vao_->GetEbo();
+    void VertexArray::Render(State& state) {
+        const auto* ebo = vao_->GetEbo();
         vao_->Bind();
         shader::Shader::DrawElements(static_cast<uint>(drawMode_), ebo->GetIndexCount(), ebo->GetIndexType());
     }
 
-    vertex::Vao *VertexArray::GetVao() const {
+    vertex::Vao* VertexArray::GetVao() const {
         return vao_;
     }
 

@@ -14,29 +14,33 @@ namespace soil::stage {
 
         ~Manager() override;
 
-        int AddStage(Stage *stage);
-        void SetCurrent(const Stage *stage);
+        void Init(Window* window, input::Manager* inputManager, Resources* resources);
 
-        void Init(Window *window, input::Manager *inputManager, Resources *resources);
+        void RegisterStage(const std::string& name, Stage* stage);
+        void SetCurrent(const std::string& name);
+        Stage* GetCurrent() const;
+        Stage* GetStage(const std::string& name) const;
+        Stage* RemoveStage(const std::string& name);
 
         void Update() const;
 
-        void Render(video::render::State &state) const;
+        void Render(video::render::State& state) const;
 
-        void Handle(const input::Event &event) override;
+        void Handle(const input::Event& event) override;
 
-        void Handle(const WindowEvent &event) override;
-        [[nodiscard]] Resources &GetResources() const;
+        void Handle(const WindowEvent& event) override;
+        [[nodiscard]] Resources& GetResources() const;
+
 
     private:
-        std::vector<Stage *> stages_;
-        int currentStage_;
+        std::unordered_map<std::string, Stage*> stages_;
+        std::string currentStageName_;
+        Stage* currentStage_;
         std::function<const void()> deregisterFun;
-        Resources *resources_;
-        Window *window_;
-        input::Manager *inputManager_;
-        int nextStageId_;
+        Resources* resources_;
+        Window* window_;
+        input::Manager* inputManager_;
     };
 } // namespace soil::stage
 
-#endif // SOIL_STAGE_MANAGER_H_
+#endif

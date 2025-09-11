@@ -17,19 +17,27 @@ namespace soil::event {
 
         explicit Event(Type type);
 
-        Event(const Event &orig);
+        Event(const Event& orig);
 
         virtual ~Event();
 
-        [[nodiscard]] Type getType() const;
+        [[nodiscard]] Type GetType() const;
 
-        void consume();
+        void Consume();
 
-        [[nodiscard]] bool isConsumed() const;
+        [[nodiscard]] bool IsConsumed() const;
+
+        friend bool operator==(const Event& lhs, const Event& rhs) {
+            return lhs.type_ == rhs.type_ && lhs.consumed_ == rhs.consumed_;
+        }
+
+        friend bool operator!=(const Event& lhs, const Event& rhs) {
+            return !(lhs == rhs);
+        }
 
     private:
         Type type_;
         bool consumed_;
     };
 } // namespace soil::event
-#endif /* SOIL_EVENT_EVENT_H */
+#endif

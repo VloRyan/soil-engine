@@ -5,11 +5,13 @@
 #include "window.h"
 
 namespace soil::stage::scene::viewer {
-    Ortho::Ortho(scene::Node *parent, const glm::ivec2 resolution) :
-        Node(parent, {ReceiverType::Window}), projection_(glm::mat4(1)),
+    Ortho::Ortho(const glm::ivec2 resolution) :
+        projection_(glm::mat4(1.F)),
         view_(glm::lookAt(glm::vec3(0.F), glm::vec3(0.0F, 0.0F, -1.0F), glm::vec3(0.0F, 1.0F, 0.0F))), orthoSize_(10),
         orthoType_(OrthoType::Full) {
-        UpdateProjection(resolution);
+        Node::SetReceiverType(ReceiverType::Window, true);
+        windowSize_ = resolution;
+        UpdateProjection(windowSize_);
     }
 
     void Ortho::Look(const glm::vec3 pos, const glm::vec3 center, const glm::vec3 up) {
@@ -31,15 +33,11 @@ namespace soil::stage::scene::viewer {
         return projection_;
     }
 
-    void Ortho::SetPosition(const glm::vec3 pos) {
-        Node::SetPosition(pos);
-    }
-
     void Ortho::Update() {
         Node::Update();
     }
 
-    void Ortho::UpdateProjection(const glm::ivec2 &size) {
+    void Ortho::UpdateProjection(const glm::ivec2& size) {
         switch (orthoType_) {
         case OrthoType::Full:
             projection_ = glm::ortho(0.F, static_cast<float>(size.x), 0.F, static_cast<float>(size.y), nearZ_, farZ_);
@@ -74,7 +72,7 @@ namespace soil::stage::scene::viewer {
 
     void Ortho::UpdateDirty() {
         Node::UpdateDirty();
-        auto const wPos = GetWorldPosition();
+        const auto wPos = GetWorldPosition();
         view_ = glm::lookAt(wPos, wPos + direction_, glm::vec3(0.F, 1.F, 0.F));
         glm::mat4 invTransform = inverse(view_);
         right_ = glm::vec3(invTransform[0]);

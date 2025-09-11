@@ -7,9 +7,9 @@ namespace soil::event {
 
     Event::~Event() = default;
 
-    void Event::consume() { consumed_ = true; }
+    void Event::Consume() { consumed_ = true; }
 
-    Event::Type Event::getType() const { return type_; }
+    Event::Type Event::GetType() const { return type_; }
 
-    bool Event::isConsumed() const { return consumed_; }
+    bool Event::IsConsumed() const { return consumed_; }
 } // namespace soil::event

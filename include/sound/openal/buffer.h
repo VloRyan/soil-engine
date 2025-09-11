@@ -25,4 +25,4 @@ namespace soil::sound::openal {
         uint dataSize_;
     };
 } // namespace soil::sound::openal
-#endif /* SOIL_SOUND_OPENAL_BUFFER_H */
+#endif

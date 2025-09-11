@@ -41,4 +41,4 @@ namespace soil::video::buffer {
     };
 } // namespace soil::video::buffer
 
-#endif // SOIL_VIDEO_BUFFER_CURSOR_H_
+#endif

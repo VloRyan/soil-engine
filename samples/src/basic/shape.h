@@ -9,23 +9,26 @@ namespace soil_samples::basic {
     public:
         Shape(const soil::video::mesh::Data& mesh, bool isOpaque, soil::video::shader::Shader* shader);
         ~Shape() override = default;
-        [[nodiscard]] virtual soil::video::texture::Texture* GetTexture() const;
-        virtual void SetTexture(soil::video::texture::Texture* texture);
         [[nodiscard]] virtual glm::vec2 GetSize() const;
         virtual void SetSize(const glm::vec2& size);
         [[nodiscard]] virtual glm::vec4 GetColor() const;
         virtual void SetColor(const glm::vec4& color);
+        [[nodiscard]] virtual byte GetTextureUnit() const;
+        virtual void SetTextureUnit(byte textureUnit);
+
         static Shape* New(const soil::stage::Resources& resources, bool isOpaque, soil::video::shader::Shader* shader);
 
+        float DistanceTo(const glm::vec3& point) override;
+
     protected:
-        void PrepareRender() override;
+        void PrepareRender(soil::video::render::State& state) override;
 
     private:
-        soil::video::texture::Texture* texture_;
         glm::vec2 size_;
         glm::vec4 color_;
+        byte textureUnit_;
     };
 } // namespace soil_samples::basic
 
 
-#endif // BASIC_SHAPE_H
+#endif

@@ -28,4 +28,4 @@ namespace soil::video::mesh {
     };
 } // namespace soil::video::mesh
 
-#endif // SOIL_VIDEO_MESH_CACHE_H_
+#endif

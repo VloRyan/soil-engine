@@ -1,11 +1,16 @@
 
 #include "stage/scene/input.h"
+
 namespace soil::stage::scene {
-    Input::Input(Node *parent) : Node(parent, Type::Input, {ReceiverType::Input}) {}
+    Input::Input() : Node(Type::Input) { /*, {ReceiverType::Input}*/
+        SetReceiverType(ReceiverType::Input, true);
+    }
 
-    input::EventMap &Input::GetEventMap() { return eventMap_; }
+    input::EventMap& Input::GetEventMap() {
+        return eventMap_;
+    }
 
-    void Input::Handle(const input::Event &event) {
+    void Input::Handle(const input::Event& event) {
         Node::Handle(event);
         eventMap_.Handle(event);
     }

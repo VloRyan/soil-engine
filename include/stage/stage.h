@@ -1,13 +1,9 @@
 
 #ifndef SOIL_STAGE_STAGE_H
 #define SOIL_STAGE_STAGE_H
-#include <video/buffer/fb.h>
 
 #include "input/event.h"
 #include "resources.h"
-#include "scene/scene.h"
-#include "video/render/quad.h"
-#include "video/render/state.h"
 #include "window_event.h"
 
 namespace soil::stage {
@@ -17,38 +13,49 @@ namespace soil::stage {
 
     class Manager;
 
+    class StageNotRegisteredException : public std::runtime_error {
+    public:
+        StageNotRegisteredException() : runtime_error("Stage not registered to stage manager") {}
+    };
+
     class Stage : public input::EventHandler, public WindowEventHandler {
     public:
-        explicit Stage(Manager *manager);
+        friend class Manager;
+        explicit Stage();
 
         ~Stage() override;
 
         virtual void Update();
 
-        virtual void Render(video::render::State &state);
+        virtual void Render(video::render::State& state);
 
-        int AddScene(scene::Scene *scene);
+        template <class T>
+        T AddScene(T scene) {
+            using type = std::remove_pointer_t<T>;
+            static_assert(std::is_base_of_v<scene::Scene, type>, "feature must be derived from ComponentFeature");
+            addScene(scene);
+            return scene;
+        }
 
-        void Handle(const input::Event &event) override;
-        void Handle(const WindowEvent &event) override;
+        void RemoveScene(const scene::Scene* scene);
 
-        [[nodiscard]] Resources &GetResources() const;
+        [[nodiscard]] Resources& GetResources() const;
 
-        [[nodiscard]] video::buffer::FrameBuffer *GetFrameBuffer() const;
+        virtual void Load();
+        virtual void Unload();
+        [[nodiscard]] bool IsLoaded() const;
+
+        void Handle(const input::Event& event) override;
+        void Handle(const WindowEvent& event) override;
 
     protected:
-        void SetFrameBuffer(video::buffer::FrameBuffer *frameBuffer, video::render::Quad *quad = nullptr);
-
-        [[nodiscard]] video::render::Quad *GetQuad() const;
+        void addScene(scene::Scene* scene);
 
     private:
-        int id_;
-        std::vector<scene::Scene *> scenes_;
-        Resources *resources_;
-        int nextSceneId_;
-        video::buffer::FrameBuffer *frameBuffer_;
-        video::render::Quad *quad_;
+        bool loaded_;
+        std::vector<scene::Scene*> scenes_;
+        Resources* resources_;
     };
 } // namespace soil::stage
 
-#endif // SOIL_STAGE_STAGE_H
+#endif

@@ -1,7 +1,9 @@
 #include "video/mesh/data.h"
+
 #include <algorithm>
 #include <plog/Log.h>
 #include <utility>
+
 #include "GL/gl3w.h"
 
 namespace soil::video::mesh {
@@ -10,27 +12,12 @@ namespace soil::video::mesh {
         drawMode_(shader::DrawMode::Triangles), dataSize_(0), data_(nullptr) {}
 
     Data::~Data() {
-        PLOG_DEBUG << "Deleting mesh " << id_;
+        PLOG_DEBUG << "Deleting mesh ";
         delete[] indices_;
         delete[] data_;
     }
 
-    std::string Data::GetId() const {
-        return id_;
-    }
-
-    uint Data::GetIndex(const uint idx) const {
-        switch (indexType_) {
-        case vertex::IndexType::TYPE_UINT:
-            return reinterpret_cast<uint *>(indices_)[idx];
-        case vertex::IndexType::TYPE_USHORT:
-            return reinterpret_cast<ushort *>(indices_)[idx];
-        default:
-            throw std::runtime_error("unknown index type");
-        }
-    }
-
-    void Data::SetIndices(const ushort *indices, const uint indexCount) {
+    void Data::SetIndices(const ushort* indices, const uint indexCount) {
         delete[] indices_;
         indices_ = nullptr;
         indexCount_ = indexCount;
@@ -42,7 +29,7 @@ namespace soil::video::mesh {
         }
     }
 
-    void Data::SetIndices(const uint *indices, const uint indexCount) {
+    void Data::SetIndices(const uint* indices, const uint indexCount) {
         delete[] indices_;
         indices_ = nullptr;
         indexCount_ = indexCount;
@@ -54,8 +41,8 @@ namespace soil::video::mesh {
         }
     }
 
-    void Data::SetData(const byte *data, const size_t dataSize,
-                       const std::vector<vertex::VertexAttribDescriptor> &vertexAttribs) {
+    void Data::SetData(const byte* data, const size_t dataSize,
+                       const std::vector<vertex::VertexAttribDescriptor>& vertexAttribs) {
         if (dataSize != dataSize_) {
             delete[] data_;
             data_ = nullptr;
@@ -74,11 +61,11 @@ namespace soil::video::mesh {
         return indexType_;
     }
 
-    byte *Data::GetIndices() const {
+    byte* Data::GetIndices() const {
         return indices_;
     }
 
-    byte *Data::GetData() const {
+    byte* Data::GetData() const {
         return data_;
     }
 
@@ -94,7 +81,7 @@ namespace soil::video::mesh {
         drawMode_ = drawMode;
     }
 
-    const std::vector<vertex::VertexAttribDescriptor> &Data::GetVertexAttribs() const {
+    const std::vector<vertex::VertexAttribDescriptor>& Data::GetVertexAttribs() const {
         return vertexAttribs_;
     }
 

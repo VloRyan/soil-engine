@@ -29,4 +29,4 @@ namespace soil::video::render::instance {
     };
 } // namespace soil::video::render::instance
 
-#endif // SOIL_VIDEO_RENDER_INSTANCE_INSTANCE_H_
+#endif

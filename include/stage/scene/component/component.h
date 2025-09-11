@@ -1,15 +1,18 @@
-#ifndef SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_
-#define SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_
-#include <cstdint>
-#include <glm/fwd.hpp>
-#include <string>
+#ifndef SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H
+#define SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H
+#include <glm/glm.hpp>
+
+#include "event/observable.hpp"
+#include "stage/event/component.h"
 
 namespace soil::stage::scene {
     class Node;
 }
 
 namespace soil::stage::scene::component {
-    class Component {
+    class Component : public soil::event::Observable<event::Component> {
+        friend class scene::Node;
+
     public:
         enum class Type : std::uint8_t {
             Visual = 0,
@@ -18,46 +21,40 @@ namespace soil::stage::scene::component {
             Sound,
             Metadata,
             Lighting,
+            Any = 255
         };
 
         enum class State : std::uint8_t {
-            Dirty,
+            Dirty = 0,
             Normal,
             Delete,
         };
 
         explicit Component(Type type);
 
-        virtual ~Component();
+        ~Component() override;
 
-        virtual void SetParent(Node *parent);
-        [[nodiscard]] Node *GetParent() const;
+        [[nodiscard]] Node* GetParent() const;
 
         [[nodiscard]] Type GetType() const;
 
         virtual void Update();
 
-        virtual void UpdateMatrix(const glm::mat4 &matrix);
-
         [[nodiscard]] State GetState() const;
-
-        [[nodiscard]] std::string GetName() const;
-
-        void SetName(const std::string &name);
-
-        void SetDirty();
 
         [[nodiscard]] bool IsDirty() const;
 
     protected:
+        virtual void SetDirty();
         void SetState(State state);
+        virtual void UpdateTransform(const glm::mat4& transform);
+        virtual void SetParent(Node* parent);
 
     private:
-        Node *parent_;
-        std::string name_;
+        Node* parent_;
         Type type_;
         State state_;
     };
 } // namespace soil::stage::scene::component
 
-#endif // SOIL_STAGE_SCENE_COMPONENT_COMPONENT_H_
+#endif

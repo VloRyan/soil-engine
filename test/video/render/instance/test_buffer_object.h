@@ -4,6 +4,7 @@
 #include <oneapi/tbb/detail/_template_helpers.h>
 
 #include "video/buffer/object.h"
+
 namespace soil::video::render::instance {
     class TestBufferObject final : public buffer::Object {
     public:
@@ -15,4 +16,4 @@ namespace soil::video::render::instance {
         void create() override;
     };
 } // namespace soil::video::render::instance
-#endif // TEST_BUFFER_OBJECT_H
+#endif

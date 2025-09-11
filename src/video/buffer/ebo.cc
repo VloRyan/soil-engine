@@ -14,7 +14,7 @@ namespace soil::video::buffer {
 
     void Ebo::SetData(const void* data, const gl_size_t dataSize) {
         Object::SetData(data, dataSize);
-        indexCount_ = static_cast<int>(dataSize / static_cast<long>(indexType_));
+        indexCount_ = static_cast<int>(dataSize / IndexSize(indexType_));
     }
 
     int Ebo::GetIndexCount() const {

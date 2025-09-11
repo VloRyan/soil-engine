@@ -41,4 +41,4 @@ namespace soil::video::vertex {
     };
 } // namespace soil::video::vertex
 
-#endif // SOIL_VIDEO_VERTEX_VAO_H_
+#endif

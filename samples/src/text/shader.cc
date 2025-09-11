@@ -1,0 +1,16 @@
+
+#include "shader.h"
+
+namespace soil_samples::text {
+    Shader::Shader(const std::string& path) : soil::video::shader::Shader(NAME, path), viewer_(nullptr) {}
+
+    void Shader::Prepare(soil::video::render::State& state) {
+        soil::video::shader::Shader::Prepare(state);
+        SetUniform("ProjectionViewMatrix", viewer_->GetProjectionMatrix() * viewer_->GetViewMatrix());
+    }
+
+    void Shader::SetViewer(soil::stage::scene::viewer::Node* const viewer) {
+        viewer_ = viewer;
+    }
+
+} // namespace soil_samples::text

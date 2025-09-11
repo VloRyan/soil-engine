@@ -7,6 +7,7 @@ option(BUILD_SAMPLES "Build samples" OFF)
 
 #TODO
 add_compile_definitions(DEBUG)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -21,6 +22,7 @@ include_directories(include)
 add_library(${PROJECT_NAME}
         include/event/handler.hpp
         include/event/observable.hpp
+        include/file/sequence.hpp
         include/input/constants.hpp
         include/stage/scene/render/type.hpp
         include/util/pointer_cache.hpp
@@ -28,6 +30,7 @@ add_library(${PROJECT_NAME}
         src/engine.cc
         src/event/event.cc
         src/file/font.cc
+        src/file/sprite_sheet.cc
         src/input/event.cc
         src/input/event_map.cc
         src/input/manager.cc
@@ -48,19 +51,28 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/listener.cc
         src/stage/scene/component/mesh_component.cc
         src/stage/scene/component/sound.cc
+        src/stage/scene/component/text/abstract_text.cc
+        src/stage/scene/component/text/parser.cc
         src/stage/scene/component/visual_component.cc
-        src/stage/scene/component_feature.cc
+        src/stage/scene/gui/container/base.cc
+        src/stage/scene/gui/container/h_box.cc
+        src/stage/scene/gui/container/v_box.cc
+        src/stage/scene/gui/rectangle.cc
+        src/stage/scene/gui/root.cc
+        src/stage/scene/hook/hook.cc
+        src/stage/scene/hook/render_hook.cc
+        src/stage/scene/hook/update_hook.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
-        src/stage/scene/render/feature.cc
         src/stage/scene/render/instancing.cc
         src/stage/scene/render/plain.cc
+        src/stage/scene/render/update_matrices_ubo.cc
         src/stage/scene/scene.cc
+        src/stage/scene/text/parser.cc
         src/stage/scene/viewer/node.cc
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
         src/stage/scene/volume/container.cc
-        src/stage/scene/volume/feature.cc
         src/stage/scene/volume/frustum_culling.cc
         src/stage/stage.cc
         src/util/files.cc
@@ -92,6 +104,8 @@ add_library(${PROJECT_NAME}
         src/video/render/step/base.cc
         src/video/render/step/bind_buffer.cc
         src/video/render/step/render.cc
+        src/video/render/step/set_renderables.cc
+        src/video/render/step/sort.cc
         src/video/render/vertex_array.cc
         src/video/shader/cache.cc
         src/video/shader/definition.cc
@@ -109,7 +123,8 @@ add_library(${PROJECT_NAME}
         src/world/volume/aabb.cc
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
-        src/world/volume/quad_tree.cc
+        src/stage/scene/gui/overlay.cc
+
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -127,6 +142,8 @@ target_sources(
         include/event/handler.hpp
         include/event/observable.hpp
         include/file/font.h
+        include/file/sprite_sheet.h
+        include/file/sequence.hpp
         include/input/constants.hpp
         include/input/event.h
         include/input/event_map.h
@@ -149,22 +166,32 @@ target_sources(
         include/stage/scene/component/listener.h
         include/stage/scene/component/mesh_component.h
         include/stage/scene/component/sound.h
+        include/stage/scene/component/text/abstract_text.h
+        include/stage/scene/component/text/parser.h
         include/stage/scene/component/visual_component.h
-        include/stage/scene/component_feature.h
+        include/stage/scene/gui/container/base.h
+        include/stage/scene/gui/container/h_box.h
+        include/stage/scene/gui/container/v_box.h
+        include/stage/scene/gui/rectangle.h
+        include/stage/scene/gui/root.h
+        include/stage/scene/hook/hook.h
+        include/stage/scene/hook/render_hook.h
+        include/stage/scene/hook/update_hook.h
         include/stage/scene/input.h
         include/stage/scene/node.h
-        include/stage/scene/render/feature.h
         include/stage/scene/render/instancing.h
         include/stage/scene/render/plain.h
         include/stage/scene/render/type.hpp
+        include/stage/scene/render/update_matrices_ubo.h
         include/stage/scene/scene.h
+        include/stage/scene/text/parser.h
         include/stage/scene/viewer/node.h
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
         include/stage/scene/volume/container.h
-        include/stage/scene/volume/feature.h
         include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
+        include/util/deque.hpp
         include/util/files.h
         include/util/pointer_cache.hpp
         include/util/strings.h
@@ -191,11 +218,14 @@ target_sources(
         include/video/render/properties.h
         include/video/render/quad.h
         include/video/render/renderable.h
+        include/video/render/renderable_object.h
         include/video/render/state.h
         include/video/render/step/base.h
         include/video/render/step/bind_buffer.h
         include/video/render/step/context.hpp
         include/video/render/step/render.h
+        include/video/render/step/set_renderables.h
+        include/video/render/step/sort.h
         include/video/render/technique.h
         include/video/render/vertex_array.h
         include/video/shader/cache.h
@@ -221,16 +251,19 @@ target_sources(
         include/world/volume/quad_tree.h
         include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
+        include/stage/scene/gui/overlay.h
 )
 
 target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog)
 
 if (NOT BUILD_TESTING STREQUAL OFF)
     add_subdirectory(test)
+    #add_subdirectory(benchmark)
 endif ()
 
-if (BUILD_SAMPLES STREQUAL ON)
+
+if (BUILD_SAMPLES)
     add_subdirectory(samples)
-endif ()
+endif (BUILD_SAMPLES)
 
 install(TARGETS ${PROJECT_NAME} FILE_SET public_headers)

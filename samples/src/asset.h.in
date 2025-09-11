@@ -1,0 +1,13 @@
+#ifndef ASSET_H
+#define ASSET_H
+#include <filesystem>
+#include <string>
+
+namespace asset {
+    static constexpr auto ASSET_FILE_PATH = "@ASSET_FILE_PATH@";
+
+    inline std::string GetPath(const std::string &name) {
+        return std::filesystem::path(ASSET_FILE_PATH).append(name);
+    }
+} // namespace asset
+#endif // ASSET_H

@@ -27,4 +27,4 @@ namespace soil::input::mouse {
     };
 } // namespace soil::input::mouse
 
-#endif // SOIL_INPUT_MOUSE_PICKER_H_
+#endif

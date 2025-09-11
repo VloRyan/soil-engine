@@ -62,4 +62,4 @@ namespace soil::sound::openal {
         Buffer *buffer_;
     };
 } // namespace soil::sound::openal
-#endif // SOIL_SOUND_OPENAL_SOURCE_H
+#endif

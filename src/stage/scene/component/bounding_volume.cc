@@ -4,23 +4,31 @@
 
 namespace soil::stage::scene::component {
     BoundingVolume::BoundingVolume(Volume* volume, const std::vector<ContactType>& contactTypes) :
-        Component(Type::BoundingVolume), volume_(volume) {
+        Component(Type::BoundingVolume), volume_(volume), container_(nullptr) {
         for (const auto contactType : contactTypes) {
             BoundingVolume::SetContactType(contactType, true);
         }
     }
 
-    void BoundingVolume::UpdateMatrix(const glm::mat4& matrix) {
-        Component::UpdateMatrix(matrix);
+    void BoundingVolume::UpdateTransform(const glm::mat4& matrix) {
+        auto removed = false;
+        if (container_ != nullptr) {
+            removed = container_->Remove(this);
+        }
+        Component::UpdateTransform(matrix);
         volume_->SetPosition(matrix[3]);
+        if (removed) {
+            container_->Insert(this);
+        }
+        Component::UpdateTransform(matrix);
     }
 
     bool BoundingVolume::IsContactType(ContactType type) const {
-        return contactTypes_[static_cast<int>(type)];
+        return contactTypes_[static_cast<std::int8_t>(type)];
     }
 
     void BoundingVolume::SetContactType(ContactType type, const bool value) {
-        contactTypes_[static_cast<int>(type)] = value;
+        contactTypes_[static_cast<std::int8_t>(type)] = value;
     }
 
     bool BoundingVolume::IsInside(const glm::vec3& min, const glm::vec3& max) const {
@@ -29,6 +37,10 @@ namespace soil::stage::scene::component {
 
     bool BoundingVolume::IsInsideXZ(const glm::vec3& min, const glm::vec3& max) const {
         return volume_->IsInsideXZ(min, max);
+    }
+
+    bool BoundingVolume::IsInside(const glm::vec2& min, const glm::vec2& max) const {
+        return volume_->IsInside(min, max);
     }
 
     bool BoundingVolume::Contains(const glm::vec3& point) const {
@@ -50,8 +62,15 @@ namespace soil::stage::scene::component {
     }
 
     void BoundingVolume::SetPosition(const glm::vec3& position) {
+        if (position == volume_->GetPosition()) {
+            return;
+        }
         volume_->SetPosition(position);
         SetDirty();
+    }
+
+    glm::vec3 BoundingVolume::GetPosition() const {
+        return volume_->GetPosition();
     }
 
     void BoundingVolume::SetParent(Node* parent) {
@@ -62,5 +81,25 @@ namespace soil::stage::scene::component {
         if (GetParent() != nullptr) {
             volume_->SetPosition(GetParent()->GetWorldPosition());
         }
+    }
+
+    void BoundingVolume::SetContainer(world::volume::Container* container) {
+        if (container_ == container) {
+            return;
+        }
+        if (container_ != nullptr) {
+            if (!container_->Remove(this)) {
+                throw std::runtime_error("[BoundingVolume::SetContainer]: Failed to remove from container.");
+            }
+        }
+        container_ = container;
+    }
+
+    world::volume::Container* BoundingVolume::GetContainer() const {
+        return container_;
+    }
+
+    std::vector<world::volume::Line> BoundingVolume::GenerateLines() const {
+        return volume_->GenerateLines();
     }
 } // namespace soil::stage::scene::component

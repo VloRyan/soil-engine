@@ -1,14 +1,15 @@
 #include "video/render/step/bind_buffer.h"
+
 #include "GL/gl3w.h"
 
 namespace soil::video::render::step {
     BindBuffer::BindBuffer(const std::string& id, buffer::FrameBuffer* frameBuffer, const bool clearBuffer) :
-        Base(id), frameBuffer_(frameBuffer), clearBuffer_(clearBuffer) {}
+        Base(id, Type::Prepare), frameBuffer_(frameBuffer), clearBuffer_(clearBuffer) {}
 
     void BindBuffer::Process(Context& context) {
         context.State->SetFramebuffer(GetFrameBuffer());
         if (const buffer::FrameBuffer* framebuffer = GetFrameBuffer(); framebuffer != nullptr) {
-            context.State->SetViewPort(framebuffer->GetSize());
+            context.State->SetViewPort({.Size = framebuffer->GetSize()});
             if (IsClearBuffer()) {
                 framebuffer->Clear();
             }

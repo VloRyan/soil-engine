@@ -1,15 +1,11 @@
 #version 330
-precision highp float;
 
 uniform sampler2D Textures[3];
-
 
 in VS_OUT {
     vec2 uv;
     vec4 color;
     flat uint textureIndex;
-    vec3 position;
-    vec3 normal;
 } fs_in;
 out vec4 FragColor;
 

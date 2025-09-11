@@ -22,8 +22,8 @@ namespace soil::stage::scene::component {
 
     sound::Source *Sound::GetSource() const { return source_; }
 
-    void Sound::UpdateMatrix(const glm::mat4 &matrix) {
-        Component::UpdateMatrix(matrix);
+    void Sound::UpdateTransform(const glm::mat4 &matrix) {
+        Component::UpdateTransform(matrix);
         if (source_ == nullptr) {
             return;
         }

@@ -10,14 +10,16 @@ namespace soil::video::shader {
 
     Stage::~Stage() {
         if (id_ > 0) {
-            glDetachShader(programId_, id_);
+            if (programId_ > 0) {
+                glDetachShader(programId_, id_);
+            }
             glDeleteShader(id_);
             id_ = 0;
         }
     }
 
-    size_t Stage::replaceLine(const std::string &line, std::list<std::string> &lineBuffer,
-                              std::string &originFileName) {
+    size_t Stage::replaceLine(const std::string& line, std::list<std::string>& lineBuffer,
+                              std::string& originFileName) {
         if (line.starts_with("//#include ")) {
             std::string currentDir = util::Files::GetDirectory(originFileName);
             std::string includeFilename = line.substr(11);
@@ -44,7 +46,7 @@ namespace soil::video::shader {
         return line.length() + 1; // +1 line terminator
     }
 
-    Stage *Stage::load(std::string fileName, uint type) {
+    Stage* Stage::load(std::string fileName, uint type) {
         std::string line;
         size_t length = 0;
         std::list<std::string> lineBuffer;
@@ -78,7 +80,7 @@ namespace soil::video::shader {
             offset += elem.length();
         }
         buffer[offset] = '\0';
-        Stage *stage = compile(buffer, type);
+        Stage* stage = compile(buffer, type);
         if (stage == nullptr) {
             std::string message = "Impossible to compile the shader file '" + fileName + "'";
             throw std::runtime_error(message);
@@ -93,7 +95,7 @@ namespace soil::video::shader {
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 
         if (infoLogLen > 0) {
-            GLchar *infoLog = nullptr;
+            GLchar* infoLog = nullptr;
             infoLog = new GLchar[infoLogLen];
             // error check for fail to allocate memory omitted
             glGetShaderInfoLog(shader, infoLogLen, &charsWritten, infoLog);
@@ -102,7 +104,7 @@ namespace soil::video::shader {
         }
     }
 
-    Stage *Stage::compile(const char *source, const uint type) {
+    Stage* Stage::compile(const char* source, const uint type) {
         // Assign our handles a "name" to new shader objects
         const uint shaderId = glCreateShader(type);
         // Associate the source code buffers with each handle

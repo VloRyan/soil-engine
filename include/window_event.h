@@ -30,4 +30,4 @@ namespace soil {
 
     using WindowEventHandler = event::Handler<WindowEvent>;
 } // namespace soil
-#endif /* SOIL_WINDOW_EVENT_H */
+#endif

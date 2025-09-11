@@ -43,4 +43,18 @@ namespace soil::stage::scene::component {
         culled_ = culled;
         SetDirty();
     }
+
+    VisualComponent* VisualComponent::Cast(Component* component) {
+        if (component == nullptr || component->GetType() != Type::Visual) {
+            return nullptr;
+        }
+        return dynamic_cast<VisualComponent*>(component);
+    }
+
+    bool VisualComponent::IsRenderType(Component* component, const render::Type renderType) {
+        if (const auto* vComp = Cast(component); vComp == nullptr || vComp->GetRenderType() != renderType) {
+            return false;
+        }
+        return true;
+    }
 } // namespace soil::stage::scene::component

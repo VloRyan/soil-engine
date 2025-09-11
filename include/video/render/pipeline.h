@@ -9,40 +9,41 @@
 namespace soil::video::render {
     class Pipeline final {
     public:
-        explicit Pipeline(std::string name, Container *container);
+        explicit Pipeline(std::string name, Container* container);
 
         ~Pipeline();
 
-        void Run(State &state);
+        void Run(State& state);
 
         void Clear();
 
-        void InsertStep(step::Base *step);
+        void InsertStep(step::Base* step);
 
-        void RemoveStep(const step::Base *step);
+        void RemoveStep(const step::Base* step);
 
         void Print() const;
 
         [[nodiscard]] bool Empty() const;
 
-        [[nodiscard]] step::Base *GetStep(uint number);
-
-        [[nodiscard]] step::Base *GetStep(const std::string &name) const;
+        [[nodiscard]] step::Base* GetStep(const std::string& id) const;
+        [[nodiscard]] std::vector<step::Base*>& GetSteps();
 
         void SetName(std::string Name);
 
         [[nodiscard]] std::string GetName() const;
-        [[nodiscard]] step::Context &GetContext();
+        [[nodiscard]] step::Context& GetContext();
+
+        static Pipeline* NewForwardRenderingPipeline(Container* container, bool depthTest = true,
+                                                     const std::string& name = "");
 
     protected:
-        void find(std::vector<step::Base *>::iterator &itr, const step::Base *step);
+        void find(std::vector<step::Base*>::iterator& itr, const step::Base* step);
 
     private:
         std::string name_;
-        Container *container_;
-        std::vector<step::Base *> processingSteps_;
+        std::vector<step::Base*> steps_;
         step::Context context_;
     };
 } // namespace soil::video::render
 
-#endif // SOIL_VIDEO_RENDER_PIPELINE_H_
+#endif

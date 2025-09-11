@@ -19,4 +19,4 @@ namespace soil::video::buffer {
         Layout m_Layout;
     };
 } // namespace soil::video::buffer
-#endif /* SOIL_VIDEO_BUFFER_UNIFORM_BUFFER_OBJECT_H */
+#endif

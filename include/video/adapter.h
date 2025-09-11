@@ -21,4 +21,4 @@ namespace soil::video {
     };
 } // namespace soil::video
 
-#endif // SOIL_VIDEO_ADAPTER_H_
+#endif

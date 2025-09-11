@@ -40,17 +40,17 @@ namespace soil::input {
 
         [[nodiscard]] glm::vec2 GetWheelOffset() const;
 
-        [[nodiscard]] const glm::vec2 &GetCursorPos() const;
+        [[nodiscard]] const glm::vec2& GetCursorPos() const;
 
-        static Event KeyChangedEvent(Keys key, State state);
+        static Event MakeKeyChangedEvent(Keys key, State state);
 
-        static Event CharacterEnteredEvent(char character);
+        static Event MakeCharacterEnteredEvent(char character);
 
-        static Event MouseButtonEvent(MouseButton button, State state, glm::vec2 pos);
+        static Event MakeMouseButtonEvent(glm::vec2 pos, MouseButton button, State state);
 
-        static Event MouseWheelEvent(glm::vec2 offset);
+        static Event MakeMouseWheelEvent(glm::vec2 pos, glm::vec2 offset);
 
-        static Event MousePositionEvent(glm::vec2 pos);
+        static Event MakeMousePositionEvent(glm::vec2 pos);
 
     protected:
         Event(Origin origin, Cause cause);
@@ -63,10 +63,10 @@ namespace soil::input {
         State state_;
         char character_;
         glm::vec2 wheelOffset_;
-        glm::vec2 cursorPos_{};
+        glm::vec2 cursorPos_ {};
     };
 
     using EventHandler = event::Handler<Event>;
 } // namespace soil::input
 
-#endif // SOIL_INPUT_EVENT_H_
+#endif

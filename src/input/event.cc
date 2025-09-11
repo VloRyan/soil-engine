@@ -7,34 +7,48 @@ namespace soil::input {
 
     Event::~Event() = default;
 
-    Event::Cause Event::GetCause() const { return cause_; }
+    Event::Cause Event::GetCause() const {
+        return cause_;
+    }
 
-    Event::Origin Event::GetOrigin() const { return origin_; }
+    Event::Origin Event::GetOrigin() const {
+        return origin_;
+    }
 
-    Keys Event::GetKey() const { return key_; }
+    Keys Event::GetKey() const {
+        return key_;
+    }
 
-    Event::State Event::GetState() const { return state_; }
+    Event::State Event::GetState() const {
+        return state_;
+    }
 
-    char Event::GetCharacter() const { return character_; }
+    char Event::GetCharacter() const {
+        return character_;
+    }
 
-    MouseButton Event::GetMouseButton() const { return mouseButton_; }
+    MouseButton Event::GetMouseButton() const {
+        return mouseButton_;
+    }
 
-    glm::vec2 Event::GetWheelOffset() const { return wheelOffset_; }
+    glm::vec2 Event::GetWheelOffset() const {
+        return wheelOffset_;
+    }
 
-    Event Event::KeyChangedEvent(const Keys key, const State state) {
+    Event Event::MakeKeyChangedEvent(const Keys key, const State state) {
         auto event = Event(Origin::Keyboard, Cause::StateChanges);
         event.key_ = key;
         event.state_ = state;
         return event;
     }
 
-    Event Event::CharacterEnteredEvent(const char character) {
+    Event Event::MakeCharacterEnteredEvent(const char character) {
         auto event = Event(Origin::Keyboard, Cause::Entered);
         event.character_ = character;
         return event;
     }
 
-    Event Event::MouseButtonEvent(const MouseButton button, const State state, const glm::vec2 pos) {
+    Event Event::MakeMouseButtonEvent(const glm::vec2 pos, const MouseButton button, const State state) {
         auto event = Event(Origin::MouseButton, Cause::StateChanges);
         event.mouseButton_ = button;
         event.state_ = state;
@@ -42,17 +56,20 @@ namespace soil::input {
         return event;
     }
 
-    Event Event::MouseWheelEvent(const glm::vec2 offset) {
+    Event Event::MakeMouseWheelEvent(const glm::vec2 pos, const glm::vec2 offset) {
         auto event = Event(Origin::MouseWheel, Cause::StateChanges);
         event.wheelOffset_ = offset;
+        event.cursorPos_ = pos;
         return event;
     }
 
-    Event Event::MousePositionEvent(const glm::vec2 pos) {
+    Event Event::MakeMousePositionEvent(const glm::vec2 pos) {
         auto event = Event(Origin::MousePosition, Cause::StateChanges);
         event.cursorPos_ = pos;
         return event;
     }
 
-    const glm::vec2 &Event::GetCursorPos() const { return cursorPos_; }
+    const glm::vec2& Event::GetCursorPos() const {
+        return cursorPos_;
+    }
 } // namespace soil::input

@@ -16,12 +16,14 @@ namespace soil_samples::basic {
         inline static const std::string NAME = "Basic";
         void SetViewer(soil::stage::scene::viewer::Node* viewer);
 
-        void Prepare() override;
+        void Prepare(soil::video::render::State& state) override;
+        void SetTextures(const std::vector<soil::video::texture::Texture*>& textures);
 
     private:
         soil::stage::scene::viewer::Node* viewer_;
+        std::vector<soil::video::texture::Texture*> textures_;
     };
 } // namespace soil_samples::basic
 
 
-#endif // BASIC_SHADER_H
+#endif

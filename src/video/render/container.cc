@@ -1,28 +1,34 @@
 #include "video/render/container.h"
 
 namespace soil::video::render {
-    void Container::Add(Renderable* renderable, const RenderDef& state) {
-        const auto& renderables = renderablesPerState[state];
-        const auto nextId = static_cast<int>(renderables.size());
+    void Container::Add(RenderableObject* renderable, const RenderDef& state) {
+        const auto nextId = static_cast<int>(renderables_.size());
         renderable->SetContainerStateIndex(nextId);
-        renderablesPerState[state].push_back(renderable);
+        renderables_.emplace_back(renderable, state);
     }
 
-    bool Container::Remove(Renderable* renderable, const RenderDef& state) {
+    bool Container::Remove(RenderableObject* renderable, const RenderDef& state) {
         const auto index = renderable->GetContainerStateIndex();
-        auto& renderables = renderablesPerState[state];
-        if (renderables[index] != renderable) {
+        if (index == -1 || renderables_[index].Ptr != renderable) {
             return false;
         }
-        renderables.erase(renderables.begin() + index);
+        renderables_.erase(renderables_.begin() + index);
         renderable->SetContainerStateIndex(-1);
-        for (auto i = index; i < renderables.size(); ++i) {
-            renderables[i]->SetContainerStateIndex(i);
+        for (auto i = index; i < renderables_.size(); ++i) {
+            renderables_[i].Ptr->SetContainerStateIndex(i);
         }
         return true;
     }
 
-    const std::vector<Renderable*>& Container::GetPerDef(const RenderDef state) {
-        return renderablesPerState[state];
+    void Container::GetPerDef(std::vector<RenderableObject*>& v, const RenderDef& state) {
+        for (auto& renderable : renderables_) {
+            if (renderable.State == state) {
+                v.push_back(renderable.Ptr);
+            }
+        }
+    }
+
+    bool Container::Empty() const {
+        return renderables_.empty();
     }
 } // namespace soil::video::render

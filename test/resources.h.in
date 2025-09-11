@@ -1,0 +1,13 @@
+#ifndef RESOURCES_H
+#define RESOURCES_H
+#include <filesystem>
+#include <string>
+
+namespace resources {
+    static constexpr auto RESOURCES_FILE_PATH = "@RESOURCES_FILE_PATH@";
+
+    inline std::string GetPath(const std::string &name) {
+        return std::filesystem::path(RESOURCES_FILE_PATH).append(name);
+    }
+} // namespace resources
+#endif

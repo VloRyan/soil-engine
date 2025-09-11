@@ -1,15 +1,17 @@
 #include "stage/scene/viewer/perspective.h"
+
 #include <cmath>
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "window.h"
 
 namespace soil::stage::scene::viewer {
-    Perspective::Perspective(scene::Node *parent) :
-        Node(parent, {ReceiverType::Window}), updateVelocity_(false), moveSpeed_(), rotate_(0.0F), velocity_(0.0F),
-        fovY_(60.0F), perspective_(0.0F), view_(1.0F) {
+    Perspective::Perspective() :
+        updateVelocity_(false), moveSpeed_(), rotate_(0.0F), velocity_(0.0F), fovY_(60.0F), perspective_(0.0F),
+        view_(1.0F) {
         nearZ_ = 0.1F;
         SetRotate(rotate_);
+        Node::SetReceiverType(ReceiverType::Window, true);
     }
 
     glm::mat4 Perspective::GetProjectionMatrix() const {
@@ -61,7 +63,7 @@ namespace soil::stage::scene::viewer {
 
     void Perspective::UpdateDirty() {
         Node::UpdateDirty();
-        if (IsDirtyCause(DirtyCauses::Matrix)) {
+        if (IsDirtyImpact(DirtyImpact::Dependents)) {
             view_ = glm::lookAt(GetWorldPosition(), GetWorldPosition() + GetDirection(), GetUp());
             glm::mat4 invTransform = inverse(view_);
             right_ = glm::vec3(invTransform[0]);
@@ -71,26 +73,26 @@ namespace soil::stage::scene::viewer {
         }
     }
 
-    void Perspective::UpdateProjection(const glm::ivec2 &size) {
+    void Perspective::UpdateProjection(const glm::ivec2& size) {
         const float aspect = static_cast<float>(size.x) / static_cast<float>(size.y);
         perspective_ = glm::perspective(glm::radians(fovY_), aspect, nearZ_, farZ_);
     }
 
-    void Perspective::SetDirection(const glm::vec3 direction) {
+    void Perspective::SetDirection(const glm::vec3& direction) {
         direction_ = direction;
     }
 
-    void Perspective::SetPosition(const glm::vec3 pos) {
+    void Perspective::SetPosition(const glm::vec3& pos) {
         auto localTransform = GetLocalTransform();
         localTransform[3] = glm::vec4(pos, 1.0F);
         SetLocalTransform(localTransform);
     }
 
-    void Perspective::SetRight(const glm::vec3 right) {
+    void Perspective::SetRight(const glm::vec3& right) {
         right_ = right;
     }
 
-    void Perspective::SetUp(const glm::vec3 up) {
+    void Perspective::SetUp(const glm::vec3& up) {
         up_ = up;
     }
 

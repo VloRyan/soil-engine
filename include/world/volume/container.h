@@ -1,54 +1,52 @@
 #ifndef SOIL_WORLD_VOLUME_CONTAINER_H
 #define SOIL_WORLD_VOLUME_CONTAINER_H
 #include <vector>
-
-
-#include "stage/scene/component/bounding_volume.h"
 #include "volume.hpp"
 
 namespace soil::world::volume {
     class Container {
     public:
+        inline static auto NO_CHILDREN = -1;
+
         struct Node {
-            [[nodiscard]] bool Contains(const glm::vec3 &point) const {
-                for (auto i = 0; i < 3; ++i) {
-                    if (point[i] < Min[i] || point[i] > Max[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            [[nodiscard]] bool ContainsXZ(const glm::vec3 &point) const {
-                if (point.x < Min.x || point.x > Max.x) {
-                    return false;
-                }
-                if (point.z < Min.z || point.z > Max.z) {
+            [[nodiscard]] bool Contains(const glm::vec2& point) const {
+                if (point.x < Min.x || //
+                    point.x > Max.x || //
+                    point.y < Min.y || //
+                    point.y > Max.y) {
                     return false;
                 }
                 return true;
             }
 
-            std::int32_t ParentIndex{-1};
-            std::int32_t FirstChildIndex{-1};
-            std::int32_t Level{-1};
-            std::vector<const Volume *> Contained{};
-            glm::vec3 Min{0};
-            glm::vec3 Max{0};
+            [[nodiscard]] bool Contains(const glm::vec2& min, const glm::vec2& max) const {
+                if (Min.x > min.x && Max.x < max.x || //
+                    Min.y > min.y && Max.y < max.y) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            inline static uint UNSET = -1;
+            uint ChildrenStartIndex{UNSET};
+            uint VolumesIndex{UNSET};
+            glm::vec2 Min{0.F};
+            glm::vec2 Max{0.F};
         };
 
         virtual ~Container() = default;
 
-        virtual void Insert(const Volume *volume) = 0;
-        virtual bool Remove(const Volume *volume) = 0;
+        virtual void Insert(const Volume* volume) = 0;
+        virtual bool Remove(const Volume* volume) = 0;
 
-        virtual const Node *FindNodeAt(glm::vec3 point) = 0;
-        virtual const Node *FindNodeFor(const Volume *volume) = 0;
-        virtual int FindNodeIndexFor(const Volume *volume) = 0;
+        virtual void QueryVolumesAt(const glm::vec3& point, std::vector<const Volume*>& volumes) const = 0;
+        virtual void QueryNodeIndicesFor(const Volume*, std::vector<int>& indices) const = 0;
 
-        virtual std::vector<const Node *> FindNodesAt(glm::vec3 point) = 0;
+        virtual void GetVolumes(int index, std::vector<const Volume*>& volumes) const = 0;
 
-        [[nodiscard]] virtual const Node *GetNode(int index) const = 0;
+
+        [[nodiscard]] virtual const Node* GetNode(int index) const = 0;
 
         [[nodiscard]] virtual size_t GetNodeCount() const = 0;
         [[nodiscard]] virtual size_t GetChildrenPerNode() const = 0;
@@ -57,4 +55,4 @@ namespace soil::world::volume {
         Container() = default;
     };
 } // namespace soil::world::volume
-#endif // SOIL_WORLD_VOLUME_CONTAINER_H
+#endif

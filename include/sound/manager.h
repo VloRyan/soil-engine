@@ -29,4 +29,4 @@ namespace soil::sound {
 
 } // namespace soil::sound
 
-#endif // SOIL_SOUND_MANAGER
+#endif

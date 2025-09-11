@@ -28,4 +28,4 @@ namespace soil::video::render {
     };
 } // namespace soil::video::render
 
-#endif // SOIL_VIDEO_RENDER_PROPERTIES_H_
+#endif

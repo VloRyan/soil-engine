@@ -2,17 +2,18 @@
 
 #include <stdexcept>
 #include <string>
+
 #include "GL/gl3w.h"
 
 namespace soil::video::vertex {
-    AttributePointer::AttributePointer(buffer::Object *vbo, const DataType dataType, const int elementSize,
+    AttributePointer::AttributePointer(buffer::Object* vbo, const DataType dataType, const int elementSize,
                                        const GLsizei elementStride, const byte divisor, const size_t offset) :
         vbo_(vbo), dataType_(dataType), elementSize_(elementSize), elementStride_(elementStride), divisor_(divisor),
         offset_(offset), normalize_(false) {}
 
     void AttributePointer::Set(const uint index) const {
         vbo_->BindAs(buffer::Object::Types::Vertex);
-        const auto glType = this->GetGLDataType();
+        const auto glType = static_cast<GLenum>(dataType_);
         glEnableVertexAttribArray(index);
 
         const bool isIntegerType =
@@ -21,15 +22,15 @@ namespace soil::video::vertex {
         if (isIntegerType) {
             if (!normalize_) {
                 glVertexAttribIPointer(index, this->GetElementSize(), glType, this->GetElementStride(),
-                                       reinterpret_cast<void *>(this->GetOffset()));
+                                       reinterpret_cast<void*>(this->GetOffset()));
             } else {
                 glVertexAttribPointer(index, this->GetElementSize(), glType, GL_TRUE, this->GetElementStride(),
-                                      reinterpret_cast<void *>(this->GetOffset()));
+                                      reinterpret_cast<void*>(this->GetOffset()));
             }
         } else {
-            const GLboolean normalize = normalize_ ? GL_TRUE : GL_FALSE;
+            const auto normalize = normalize_ ? GL_TRUE : GL_FALSE;
             glVertexAttribPointer(index, this->GetElementSize(), glType, normalize, this->GetElementStride(),
-                                  reinterpret_cast<void *>(this->GetOffset()));
+                                  reinterpret_cast<void*>(this->GetOffset()));
         }
         if (this->GetDivisor() != 0U) {
             glVertexAttribDivisor(index, this->GetDivisor());
@@ -37,41 +38,18 @@ namespace soil::video::vertex {
         vbo_->UnbindAs(buffer::Object::Types::Vertex);
     }
 
-    uint AttributePointer::GetGLDataType() const {
-        switch (this->GetDataType()) {
-        case Double:
-            return GL_DOUBLE;
-        case Float:
-            return GL_FLOAT;
-        case Int:
-            return GL_INT;
-        case UInt:
-            return GL_UNSIGNED_INT;
-        case Byte:
-            return GL_BYTE;
-        case UByte:
-            return GL_UNSIGNED_BYTE;
-        case UInt64:
-            return GL_UNSIGNED_INT64_ARB;
-        default:
-            throw std::runtime_error("Unknown data type: " + std::to_string(static_cast<uint>(this->GetDataType())));
-        }
-    }
-
     GLsizei AttributePointer::GetSizeOfDataType(const DataType type) {
         switch (type) {
         case Double:
-            return sizeof(double);
+        case UInt64:
+            return 8; // 64 bit
         case Float:
-            return sizeof(float);
         case Int:
         case UInt:
-            return sizeof(int);
+            return 4; // 32 bit
         case Byte:
         case UByte:
-            return sizeof(byte);
-        case UInt64:
-            return sizeof(std::uint64_t);
+            return 1; // 8 bit
         default:
             throw std::runtime_error("Unknown data type: " + std::to_string(static_cast<int>(type)));
         }
@@ -105,7 +83,7 @@ namespace soil::video::vertex {
         dataType_ = DataType;
     }
 
-    buffer::Object *AttributePointer::GetVbo() const {
+    buffer::Object* AttributePointer::GetVbo() const {
         return vbo_;
     }
 

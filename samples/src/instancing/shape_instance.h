@@ -3,9 +3,7 @@
 #include <stage/scene/component/instance_data.h>
 #include <vector>
 
-namespace soil::video::vertex {
-    struct VertexAttribDescriptor;
-}
+#include "video/vertex/vertex.h"
 
 namespace soil_samples::instancing {
     class ShapeInstance : public soil::stage::scene::component::InstanceData {
@@ -17,7 +15,7 @@ namespace soil_samples::instancing {
             uint TextureIndex{0};
         };
 
-        ShapeInstance(bool isOpaque);
+        explicit ShapeInstance(bool isOpaque);
 
         ~ShapeInstance() override = default;
 
@@ -29,8 +27,8 @@ namespace soil_samples::instancing {
         virtual void SetColor(const glm::vec4& color);
 
         static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;
-        static inline std::string BATCH_KEY = "Shape";
-        void UpdateMatrix(const glm::mat4& matrix) override;
+        static inline std::string BATCH_NAME = "Shape";
+        void UpdateTransform(const glm::mat4& matrix) override;
 
     protected:
         void WriteData(soil::video::buffer::Cursor* cursor) const override;
@@ -40,4 +38,4 @@ namespace soil_samples::instancing {
     };
 } // namespace soil_samples::instancing
 
-#endif // INSTANCING_SHAPE_INSTANCE_H
+#endif

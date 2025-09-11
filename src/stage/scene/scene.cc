@@ -1,109 +1,79 @@
 
 #include "stage/scene/scene.h"
 
-#include <ranges>
-#include <stdexcept>
+#include <deque>
 
-#include "stage/scene/component/instance_data.h"
-#include "stage/scene/render/plain.h"
 #include "stage/stage.h"
-#include "video/render/step/bind_buffer.h"
-#include "video/render/step/render.h"
+#include "util/deque.hpp"
 
 namespace soil::stage::scene {
-    constexpr auto SCENE_NODE_OFFSET = 100000;
 
-    Scene::Scene(Stage *stage) :
-        Node(stage->AddScene(this), Type::Scene, {}, ".::SCENE::."), stage_(stage), viewer_(nullptr),
-        dirtyNodesPtr_(&dirtyNodes_), renderContainer_(new video::render::Container()),
-        nextId_(GetId() * SCENE_NODE_OFFSET), worldTransform_(1), uboMatricesBindingTarget_(-1), pipeline_(nullptr) {
-        SetScene(this);
+    Scene::Scene() :
+        Node(Type::Scene), stage_(nullptr), dirtyNodesPtr_(&dirtyNodes_),
+        renderContainer_(new video::render::Container()), pipeline_(nullptr) {}
 
-        pipeline_ = new video::render::Pipeline("renderScene" + std::to_string(GetId()), renderContainer_);
-        pipeline_->InsertStep(
-            new video::render::step::Render("renderOpaque", {.Blending = false}, {.Blend = false, .DepthTest = true}));
-        pipeline_->InsertStep(
-            new video::render::step::Render("renderNonOpaque", {.Blending = true}, {.Blend = true, .DepthTest = true}));
+    Scene::~Scene() {
+        if (const auto stage = GetStage(); stage != nullptr) {
+            stage->RemoveScene(this);
+        }
+        activeUpdateNodes_.clear();
+        windowEventReceiverNodes_.clear();
+        inputEventReceiverNodes_.clear();
+        ForEachChild(this, [this](Node* child) { child->RemoveListener(this); });
+        delete renderContainer_;
     }
 
-    void Scene::RemoveChild(Node *node) {
-        NodeRemoved(node);
-        Node::RemoveChild(node);
-    }
-
-    void Scene::Render(video::render::State &state) {
-        if (pipeline_ == nullptr || viewer_ == nullptr) {
-            return;
+    void Scene::Render(video::render::State& state) {
+        for (const auto hook : renderHooks_) {
+            hook->OnRender(state);
         }
-        for (auto *feature : componentFeatures_) {
-            if (feature->GetUpdateType() != ComponentFeature::UpdateType::Render) {
-                continue;
-            }
-            feature->Update();
+        if (pipeline_ != nullptr) {
+            pipeline_->Run(state);
         }
-        if (uboMatricesBindingTarget_ != -1) {
-            state.WriteUbo(uboMatricesBindingTarget_, [this](video::buffer::Cursor *cursor) {
-                const auto proj = viewer_->GetProjectionMatrix();
-                const auto view = viewer_->GetViewMatrix();
-                const auto pvMatrix = proj * view;
-                cursor->Write(proj);
-                cursor->Write(view);
-                cursor->Write(glm::inverse(view));
-                cursor->Write(pvMatrix);
-            });
-        }
-        if (beforeRenderViewer_ != nullptr) {
-            beforeRenderViewer_(viewer_, pipeline_);
-        }
-        pipeline_->Run(state);
     }
 
     void Scene::Update() {
-        for (auto *node : activeUpdateNodes_) {
+        for (const auto* node : nodesToDelete_) {
+            delete node;
+        }
+        nodesToDelete_.clear();
+        for (auto* node : activeUpdateNodes_) {
             node->Update();
         }
-        auto *lastDirtyNodes = dirtyNodesPtr_;
+        auto* lastDirtyNodes = dirtyNodesPtr_;
         if (dirtyNodesPtr_ == &dirtyNodes_) {
             dirtyNodesPtr_ = &dirtyNodes2_;
         } else {
             dirtyNodesPtr_ = &dirtyNodes_;
         }
-        for (auto *node : *lastDirtyNodes) {
-            if (!node->IsDirty() || node->GetType() == Type::Viewer || node->GetUpdateType() == UpdateType::Active) {
+        for (auto* node : *lastDirtyNodes) {
+            if (!node->IsDirty()) {
                 continue;
             }
-            if (auto *topDirty = computeTopDirtyNode(node); topDirty != nullptr) {
-                topDirty->Update();
-            }
+            computeTopDirtyNode(node, this)->Update();
         }
         lastDirtyNodes->clear();
-        if (viewer_ != nullptr) {
-            viewer_->Update();
-        }
-        for (auto *feature : componentFeatures_) {
-            if (feature->GetUpdateType() != ComponentFeature::UpdateType::AfterScene) {
-                continue;
-            }
-            feature->Update();
+        for (const auto hook : updateHooks_) {
+            hook->OnUpdate();
         }
     }
 
-    void Scene::Handle(const event::Node &event) {
+    void Scene::Handle(const event::Node& event) {
         switch (event.GetChangeType()) {
         case event::Node::ChangeType::State:
-            NodeStateChanged(event.GetOrigin());
-            break;
-        case event::Node::ChangeType::Created:
-            NodeAdded(event.GetOrigin());
+            OnNodeStateChanged(event.GetOrigin());
             break;
         case event::Node::ChangeType::ChildAdded:
-            NodeAdded(event.GetChangedNode());
+            OnNodeAdded(event.GetChangedNode());
+            ForEachChild(event.GetChangedNode(), [this](Node* child) { OnNodeAdded(child); });
             break;
         case event::Node::ChangeType::Deleted:
-            NodeRemoved(event.GetOrigin());
+            OnNodeRemoved(event.GetOrigin());
+            ForEachChild(event.GetOrigin(), [this](Node* child) { OnNodeRemoved(child); });
             break;
         case event::Node::ChangeType::ChildRemoved:
-            NodeRemoved(event.GetChangedNode());
+            OnNodeRemoved(event.GetChangedNode());
+            ForEachChild(event.GetChangedNode(), [this](Node* child) { OnNodeRemoved(child); });
             break;
         case event::Node::ChangeType::UpdateType:
             switch (event.GetOrigin()->GetUpdateType()) {
@@ -119,65 +89,70 @@ namespace soil::stage::scene {
                 }
                 break;
             }
+        case event::Node::ChangeType::Component:
+            Handle(event.GetComponentEvent());
         default:; // do nothing
         }
     }
 
-    void Scene::NodeStateChanged(Node *node) {
-        if (node->IsDirty()) {
+    void Scene::OnNodeStateChanged(Node* node) {
+        /*
+#ifdef DEBUG
+        if (node->GetScene() != this) {
+            throw std::runtime_error("node does not belong to this scene");
+        }
+#endif*/
+        if (node->IsDirty() && node->GetUpdateType() != UpdateType::Active) {
             dirtyNodesPtr_->push_back(node);
-        } else if (node->GetState() == State::Delete) {
-            delete node;
+        } else if (node->IsState(State::Delete)) {
+            nodesToDelete_.push_back(node);
         }
     }
 
-    void Scene::NodeAdded(Node *node) {
-        switch (node->GetType()) {
-        case Type::Viewer:
-            {
-                auto *viewer = dynamic_cast<viewer::Node *>(node);
-                if (viewer == nullptr) {
-                    return;
-                }
-                if (viewer_ != nullptr) {
-                    throw std::runtime_error("Viewer already exists");
-                }
-                viewer_ = viewer;
-                break;
-            }
-        default:
-            if (node->GetUpdateType() == UpdateType::Active) {
-                activeUpdateNodes_.push_back(node);
-            }
-        }
-
-        node->ForEachComponent([this](component::Component *comp) { AddComponent(comp); });
-
+    void Scene::OnNodeAdded(Node* node) {
+        node->AddListener(this);
         dirtyNodesPtr_->push_back(node);
-        if (node->GetReceiveTypes()[static_cast<short>(ReceiverType::Window)]) {
+
+        if (node->GetUpdateType() == UpdateType::Active) {
+            activeUpdateNodes_.push_back(node);
+        }
+        if (node->GetReceiverType(ReceiverType::Window)) {
             windowEventReceiverNodes_.push_back(node);
         }
-        if (node->GetReceiveTypes()[static_cast<short>(ReceiverType::Input)]) {
+        if (node->GetReceiverType(ReceiverType::Input)) {
             inputEventReceiverNodes_.push_back(node);
+        }
+        if (!componentEventHandler_.empty()) {
+            node->ForEachComponent([this](component::Component* component) {
+                for (auto* listener : componentEventHandler_) {
+                    listener->Handle(event::Component(component, event::Component::ChangeType::Added));
+                }
+            });
         }
     }
 
-    void Scene::NodeRemoved(const Node *node) {
-        switch (node->GetType()) {
-        case Type::Viewer:
-            viewer_ = nullptr;
-            break;
-        default:
-            if (node->GetUpdateType() == UpdateType::Active) {
-                for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
-                    if (*itr == node) {
-                        activeUpdateNodes_.erase(itr);
-                        break;
-                    }
+    void Scene::RemoveChild(Node* node) {
+        OnNodeRemoved(node);
+        ForEachChild(node, [this](Node* child) { OnNodeRemoved(child); });
+        Node::RemoveChild(node);
+    }
+
+    void Scene::OnNodeRemoved(Node* node) {
+        /*
+#ifdef DEBUG
+        if (node->GetScene() != this) {
+            throw std::runtime_error("node does not belong to this scene");
+        }
+#endif*/
+        if (node->GetUpdateType() == UpdateType::Active) {
+            for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
+                if (*itr == node) {
+                    activeUpdateNodes_.erase(itr);
+                    break;
                 }
             }
         }
-        if (node->GetReceiveTypes()[static_cast<short>(ReceiverType::Window)]) {
+        if (node->GetReceiverType(ReceiverType::Window)) {
             for (auto itr = windowEventReceiverNodes_.begin(); itr != windowEventReceiverNodes_.end(); ++itr) {
                 if (*itr == node) {
                     windowEventReceiverNodes_.erase(itr);
@@ -185,7 +160,7 @@ namespace soil::stage::scene {
                 }
             }
         }
-        if (node->GetReceiveTypes()[static_cast<short>(ReceiverType::Input)]) {
+        if (node->GetReceiverType(ReceiverType::Input)) {
             for (auto itr = inputEventReceiverNodes_.begin(); itr != inputEventReceiverNodes_.end(); ++itr) {
                 if (*itr == node) {
                     inputEventReceiverNodes_.erase(itr);
@@ -193,120 +168,118 @@ namespace soil::stage::scene {
                 }
             }
         }
+        node->RemoveListener(this);
     }
 
-    void Scene::SetBeforeRenderViewer(
-        const std::function<void(viewer::Node *node, video::render::Pipeline *pipeline)> &before_render_viewer) {
-        beforeRenderViewer_ = before_render_viewer;
+    void Scene::addChild(Node* node) {
+        OnNodeAdded(node);
+        ForEachChild(node, [this](Node* child) { OnNodeAdded(child); });
+        Node::addChild(node);
     }
 
-    viewer::Node *Scene::GetViewer() const {
-        return viewer_;
+    void Scene::addHook(hook::Hook* hook) {
+        switch (hook->GetType()) {
+        case hook::Type::AfterUpdateScene:
+            {
+                auto* uHook = dynamic_cast<hook::UpdateHook*>(hook);
+#ifdef DEBUG
+                if (uHook == nullptr) {
+                    throw std::invalid_argument("hook can not be cast to UpdateHook");
+                }
+#endif
+                updateHooks_.push_back(uHook);
+                break;
+            }
+        case hook::Type::Render:
+            {
+                auto* rHook = dynamic_cast<hook::RenderHook*>(hook);
+#ifdef DEBUG
+                if (rHook == nullptr) {
+                    throw std::invalid_argument("hook can not be cast to RenderHook");
+                }
+#endif
+                renderHooks_.push_back(rHook);
+                break;
+            }
+        }
+        if (hook->GetHandlerType() == hook::Hook::HandlerType::Component) {
+            componentEventHandler_.push_back(hook);
+        }
     }
 
-    void Scene::RemoveComponentFeature(ComponentFeature *feature) {
-        for (auto itr = componentFeatures_.begin(); itr != componentFeatures_.end(); ++itr) {
-            if (*itr == feature) {
-                componentFeatures_.erase(itr);
+    void Scene::RemoveHook(hook::Hook* theHook) {
+        switch (theHook->GetType()) {
+        case hook::Type::AfterUpdateScene:
+            for (auto itr = updateHooks_.begin(); itr != updateHooks_.end(); ++itr) {
+                if (*itr == theHook) {
+                    updateHooks_.erase(itr);
+                    break;
+                }
+            }
+        case hook::Type::Render:
+            for (auto itr = renderHooks_.begin(); itr != renderHooks_.end(); ++itr) {
+                if (*itr == theHook) {
+                    renderHooks_.erase(itr);
+                    break;
+                }
             }
         }
     }
 
-    video::render::Container *Scene::GetRenderContainer() const {
+    video::render::Container* Scene::GetRenderContainer() const {
         return renderContainer_;
     }
 
-    void Scene::Handle(const event::Component &event) {
-        switch (event.GetChangeType()) {
-        case event::Component::ChangeType::Added:
-            ComponentAdded(event.GetOrigin());
-            break;
-        case event::Component::ChangeType::Removed:
-            ComponentRemoved(event.GetOrigin());
-            break;
-        case event::Component::ChangeType::State:
-            ComponentStateChanged(event.GetOrigin());
-            break;
+    void Scene::Handle(const event::Component& event) {
+        for (auto* handler : componentEventHandler_) {
+            handler->Handle(event);
         }
     }
 
-    void Scene::ComponentAdded(component::Component *component) {
-        for (auto *feature : componentFeatures_) {
-            feature->ComponentAdded(component);
+    Node* Scene::computeTopDirtyNode(Node* node, const Node* except) {
+        auto* topDirtyNode = node;
+        auto* current = node;
+        while (current != nullptr) {
+            current = current->GetParent();
+            if (current == except) {
+                current = nullptr;
+            } else {
+                if (current != nullptr && current != except && current->IsDirty()) {
+                    topDirtyNode = current;
+                }
+            }
         }
+        return topDirtyNode;
     }
 
-    void Scene::ComponentRemoved(component::Component *component) {
-        for (auto *feature : componentFeatures_) {
-            feature->ComponentRemoved(component);
-        }
-    }
-
-    void Scene::ComponentStateChanged(component::Component *component) {
-        for (auto *feature : componentFeatures_) {
-            feature->ComponentChanged(component);
-        }
-    }
-
-    Node *Scene::computeTopDirtyNode(Node *current) {
-        if (current->GetParent() != nullptr && current->GetParent()->IsDirty()) {
-            return computeTopDirtyNode(current->GetParent());
-        }
-        return current;
-    }
-
-    int Scene::GetUboMatricesBindingTarget() const {
-        return uboMatricesBindingTarget_;
-    }
-
-    void Scene::SetUboMatricesBindingTarget(const int ubo_matrices_binding_target) {
-        uboMatricesBindingTarget_ = ubo_matrices_binding_target;
-    }
-
-    video::render::Pipeline *Scene::GetPipeline() const {
+    video::render::Pipeline* Scene::GetPipeline() const {
         return pipeline_;
     }
 
-    void Scene::SetPipeline(video::render::Pipeline *const pipeline) {
+    void Scene::SetPipeline(video::render::Pipeline* const pipeline) {
         pipeline_ = pipeline;
     }
 
-    void Scene::forEachChild(const Node *node, const std::function<void(Node *child)> &func) {
-        for (auto *const child : node->GetChildren()) {
-            func(child);
-            forEachChild(child, func);
+    void Scene::SetStage(Stage* const stage) {
+        if (stage_ != nullptr) {
+            stage_->RemoveScene(this);
         }
+        stage_ = stage;
     }
 
-    void Scene::Handle(const input::Event &event) {
-        for (auto *const node : inputEventReceiverNodes_) {
+    void Scene::Handle(const input::Event& event) {
+        for (auto* const node : inputEventReceiverNodes_) {
             node->Handle(event);
         }
     }
 
-    void Scene::Handle(const WindowEvent &event) {
-        for (auto *const node : windowEventReceiverNodes_) {
+    void Scene::Handle(const WindowEvent& event) {
+        for (auto* const node : windowEventReceiverNodes_) {
             node->Handle(event);
         }
     }
 
-    int Scene::GetNextId() {
-        const auto nextId = ++nextId_;
-        if (nextId % SCENE_NODE_OFFSET == 0) {
-            throw std::runtime_error("nextId reached next scene range");
-        }
-        return nextId;
-    }
-
-    void Scene::AddChild(Node *child) {
-        Node::AddChild(child);
-    }
-
-    Resources &Scene::GetResources() const {
-        return stage_->GetResources();
-    }
-
-    Stage *Scene::GetStage() const {
+    Stage* Scene::GetStage() const {
         return stage_;
     }
 } // namespace soil::stage::scene

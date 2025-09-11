@@ -10,7 +10,7 @@ namespace soil::stage::scene::component {
         return batchKey_;
     }
 
-    video::render::Renderable* InstanceData::GetRenderable() {
+    video::render::RenderableObject* InstanceData::GetRenderable() {
         return nullptr;
     }
 } // namespace soil::stage::scene::component

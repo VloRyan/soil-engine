@@ -42,4 +42,4 @@ namespace soil::video::render::instance {
 } // namespace soil::video::render::instance
 
 
-#endif // SOIL_VIDEO_RENDER_INSTANCE_SORTED_BUFFER_H
+#endif

@@ -32,4 +32,4 @@ using HashMap = std::unordered_map<Key, T, HashType<Key> >;
 template <typename Key, typename T>
 using PairHashMap = std::unordered_map<Key, T, PairHash>;
 
-#endif // SOIL_BASE_H_
+#endif

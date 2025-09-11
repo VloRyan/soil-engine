@@ -1,84 +1,90 @@
 #include "video/render/pipeline.h"
-#include <plog/Log.h>
 
+#include <plog/Log.h>
 #include <utility>
 
 #include "stage/scene/viewer/node.h"
+#include "video/render/step/render.h"
+#include "video/render/step/set_renderables.h"
+#include "video/render/step/sort.h"
 
 namespace soil::video::render {
-    Pipeline::Pipeline(std::string name, Container *container) : name_(std::move(name)), container_(container) {}
+    Pipeline::Pipeline(std::string name, Container* container) : name_(std::move(name)) {
+        context_.RenderContainer = container;
+    }
 
     Pipeline::~Pipeline() {
         PLOG_DEBUG << "Delete Pipeline: " << name_;
-        processingSteps_.clear();
+        for (const auto* step : steps_) {
+            delete step;
+        }
     }
 
     void Pipeline::Clear() {
         PLOG_DEBUG << "Clear Pipeline: " << name_;
-        processingSteps_.clear();
+        steps_.clear();
     }
 
-    void Pipeline::Run(State &state) {
+    void Pipeline::Run(State& state) {
         context_.State = &state;
-        context_.RenderContainer = container_;
-        for (step::Base *step : processingSteps_) {
+        for (auto* step : steps_) {
             step->Process(context_);
         }
     }
 
-    void Pipeline::InsertStep(step::Base *step) {
+    void Pipeline::InsertStep(step::Base* step) {
+#ifdef DEBUG
+        for (auto* s : steps_) {
+            if (s->GetId() == step->GetId()) {
+                throw std::invalid_argument("step already exists");
+            }
+        }
+#endif
+
         if (step->GetRequiredStep() != nullptr) {
-            auto itr = processingSteps_.begin();
+            auto itr = steps_.begin();
             find(itr, step->GetRequiredStep());
 
-            if (itr == processingSteps_.end()) {
+            if (itr == steps_.end()) {
                 throw std::runtime_error("Can't find required step");
             }
             const auto afterRequiredStep = ++itr;
-            processingSteps_.insert(afterRequiredStep, step);
+            steps_.insert(afterRequiredStep, step);
         } else {
-            processingSteps_.push_back(step);
+            steps_.push_back(step);
         }
     }
 
-    void Pipeline::RemoveStep(const step::Base *step) {
-        auto itr = processingSteps_.begin();
+    void Pipeline::RemoveStep(const step::Base* step) {
+        auto itr = steps_.begin();
         find(itr, step);
 
-        if (itr == processingSteps_.end()) {
+        if (itr == steps_.end()) {
             throw std::runtime_error("Can't find required step");
         }
-        processingSteps_.erase(itr);
+        steps_.erase(itr);
         delete step;
     }
 
-    void Pipeline::find(std::vector<step::Base *>::iterator &itr, const step::Base *step) {
-        for (; itr != processingSteps_.end(); ++itr) {
+    void Pipeline::find(std::vector<step::Base*>::iterator& itr, const step::Base* step) {
+        for (; itr != steps_.end(); ++itr) {
             if (step == *itr) {
                 return;
             }
         }
     }
 
-    step::Base *Pipeline::GetStep(const uint number) {
-        auto itr = processingSteps_.begin();
-        uint counter = 0;
-        for (; itr != processingSteps_.end(); ++itr) {
-            if (counter == number) {
-                return *itr;
-            }
-            ++counter;
-        }
-        return nullptr;
-    }
-
-    step::Base *Pipeline::GetStep(const std::string &name) const {
-        for (auto *step : processingSteps_) {
-            if (step->GetId() == name) {
+    step::Base* Pipeline::GetStep(const std::string& id) const {
+        for (auto* step : steps_) {
+            if (step->GetId() == id) {
                 return step;
             }
         }
         return nullptr;
+    }
+
+    std::vector<step::Base*>& Pipeline::GetSteps() {
+        return steps_;
     }
 
     void Pipeline::SetName(std::string Name) {
@@ -89,18 +95,29 @@ namespace soil::video::render {
         return name_;
     }
 
-    step::Context &Pipeline::GetContext() {
+    step::Context& Pipeline::GetContext() {
         return context_;
     }
 
+    Pipeline* Pipeline::NewForwardRenderingPipeline(Container* container, bool depthTest, const std::string& name) {
+        auto* pipeline = new Pipeline(name, container);
+        pipeline->InsertStep(new step::SetRenderables("set_opaque", {.Blending = false}));
+        pipeline->InsertStep(new step::Sort("sort_near_far", step::Sort::Order::FrontToBack));
+        pipeline->InsertStep(new step::Render("render_opaque", {.Blend = false, .DepthTest = depthTest}));
+        pipeline->InsertStep(new step::SetRenderables("set_transparent", {.Blending = true}));
+        pipeline->InsertStep(new step::Sort("sort_far_near", step::Sort::Order::BackToFront));
+        pipeline->InsertStep(new step::Render("render_transparent", {.Blend = true, .DepthTest = depthTest}));
+        return pipeline;
+    }
+
     bool Pipeline::Empty() const {
-        return processingSteps_.empty();
+        return steps_.empty();
     }
 
     void Pipeline::Print() const {
         uint counter = 0;
         PLOG_INFO << name_ << ":";
-        for (auto *step : processingSteps_) {
+        for (auto* step : steps_) {
             ++counter;
             PLOG_INFO << "    " << counter << ": " << step->GetId();
         }

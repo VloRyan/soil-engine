@@ -13,4 +13,4 @@ namespace soil::video::vertex {
 } // namespace soil::video::vertex
 
 
-#endif // VAO_CREATOR_H
+#endif

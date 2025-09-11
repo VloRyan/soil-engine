@@ -13,4 +13,4 @@ namespace soil::sound {
         virtual void setData(const void *data, int dataSize, int format, int frequency) = 0;
     };
 } // namespace soil::sound
-#endif /* SOIL_SOUND_BUFFER_H */
+#endif

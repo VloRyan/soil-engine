@@ -6,7 +6,15 @@
 namespace soil::video::vertex {
     class AttributePointer final {
     public:
-        enum DataType : std::uint8_t { Double, Float, Int, UInt, Byte, UByte, UInt64 };
+        enum DataType : std::uint16_t {
+            Double = GL_DOUBLE,
+            Float = GL_FLOAT,
+            Int = GL_INT,
+            UInt = GL_UNSIGNED_INT,
+            Byte = GL_BYTE,
+            UByte = GL_UNSIGNED_BYTE,
+            UInt64 = GL_UNSIGNED_INT64_ARB,
+        };
 
         /**
          *
@@ -21,7 +29,7 @@ namespace soil::video::vertex {
          * @param offset Specifies a offset of the first component of the first generic vertex attribute in the array in
          * the data store of the buffer currently bound to the GL_ARRAY_BUFFER target. The initial value is 0.
          */
-        AttributePointer(buffer::Object *vbo, DataType dataType, int elementSize, GLsizei elementStride = 0,
+        AttributePointer(buffer::Object* vbo, DataType dataType, int elementSize, GLsizei elementStride = 0,
                          byte divisor = 0, size_t offset = 0);
 
         ~AttributePointer() = default;
@@ -44,7 +52,7 @@ namespace soil::video::vertex {
 
         [[nodiscard]] uint GetGLDataType() const;
 
-        [[nodiscard]] buffer::Object *GetVbo() const;
+        [[nodiscard]] buffer::Object* GetVbo() const;
 
         void SetNormalize(bool Normalize);
 
@@ -53,7 +61,7 @@ namespace soil::video::vertex {
         [[nodiscard]] static GLsizei GetSizeOfDataType(DataType type);
 
     private:
-        buffer::Object *vbo_;
+        buffer::Object* vbo_;
         DataType dataType_;
         int elementSize_;
         GLsizei elementStride_;
@@ -63,4 +71,4 @@ namespace soil::video::vertex {
     };
 } // namespace soil::video::vertex
 
-#endif // SOIL_VIDEO_VERTEX_ATTRIBUTE_POINTER_H_
+#endif

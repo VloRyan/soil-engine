@@ -13,7 +13,7 @@ namespace soil::util {
          * @return
          */
         static std::string GetDirectory(const std::string& path);
-        static bool IsAbsolutePath(const std::string& path);
+        static bool IsAbsolute(const std::string& path);
         static std::string GetExtension(const std::string& fileName, bool withDelimiter = true);
 
         /**
@@ -51,4 +51,4 @@ namespace soil::util {
         static int mkdir(const char* path);
     };
 } // namespace soil::util
-#endif /* SOIL_UTIL_FILES_H */
+#endif

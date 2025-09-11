@@ -58,4 +58,4 @@ namespace soil::sound {
         [[nodiscard]] virtual Buffer *GetBuffer() const = 0;
     };
 } // namespace soil::sound
-#endif // SOIL_SOUND_SOURCE_H
+#endif
