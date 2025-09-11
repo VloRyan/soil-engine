@@ -1,4 +1,6 @@
 #include "util/files.h"
+
+#include <filesystem>
 #include <sstream>
 #include <sys/stat.h>
 
@@ -8,15 +10,15 @@
 
 #endif
 namespace soil::util {
-    bool Files::Exists(const std::string &name) {
-        if (FILE *file = fopen(name.c_str(), "r")) {
+    bool Files::Exists(const std::string& name) {
+        if (FILE* file = fopen(name.c_str(), "r")) {
             fclose(file);
             return true;
         }
         return false;
     }
 
-    std::string Files::GetDirectory(const std::string &path) {
+    std::string Files::GetDirectory(const std::string& path) {
         const size_t lastSlash = path.find_last_of('/');
         const size_t lastBackSlash = path.find_last_of('\\');
         std::string directory;
@@ -36,14 +38,12 @@ namespace soil::util {
         return directory;
     }
 
-    bool Files::IsAbsolutePath(const std::string &path) {
-        if (path.length() < 3) {
-            return false;
-        }
-        return path.at(1) == ':';
+    bool Files::IsAbsolute(const std::string& path) {
+        const std::filesystem::path fsPath(path);
+        return fsPath.is_absolute();
     }
 
-    std::string Files::GetExtension(const std::string &fileName, const bool withDelimiter) {
+    std::string Files::GetExtension(const std::string& fileName, const bool withDelimiter) {
         const std::string::size_type offset = withDelimiter ? 0U : 1U;
         const std::string::size_type lastDot = fileName.rfind('.');
         if (lastDot == std::string::npos) {
@@ -57,7 +57,7 @@ namespace soil::util {
      * @param[in] path the full path of the directory to Create.
      * @return zero on success, otherwise -1.
      */
-    int Files::mkdir(const char *path) {
+    int Files::mkdir(const char* path) {
 #ifdef _WIN32
         return ::_mkdir(path);
 #else
@@ -69,7 +69,7 @@ namespace soil::util {
 #endif
     }
 
-    bool Files::MkDir(const std::string &path) {
+    bool Files::MkDir(const std::string& path) {
         std::string current_level;
         std::string level;
         std::stringstream stream(path);
@@ -88,18 +88,20 @@ namespace soil::util {
         return true;
     }
 
-    bool Files::FolderExists(const std::string &name) { return IsDirectory(name); }
+    bool Files::FolderExists(const std::string& name) {
+        return IsDirectory(name);
+    }
 
-    bool Files::IsDirectory(const std::string &path) {
-        struct stat stat_{};
+    bool Files::IsDirectory(const std::string& path) {
+        struct stat stat_ {};
         if (stat(path.c_str(), &stat_) == 0) {
             return (stat_.st_mode & S_IFDIR) != 0U;
         }
         return false;
     }
 
-    bool Files::IsFile(const std::string &path) {
-        struct stat stat_{};
+    bool Files::IsFile(const std::string& path) {
+        struct stat stat_ {};
         if (stat(path.c_str(), &stat_) == 0) {
             return (stat_.st_mode & S_IFREG) != 0U;
         }

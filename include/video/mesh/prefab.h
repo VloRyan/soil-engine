@@ -20,4 +20,4 @@ namespace soil::video::mesh {
         ~Prefab() = delete;
     };
 } // namespace soil::video::mesh
-#endif // PREFAB_H
+#endif

@@ -58,4 +58,4 @@ namespace soil::video {
     };
 } // namespace soil::video
 
-#endif // SOIL_VIDEO_MANAGER_H_
+#endif

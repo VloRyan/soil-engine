@@ -22,12 +22,12 @@ namespace soil::input {
                            [](GLFWwindow *, const int key, const int, const int action, const int) {
                                const auto state = static_cast<Event::State>(action);
                                mutex_.lock();
-                               instance->eventQueue_->push_back(Event::KeyChangedEvent(getKey(key), state));
+                               instance->eventQueue_->push_back(Event::MakeKeyChangedEvent(getKey(key), state));
                                mutex_.unlock();
                            });
         glfwSetCharCallback(window_->GetGLFWWindow(), [](GLFWwindow *, const unsigned int codepoint) {
             mutex_.lock();
-            instance->eventQueue_->push_back(Event::CharacterEnteredEvent(static_cast<char>(codepoint)));
+            instance->eventQueue_->push_back(Event::MakeCharacterEnteredEvent(static_cast<char>(codepoint)));
             mutex_.unlock();
         });
         glfwSetMouseButtonCallback(
@@ -38,12 +38,15 @@ namespace soil::input {
                 double y = NAN;
                 glfwGetCursorPos(instance->window_->GetGLFWWindow(), &x, &y);
                 mutex_.lock();
-                instance->eventQueue_->push_back(Event::MouseButtonEvent(mouseButton, state, glm::vec2(x, y)));
+                instance->eventQueue_->push_back(Event::MakeMouseButtonEvent(glm::vec2(x, y), mouseButton, state));
                 mutex_.unlock();
             });
         glfwSetScrollCallback(window_->GetGLFWWindow(), [](GLFWwindow *, const double xOffset, const double yOffset) {
+            double x = NAN;
+            double y = NAN;
+            glfwGetCursorPos(instance->window_->GetGLFWWindow(), &x, &y);
             mutex_.lock();
-            instance->eventQueue_->push_back(Event::MouseWheelEvent(glm::vec2(xOffset, yOffset)));
+            instance->eventQueue_->push_back(Event::MakeMouseWheelEvent(glm::vec2(x, y), glm::vec2(xOffset, yOffset)));
             mutex_.unlock();
         });
     }
@@ -58,7 +61,7 @@ namespace soil::input {
         }
         mutex_.unlock();
         if (const auto newCursorPos = window_->GetMouseCursorPos(); cursorPosition_ != newCursorPos) {
-            eventQueueBackBuffer->push_back(Event::MousePositionEvent(newCursorPos));
+            eventQueueBackBuffer->push_back(Event::MakeMousePositionEvent(newCursorPos));
             cursorPosition_ = newCursorPos;
         }
         processEvents(eventQueueBackBuffer);
@@ -110,7 +113,7 @@ namespace soil::input {
                 }
             }
             if (!isReleasedInThisFrame) {
-                eventQueue_->push_back(Event::KeyChangedEvent(pressedKey, Event::State::Press));
+                eventQueue_->push_back(Event::MakeKeyChangedEvent(pressedKey, Event::State::Press));
             }
         }
         for (const MouseButton pressedButton : pressedButtons) {
@@ -125,7 +128,7 @@ namespace soil::input {
                 double x;
                 double y;
                 glfwGetCursorPos(window_->GetGLFWWindow(), &x, &y);
-                eventQueue_->push_back(Event::MouseButtonEvent(pressedButton, Event::State::Press, glm::vec2(x, y)));
+                eventQueue_->push_back(Event::MakeMouseButtonEvent(glm::vec2(x, y), pressedButton, Event::State::Press));
             }
         }
     }
@@ -176,6 +179,8 @@ namespace soil::input {
             return Keys::Key_Left_Shift;
         case GLFW_KEY_GRAVE_ACCENT:
             return Keys::Circumflex;
+        case GLFW_KEY_TAB:
+            return Keys::Tab;
         default:
             return Keys::Unknown;
         }

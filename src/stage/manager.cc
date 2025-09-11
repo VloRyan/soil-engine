@@ -1,17 +1,15 @@
 #include "stage/manager.h"
 
-#include "input/manager.h"
-
+#include <ranges>
 #include <stdexcept>
 
+#include "input/manager.h"
+#include "stage/scene/scene.h"
 #include "stage/stage.h"
 #include "window.h"
 
-#include "stage/scene/scene.h"
-
 namespace soil::stage {
-    Manager::Manager() :
-        currentStage_(-1), resources_(nullptr), window_(nullptr), inputManager_(nullptr), nextStageId_(0) {}
+    Manager::Manager() : currentStage_(nullptr), resources_(nullptr), window_(nullptr), inputManager_(nullptr) {}
 
     Manager::~Manager() {
         if (window_ != nullptr) {
@@ -20,30 +18,49 @@ namespace soil::stage {
         if (inputManager_ != nullptr) {
             inputManager_->RemoveListener(this);
         }
-        for (const auto *stage : stages_) {
+        delete resources_;
+        for (const auto& stage : stages_ | std::views::values) {
             delete stage;
         }
     }
 
-    void Manager::SetCurrent(const Stage *stage) {
-        for (auto i = 0; i < stages_.size(); i++) {
-            if (stages_[i] == stage) {
-                currentStage_ = i;
-                return;
-            }
+    void Manager::SetCurrent(const std::string& name) {
+        auto* stage = GetStage(name);
+        if (stage == nullptr) {
+            throw std::runtime_error("Stage with name " + name + " not registered");
         }
-        throw std::runtime_error("Stage not found");
+        if (!stage->IsLoaded()) {
+            stage->Load();
+        }
+        currentStage_ = stage;
     }
 
-    int Manager::AddStage(Stage *stage) {
-        stages_.emplace_back(stage);
-        if (stages_.size() == 1) {
-            currentStage_ = 0;
-        }
-        return ++nextStageId_;
+    Stage* Manager::GetCurrent() const {
+        return currentStage_;
     }
 
-    void Manager::Init(Window *window, input::Manager *inputManager, Resources *resources) {
+    void Manager::RegisterStage(const std::string& name, Stage* stage) {
+        if (stages_.contains(name)) {
+            throw std::runtime_error("Stage with name " + name + " already registered");
+        }
+        stage->resources_ = resources_;
+        stages_.insert({name, stage});
+    }
+
+    Stage* Manager::RemoveStage(const std::string& name) {
+        auto* stage = GetStage(name);
+        if (stage == nullptr) {
+            return stage;
+        }
+        if (currentStage_ == stage) {
+            currentStage_ = nullptr;
+        }
+        stage->resources_ = nullptr;
+        stages_.erase(name);
+        return stage;
+    }
+
+    void Manager::Init(Window* window, input::Manager* inputManager, Resources* resources) {
         window_ = window;
         inputManager_ = inputManager;
         resources_ = resources;
@@ -52,43 +69,43 @@ namespace soil::stage {
     }
 
     void Manager::Update() const {
-#ifdef DEBUG
-        if (currentStage_ == -1) {
-            throw std::runtime_error("currentStage_ not set");
+        if (currentStage_ == nullptr) {
+            return;
         }
-#endif
-        stages_[currentStage_]->Update();
+        currentStage_->Update();
     }
 
-    void Manager::Render(video::render::State &state) const {
-#ifdef DEBUG
-        if (currentStage_ == -1) {
-            throw std::runtime_error("currentStage_ not set");
+    void Manager::Render(video::render::State& state) const {
+        if (currentStage_ == nullptr) {
+            return;
         }
-#endif
-        stages_[currentStage_]->Render(state);
+        currentStage_->Render(state);
     }
 
-    void Manager::Handle(const input::Event &event) {
-#ifdef DEBUG
-        if (currentStage_ == -1) {
-            throw std::runtime_error("currentStage_ not set");
+    void Manager::Handle(const input::Event& event) {
+        if (currentStage_ == nullptr) {
+            return;
         }
-#endif
-        stages_[currentStage_]->Handle(event);
+        currentStage_->Handle(event);
     }
 
-    void Manager::Handle(const WindowEvent &event) {
-#ifdef DEBUG
-        if (currentStage_ == -1) {
-            throw std::runtime_error("currentStage_ not set");
+    void Manager::Handle(const WindowEvent& event) {
+        if (currentStage_ == nullptr) {
+            return;
         }
-#endif
-        stages_[currentStage_]->Handle(event);
+        currentStage_->Handle(event);
     }
 
-    Resources &Manager::GetResources() const {
+    Resources& Manager::GetResources() const {
         return *resources_;
+    }
+
+    Stage* Manager::GetStage(const std::string& name) const {
+        const auto itr = stages_.find(name);
+        if (itr == stages_.end()) {
+            return nullptr;
+        }
+        return itr->second;
     }
 
 

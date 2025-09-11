@@ -97,4 +97,4 @@ namespace soil::video::buffer {
         AccessType access_;
     };
 } // namespace soil::video::buffer
-#endif /* SOIL_VIDEO_BUFFER_OBJECT_H */
+#endif

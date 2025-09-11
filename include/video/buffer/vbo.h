@@ -25,4 +25,4 @@ namespace soil::video::buffer {
     };
 } // namespace soil::video::buffer
 
-#endif // SOIL_VIDEO_BUFFER_VBO_H_
+#endif

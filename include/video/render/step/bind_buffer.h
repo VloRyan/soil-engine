@@ -19,4 +19,4 @@ namespace soil::video::render::step {
     };
 } // namespace soil::video::render::step
 
-#endif // SOIL_VIDEO_RENDER_STEPBIND_BUFFER_H
+#endif

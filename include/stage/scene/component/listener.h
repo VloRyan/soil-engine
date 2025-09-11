@@ -13,11 +13,11 @@ namespace soil::stage::scene::component {
 
         [[nodiscard]] sound::Listener *GetListener() const;
 
-        void UpdateMatrix(const glm::mat4 &matrix) override;
+        void UpdateTransform(const glm::mat4 &matrix) override;
 
     private:
         sound::Listener *listener_;
     };
 } // namespace soil::stage::scene::component
 
-#endif // SOIL_STAGE_SCENE_COMPONENT_LISTENER_H
+#endif

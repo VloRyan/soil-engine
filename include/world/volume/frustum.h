@@ -43,4 +43,4 @@ namespace soil::world::volume {
     };
 } // namespace soil::world::volume
 
-#endif // SOIL_WORLD_VOLUME_FRUSTUM_H
+#endif

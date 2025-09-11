@@ -19,4 +19,4 @@ namespace soil::sound {
         unsigned char *Data;
     };
 } // namespace soil::sound
-#endif // SOIL_SOUND_FILE_H
+#endif

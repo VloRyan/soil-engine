@@ -1,4 +1,5 @@
 #include "shape_instance.h"
+
 #include "video/vertex/vertex.h"
 
 namespace soil_samples::instancing {
@@ -19,7 +20,7 @@ namespace soil_samples::instancing {
         {.Elements = 1, .Type = soil::video::vertex::AttributePointer::DataType::UInt},
     };
 
-    ShapeInstance::ShapeInstance(const bool isOpaque) : InstanceData(BATCH_KEY, isOpaque) {}
+    ShapeInstance::ShapeInstance(const bool isOpaque) : InstanceData(BATCH_NAME, isOpaque) {}
 
     uint ShapeInstance::GetTextureIndex() const {
         return data_.TextureIndex;
@@ -57,8 +58,8 @@ namespace soil_samples::instancing {
         SetDirty();
     }
 
-    void ShapeInstance::UpdateMatrix(const glm::mat4& matrix) {
-        InstanceData::UpdateMatrix(matrix);
+    void ShapeInstance::UpdateTransform(const glm::mat4& matrix) {
+        InstanceData::UpdateTransform(matrix);
         data_.Matrix = matrix;
     }
 

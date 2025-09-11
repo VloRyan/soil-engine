@@ -25,4 +25,4 @@ namespace soil::video {
     using EventHandler = event::Handler<Event>;
 } // namespace soil::video
 
-#endif // SOIL_VIDEO_EVENT_H_
+#endif

@@ -5,15 +5,7 @@
 
 namespace soil_samples::basic {
     Shape::Shape(const soil::video::mesh::Data& mesh, const bool isOpaque, soil::video::shader::Shader* shader) :
-        MeshComponent(mesh, shader, isOpaque), texture_(nullptr), size_(1.F), color_(1.F) {}
-
-    soil::video::texture::Texture* Shape::GetTexture() const {
-        return texture_;
-    }
-
-    void Shape::SetTexture(soil::video::texture::Texture* const texture) {
-        texture_ = texture;
-    }
+        MeshComponent(mesh, shader, isOpaque), size_(1.F), color_(1.F), textureUnit_(0) {}
 
     glm::vec2 Shape::GetSize() const {
         return size_;
@@ -31,6 +23,14 @@ namespace soil_samples::basic {
         color_ = color;
     }
 
+    byte Shape::GetTextureUnit() const {
+        return textureUnit_;
+    }
+
+    void Shape::SetTextureUnit(const byte textureUnit) {
+        this->textureUnit_ = textureUnit;
+    }
+
     Shape* Shape::New(const soil::stage::Resources& resources, const bool isOpaque,
                       soil::video::shader::Shader* shader) {
         const auto* mesh =
@@ -41,11 +41,15 @@ namespace soil_samples::basic {
         return new Shape(*mesh, isOpaque, shader);
     }
 
-    void Shape::PrepareRender() {
+    float Shape::DistanceTo(const glm::vec3& point) {
+        return glm::distance(point.z, GetParent()->GetWorldPosition().z);
+    }
+
+    void Shape::PrepareRender(soil::video::render::State& state) {
         GetShader()->Use();
         GetShader()->SetUniform("Transform", GetParent()->GetWorldTransform());
         GetShader()->SetUniform("Size", GetSize());
         GetShader()->SetUniform("Color", GetColor());
-        GetShader()->SetTexture2d(0, texture_, "Texture");
+        GetShader()->SetUniform("Texture", GetTextureUnit());
     }
 } // namespace soil_samples::basic

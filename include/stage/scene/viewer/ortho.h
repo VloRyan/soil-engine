@@ -8,19 +8,18 @@ namespace soil::stage::scene::viewer {
 
     class Ortho final : public Node {
     public:
-        explicit Ortho(scene::Node *parent, glm::ivec2 resolution);
+        explicit Ortho(glm::ivec2 resolution);
         ~Ortho() override = default;
         void Look(glm::vec3 pos, glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
         [[nodiscard]] OrthoType GetOrthoType() const;
-        void SetOrthoType(OrthoType ortho_type);
+        void SetOrthoType(OrthoType orthoType);
 
         [[nodiscard]] glm::mat4 GetViewMatrix() const override;
         [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
-        void SetPosition(glm::vec3 pos) override;
         void Update() override;
 
     protected:
-        void UpdateProjection(const glm::ivec2 &size) override;
+        void UpdateProjection(const glm::ivec2& size) override;
 
     private:
         void UpdateDirty() override;
@@ -33,4 +32,4 @@ namespace soil::stage::scene::viewer {
     };
 } // namespace soil::stage::scene::viewer
 
-#endif // SOIL_STAGE_SCENE_VIEWER_GUI_H_
+#endif

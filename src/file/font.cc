@@ -4,118 +4,86 @@
 #include <ranges>
 #include <utility>
 #include <vector>
+
 #include "util/files.h"
 #include "util/strings.h"
 
 namespace soil::file {
-    Font::Font(std::string fileName) :
-        fileName_(std::move(fileName)), lineHeight_(0), base_(0), spaceWidth_(0), padding_(0), imageSize_(0) {}
-
-    Font::~Font() {
-        for (const auto *letter : characterMap_ | std::views::values) {
-            delete letter;
+    Font* Font::Load(const std::string& filePath) {
+        if (std::string extension = util::Files::GetExtension(filePath); extension != ".fnt") {
+            throw std::invalid_argument("File must be .fnt file.");
         }
-    }
-
-    glm::vec4 Font::getPadding() const {
-        return padding_;
-    }
-
-    float Font::getSpaceWidth() const {
-        return spaceWidth_;
-    }
-
-    video::model::Letter *Font::getCharacter(const uint id) {
-        if (const auto itr = characterMap_.find(id); itr != characterMap_.end()) {
-            return itr->second;
+        if (!util::Files::Exists(filePath)) {
+            throw std::runtime_error("File not found: " + filePath);
         }
-        return nullptr;
-    }
 
-    std::string Font::getTextureFile() const {
-        return textureFile_;
-    }
-
-    float Font::getHorizontalPadding() {
-        return padding_[1] + padding_[3];
-    }
-
-    float Font::getVerticalPadding() {
-        return padding_[0] + padding_[2];
-    }
-
-    uint Font::getImageSize() const {
-        return imageSize_;
-    }
-
-    std::string Font::getFileName() const {
-        return fileName_;
-    }
-
-    float Font::getLineHeight() const {
-        return lineHeight_;
-    }
-
-    float Font::getBase() const {
-        return base_;
-    }
-
-    Font *Font::Load(std::string fontFilePath) {
-        bool isFontFile = false;
-        if (std::string extension = util::Files::GetExtension(fontFilePath); extension.empty()) {
-            fontFilePath += ".fnt";
-            if (util::Files::Exists(fontFilePath)) {
-                isFontFile = true;
-            }
-        } else if (extension == "fnt") {
-            isFontFile = true;
-        }
-        if (!isFontFile) {
-            throw std::runtime_error("No .fnt file found for expression '" + fontFilePath + "'.");
-        }
         std::ifstream ifs;
-        ifs.open(fontFilePath, std::ios::in);
+        ifs.open(filePath, std::ios::in);
         if (ifs.fail()) {
-            std::string message = "Failed to open file: " + fontFilePath;
+            std::string message = "Failed to open file: " + filePath;
             throw std::runtime_error(message);
         }
 
-        auto *fontFile = new Font(fontFilePath);
+        auto* fontFile = new Font{
+            .FileName = filePath,
+            .LineHeight = 0,
+            .Base = 0,
+            .Padding = glm::ivec4(0),
+            .Characters = {},
+            .Kernings = {},
+            .TextureFileName = "",
+            .ImageSize = glm::ivec2(0),
+        };
         std::string line;
-        std::unordered_map<std::string, std::string> mappedValues;
+        std::unordered_map<std::string, std::string> values;
+        auto charCount = 0;
+        auto kerningCount = 0;
         while (std::getline(ifs, line)) {
-            mapValues(line, mappedValues);
-            std::string lineType = getValue("LINE_TYPE", mappedValues);
-            if (lineType == "info") {
-                loadInfos(fontFile, mappedValues);
+            switch (parseLineValues(line, values)) {
+            case LineType::Info:
+                parseInfos(fontFile, values);
+                break;
+            case LineType::Common:
+                parseCommon(fontFile, values);
+                break;
+            case LineType::Page:
+                parsePage(fontFile, values);
+                break;
+            case LineType::Chars:
+                charCount = getIntValue("count", values);
+                break;
+            case LineType::Char:
+                parseChar(fontFile, values);
+                break;
+            case LineType::Kernings:
+                kerningCount = getIntValue("count", values);
+                break;
+            case LineType::Kerning:
+                parseKerning(fontFile, values);
+                break;
+            default:; // ignore
             }
-            if (lineType == "common") {
-                loadCommon(fontFile, mappedValues);
-            }
-            if (lineType == "page") {
-                loadPage(fontFile, mappedValues);
-            }
-            if (lineType == "chars") {
-                loadChars(fontFile, mappedValues);
-            }
-            if (lineType == "char") {
-                loadChar(fontFile, mappedValues);
-            }
+            values.clear();
         }
         ifs.close();
-        float factor = 12.0F / (fontFile->getLineHeight() - fontFile->getBase());
-        fontFile->lineHeight_ = fontFile->lineHeight_ * factor;
+        if (charCount != fontFile->Characters.size()) {
+            throw std::runtime_error("Char count mismatch");
+        }
+        if (kerningCount != fontFile->Kernings.size()) {
+            throw std::runtime_error("Kerning count mismatch");
+        }
         return fontFile;
     }
 
-    void Font::mapValues(std::string line, std::unordered_map<std::string, std::string> &map) {
-        const std::vector<std::string> parts = util::Strings::split(std::move(line), " ");
+    Font::LineType Font::parseLineValues(const std::string& line,
+                                         std::unordered_map<std::string, std::string>& values) {
+        const std::vector<std::string> parts = util::Strings::split(line, " ");
+        auto lineType = LineType::Unknown;
         std::string key;
         std::string value;
         bool valueStartsWithDQuote = false;
         bool valueEndsWithDQuote = false;
-        map.clear();
-        for (const std::string &part : parts) {
+        for (const auto& part : parts) {
             std::string token;
             if (part.empty()) {
                 continue;
@@ -126,9 +94,23 @@ namespace soil::file {
             } else if (valueStartsWithDQuote) {
                 value += token;
             } else {
-                if (map.empty()) {
-                    key = "LINE_TYPE";
-                    value = part;
+                if (values.empty()) {
+                    if (part == "info") {
+                        lineType = LineType::Info;
+                    } else if (part == "common") {
+                        lineType = LineType::Common;
+                    } else if (part == "page") {
+                        lineType = LineType::Page;
+                    } else if (part == "chars") {
+                        lineType = LineType::Chars;
+                    } else if (part == "char") {
+                        lineType = LineType::Char;
+                    } else if (part == "kernings") {
+                        lineType = LineType::Kernings;
+                    } else if (part == "kerning") {
+                        lineType = LineType::Kerning;
+                    }
+                    continue;
                 } else {
                     auto msg = std::string("Invalid state(Part: ") + part;
                     msg += " Key: " + key;
@@ -145,80 +127,67 @@ namespace soil::file {
                 if (valueEndsWithDQuote) {
                     value = value.substr(0, value.length() - 1);
                 }
-                std::unordered_map<std::string, std::string>::value_type pair(key, value);
-                map.insert(pair);
+                values.insert({key, value});
             }
         }
+        return lineType;
     }
 
-    std::string Font::getValue(const std::string &key, std::unordered_map<std::string, std::string> &map) {
-        const auto itr = map.find(key);
-        if (itr == map.end()) {
+    std::string Font::getValue(const std::string& key, std::unordered_map<std::string, std::string>& values) {
+        const auto itr = values.find(key);
+        if (itr == values.end()) {
             return "";
         }
         return itr->second;
     }
 
-    int Font::getIntValue(const std::string &key, std::unordered_map<std::string, std::string> &map) {
-        return std::stoi(getValue(key, map));
+    int Font::getIntValue(const std::string& key, std::unordered_map<std::string, std::string>& values) {
+        return std::stoi(getValue(key, values));
     }
 
-    void Font::loadInfos(Font *fontFile, std::unordered_map<std::string, std::string> &map) {
-        const std::string paddingStr = getValue("padding", map);
-        const std::vector<std::string> parts = util::Strings::split(paddingStr, ",");
+    void Font::parseInfos(Font* fontFile, std::unordered_map<std::string, std::string>& values) {
+        const auto paddingStr = values["padding"];
+        const auto parts = util::Strings::split(paddingStr, ",");
         if (parts.size() != 4) {
             throw std::runtime_error("Invalid padding size: " + std::to_string(parts.size()));
         }
-        for (uint i = 0U; i < static_cast<uint>(parts.size()); i++) {
-            fontFile->padding_[static_cast<glm::vec4::length_type>(i)] = std::stof(parts[i]);
+        for (auto i = 0; i < parts.size(); i++) {
+            fontFile->Padding[i] = std::stoi(parts[i]);
         }
     }
 
-    void Font::loadCommon(Font *fontFile, std::unordered_map<std::string, std::string> &map) {
-        fontFile->imageSize_ = getIntValue("scaleW", map);
-        fontFile->lineHeight_ = static_cast<float>(getIntValue("lineHeight", map));
-        fontFile->base_ = static_cast<float>(getIntValue("base", map));
+    void Font::parseCommon(Font* fontFile, std::unordered_map<std::string, std::string>& values) {
+        fontFile->ImageSize = glm::ivec2(getIntValue("scaleW", values), getIntValue("scaleH", values));
+        fontFile->LineHeight = getIntValue("lineHeight", values);
+        fontFile->Base = getIntValue("base", values);
     }
 
-    void Font::loadChars(Font *, std::unordered_map<std::string, std::string> &) {
-        // do nothing
-    }
-
-    void Font::loadPage(Font *fontFile, std::unordered_map<std::string, std::string> &map) {
-        std::string texFile = getValue("file", map);
+    void Font::parsePage(Font* fontFile, std::unordered_map<std::string, std::string>& values) {
+        auto texFile = values["file"];
         if (util::Files::GetDirectory(texFile).empty()) {
-            const std::string fontFileDir = util::Files::GetDirectory(fontFile->getFileName());
+            const std::string fontFileDir = util::Files::GetDirectory(fontFile->FileName);
             texFile = fontFileDir + texFile;
         }
-        fontFile->textureFile_ = texFile;
+        fontFile->TextureFileName = texFile;
     }
 
-    void Font::loadChar(Font *fontFile, std::unordered_map<std::string, std::string> &map) {
-        const float factor = 12.0f / (fontFile->getLineHeight() - fontFile->getBase());
-        uint id = static_cast<uint>(getIntValue("id", map));
-        const bool isSpace = id == ' ';
-        const float xAdvance =
-            (static_cast<float>(getIntValue("xadvance", map)) - fontFile->getHorizontalPadding()) * factor;
-        if (isSpace) {
-            fontFile->spaceWidth_ = xAdvance;
-        }
+    void Font::parseChar(Font* fontFile, std::unordered_map<std::string, std::string>& values) {
+        auto id = getIntValue("id", values);
+        auto character = Character{
+            .Id = id,
+            .TextureCoord = glm::ivec2(getIntValue("x", values), getIntValue("y", values)),
+            .Offset = glm::ivec2(getIntValue("xoffset", values), getIntValue("yoffset", values)),
+            .Size = glm::ivec2(getIntValue("width", values), getIntValue("height", values)),
+            .XAdvance = getIntValue("xadvance", values),
+        };
+        fontFile->Characters.insert({id, character});
+    }
 
-        const glm::vec2 textureUV(
-            static_cast<float>(getIntValue("x", map)) / static_cast<float>(fontFile->imageSize_),
-            (static_cast<float>(fontFile->imageSize_) - static_cast<float>(getIntValue("y", map))) /
-                static_cast<float>(fontFile->imageSize_));
-        const float width = static_cast<float>(getIntValue("width", map));
-        const float height = static_cast<float>(getIntValue("height", map));
-        const glm::vec2 textureSize(static_cast<float>(width) / static_cast<float>(fontFile->imageSize_),
-                                    static_cast<float>(height) / static_cast<float>(fontFile->imageSize_));
-        const glm::vec2 quadSize(width * factor, height * factor);
-        const glm::vec2 offset(static_cast<float>(getIntValue("xoffset", map)) * factor,
-                               static_cast<float>(getIntValue("yoffset", map)) * factor);
-
-        auto *character =
-            new video::model::Letter(id, textureUV, glm::vec2(textureUV.x + textureSize.x, textureUV.y - textureSize.y),
-                                     offset, quadSize, xAdvance);
-        std::unordered_map<uint, video::model::Letter *>::value_type pair(id, character);
-        fontFile->characterMap_.insert(pair);
+    void Font::parseKerning(Font* fontFile, std::unordered_map<std::string, std::string>& values) {
+        fontFile->Kernings.emplace_back(Kerning{
+            .First = getIntValue("first", values),
+            .Second = getIntValue("second", values),
+            .Amount = getIntValue("amount", values),
+        });
     }
 } // namespace soil::file

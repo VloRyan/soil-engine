@@ -1,4 +1,6 @@
-# Soil Engine
+# 🌱 Soil Engine 🌱
+
+![Soil Engine Logo](.github/assets/logo.png)
 
 ## Introduction
 

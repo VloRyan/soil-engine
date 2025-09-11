@@ -22,4 +22,4 @@ namespace soil::video::texture {
         void copyData(const byte *data);
     };
 } // namespace soil::video::texture
-#endif /* SOIL_VIDEO_TEXTURE_DATA_H */
+#endif

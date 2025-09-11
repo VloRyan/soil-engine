@@ -16,7 +16,7 @@ namespace soil_samples::basic {
         inline static const std::string NAME = "Basic";
         void SetViewer(soil::stage::scene::viewer::Node* viewer);
 
-        void Prepare() override;
+        void Prepare(soil::video::render::State& state) override;
 
     private:
         soil::stage::scene::viewer::Node* viewer_;
@@ -24,4 +24,4 @@ namespace soil_samples::basic {
 } // namespace soil_samples::basic
 
 
-#endif // BASIC_SHADER_H
+#endif

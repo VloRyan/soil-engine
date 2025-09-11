@@ -1,22 +1,28 @@
-#ifndef SOIL_STAGE_SCENE_RENDER_DEFAULT_CONTAINER_H
-#define SOIL_STAGE_SCENE_RENDER_DEFAULT_CONTAINER_H
-#include "feature.h"
+#ifndef SOIL_STAGE_SCENE_RENDER_PLAIN_H
+#define SOIL_STAGE_SCENE_RENDER_PLAIN_H
+
+#include "stage/scene/component/visual_component.h"
+#include "stage/scene/hook/render_hook.h"
 
 namespace soil::stage::scene::render {
-    class Plain : public Feature {
+    class Plain : public hook::RenderHook {
     public:
-        Plain() = default;
+        explicit Plain(video::render::Container* renderContainer);
         ~Plain() override = default;
-        void Update() override;
-        void ComponentAdded(component::Component* component) override;
-        void ComponentRemoved(component::Component* component) override;
-        void ComponentChanged(component::Component* component) override;
+        void OnRender(video::render::State& state) override;
+
+        void Handle(const event::Component& event) override;
 
     protected:
+        void OnAdded(component::VisualComponent* component);
+        void OnRemoved(component::VisualComponent* component);
+        void OnStateChanged(component::VisualComponent* component);
+
+        video::render::Container* renderContainer_;
         std::vector<component::VisualComponent*> added_;
         std::vector<component::VisualComponent*> removed_;
         std::vector<component::VisualComponent*> changed_;
     };
 } // namespace soil::stage::scene::render
 
-#endif // SOIL_STAGE_SCENE_RENDER_DEFAULT_CONTAINER_H
+#endif

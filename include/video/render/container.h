@@ -1,10 +1,9 @@
 #ifndef SOIL_VIDEO_RENDER_FORWARD_CONTAINER_H
 #define SOIL_VIDEO_RENDER_FORWARD_CONTAINER_H
-#include <unordered_map>
 #include <vector>
 
-
 #include "renderable.h"
+#include "renderable_object.h"
 
 namespace soil::video::render {
     struct RenderDef {
@@ -19,26 +18,26 @@ namespace soil::video::render {
         }
     };
 
-    struct RenderDef_hash {
-        size_t operator()(const RenderDef& o) const {
-            return o.Blending;
-        }
-    };
-
     class Container {
     public:
         Container() = default;
         ~Container() = default;
-        void Add(Renderable* renderable, const RenderDef& state);
-        bool Remove(Renderable* renderable, const RenderDef& state);
-        const std::vector<Renderable*>& GetPerDef(RenderDef state);
+        void Add(RenderableObject* renderable, const RenderDef& state);
+        bool Remove(RenderableObject* renderable, const RenderDef& state);
+        void GetPerDef(std::vector<RenderableObject*>& v, const RenderDef& state);
+        bool Empty() const;
 
         inline static auto OPAQUE = RenderDef{.Blending = false};
         inline static auto NON_OPAQUE = RenderDef{.Blending = true};
 
     private:
-        std::unordered_map<RenderDef, std::vector<Renderable*>, RenderDef_hash> renderablesPerState;
+        struct RenderableWithState {
+            RenderableObject* Ptr;
+            RenderDef State;
+        };
+
+        std::vector<RenderableWithState> renderables_;
     };
 } // namespace soil::video::render
 
-#endif // SOIL_VIDEO_RENDER_FORWARD_CONTAINER_H
+#endif

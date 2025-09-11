@@ -22,4 +22,4 @@ namespace soil::video::buffer {
         int indexCount_;
     };
 } // namespace soil::video::buffer
-#endif // SOIL_VIDEO_BUFFER_EBO_H_
+#endif

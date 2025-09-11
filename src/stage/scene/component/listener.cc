@@ -8,8 +8,8 @@ namespace soil::stage::scene::component {
 
     sound::Listener *Listener::GetListener() const { return listener_; }
 
-    void Listener::UpdateMatrix(const glm::mat4 &matrix) {
-        Component::UpdateMatrix(matrix);
+    void Listener::UpdateTransform(const glm::mat4 &matrix) {
+        Component::UpdateTransform(matrix);
         listener_->SetPosition(matrix[3]);
         listener_->SetOrientation(glm::mat2x3(matrix[2], matrix[1]));
     }

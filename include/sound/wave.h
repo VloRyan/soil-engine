@@ -61,4 +61,4 @@ namespace soil::sound {
         static void loadHeader(FILE *wavFile, File &audioFile);
     };
 } // namespace soil::sound
-#endif // SOIL_SOUND_WAVE_H
+#endif

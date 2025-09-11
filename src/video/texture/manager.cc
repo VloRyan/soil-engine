@@ -47,7 +47,7 @@ namespace soil::video::texture {
         }
     }
 
-    Texture *Manager::GetTexture2D(const std::string &fileName, const Parameter &parameter) {
+    Texture* Manager::GetTexture2D(const std::string& fileName, const Parameter& parameter) {
         // Check if texture is loaded
         for (auto entry : texturesCache_) {
             const bool sameType = entry.texture->GetType() == Texture::Type::Texture2D;
@@ -57,17 +57,17 @@ namespace soil::video::texture {
                 return entry.texture;
             }
         }
-        const auto *data = loadData(fileName);
+        const auto* data = loadData(fileName);
         if (data == nullptr) {
             return nullptr;
         }
-        auto *texture = GenerateTexture2D(*data, fileName, parameter);
+        auto* texture = GenerateTexture2D(*data, fileName, parameter);
         delete data;
         const auto entry = texturesCache_.emplace_back(texture);
         return entry.texture;
     }
 
-    Texture *Manager::GenerateTexture2D(const Data &data, const std::string &name, const Parameter &parameter) {
+    Texture* Manager::GenerateTexture2D(const Data& data, const std::string& name, const Parameter& parameter) {
         logGLError("Error before loadTexture2D");
 
         // Open Gl stuff
@@ -98,8 +98,8 @@ namespace soil::video::texture {
         return new Texture(id, name, data.Size, Texture::Type::Texture2D, parameter.Format);
     }
 
-    Texture *Manager::GetTextureArray2D(const std::string &fileName, const int tilesPerDim,
-                                        const Parameter &parameter) {
+    Texture* Manager::GetTextureArray2D(const std::string& fileName, const int tilesPerDim,
+                                        const Parameter& parameter) {
         // Check if texture is loaded
         for (auto entry : texturesCache_) {
             if (const bool sameType = entry.texture->GetType() == Texture::Type::TextureArray2D;
@@ -108,20 +108,20 @@ namespace soil::video::texture {
                 return entry.texture;
             }
         }
-        const auto *data = loadData(fileName);
+        const auto* data = loadData(fileName);
         if (data == nullptr) {
             return nullptr;
         }
-        auto *texture = GenerateTextureArray2D(*data, fileName, tilesPerDim, parameter);
+        auto* texture = GenerateTextureArray2D(*data, fileName, tilesPerDim, parameter);
         delete data;
         const auto entry = texturesCache_.emplace_back(texture);
         return entry.texture;
     }
 
-    Texture *Manager::GenerateTextureArray2D(const Data &data, const std::string &name, const int tilesPerDim,
-                                             const Parameter &parameter) {
+    Texture* Manager::GenerateTextureArray2D(const Data& data, const std::string& name, const int tilesPerDim,
+                                             const Parameter& parameter) {
         logGLError("Error before generate");
-        const auto internalFormat = static_cast<GLint>(getGLFormat(parameter.Format));
+        const auto internalFormat = static_cast<GLint>(parameter.Format);
         const auto tileSize = data.Size.x / tilesPerDim;
         const auto channels = Data::getComponentsPerPixel(data.Format);
         const auto tilesCount = tilesPerDim * tilesPerDim;
@@ -146,7 +146,7 @@ namespace soil::video::texture {
 
         for (int iy = 0; iy < tilesPerDim; ++iy) {
             for (int ix = 0; ix < tilesPerDim; ++ix) {
-                unsigned char *ptr = data.Bytes + iy * rowLen * tileSize + ix * tileSizeX;
+                unsigned char* ptr = data.Bytes + iy * rowLen * tileSize + ix * tileSizeX;
                 for (int row = 0; row < tileSize; ++row) {
                     std::copy_n(ptr + row * rowLen, tileSizeX, tile.begin() + row * tileSizeX);
                 }
@@ -159,17 +159,17 @@ namespace soil::video::texture {
 
         glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         logGLError("Error before glGenerateMipmap");
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, getGLMinFilter(parameter.MinFilter));
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, getGLMagFilter(parameter.MagFilter));
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(parameter.MinFilter));
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(parameter.MagFilter));
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, getGLWrapType(parameter.Wrap));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, getGLWrapType(parameter.Wrap));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLint>(parameter.Wrap));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<GLint>(parameter.Wrap));
         logGLError("Error before glTexParameteri");
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         return new Texture(id, name, data.Size, Texture::Type::TextureArray2D, parameter.Format);
     }
 
-    Data *Manager::loadData(const std::string &fileName) {
+    Data* Manager::loadData(const std::string& fileName) {
         logGLError(("Error before loadData " + fileName).c_str());
 
         ILuint ilImgId = 0;
@@ -198,21 +198,21 @@ namespace soil::video::texture {
             return nullptr;
         }
 
-        auto *const data = new Data(ilGetData(), // will copy data
+        auto* const data = new Data(ilGetData(), // will copy data
                                     glm::ivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)),
                                     ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE));
         ilDeleteImages(1, &ilImgId);
         return data;
     }
 
-    Texture *Manager::GetCubeMap(const std::string &name, const std::string &ext,
+    Texture* Manager::GetCubeMap(const std::string& name, const std::string& ext,
                                  const Texture::Format internalFormat) {
         const uint openGlId = loadCubeMap(name, ext, internalFormat);
         const auto entry = texturesCache_.emplace_back(new Texture(openGlId, name, glm::uvec2(0)));
         return entry.texture;
     }
 
-    uint Manager::loadCubeMap(const std::string &name, const std::string &ext, const Texture::Format internalFormat) {
+    uint Manager::loadCubeMap(const std::string& name, const std::string& ext, const Texture::Format internalFormat) {
         PLOG_INFO << "load cubeMap " << name;
 
         std::string fileTop = "Texture/cubemap/" + name + "/" + name + "_top" + ext;
@@ -267,7 +267,7 @@ namespace soil::video::texture {
         return texId;
     }
 
-    void Manager::loadCubeMapFace(const std::string &texturePathFile, const GLenum target,
+    void Manager::loadCubeMapFace(const std::string& texturePathFile, const GLenum target,
                                   const Texture::Format internalFormat) {
         ILuint ilImgId = 0;
         // Generate the main image name to Use.
@@ -292,14 +292,13 @@ namespace soil::video::texture {
         // CubeMap texture have origin top left
         iluFlipImage();
 
-        glTexImage2D(target, 0, static_cast<GLint>(getGLFormat(internalFormat)), width, height, 0, format, type,
-                     ilGetData());
+        glTexImage2D(target, 0, static_cast<GLint>(internalFormat), width, height, 0, format, type, ilGetData());
         logGLError("Error after glTexImage2D");
 
         ilDeleteImages(1, &ilImgId);
     }
 
-    void Manager::logGLError(const char *text) {
+    void Manager::logGLError(const char* text) {
         if (const GLenum glError = glGetError(); glError != GL_NO_ERROR) {
             switch (glError) {
             case GL_INVALID_ENUM:
@@ -318,103 +317,12 @@ namespace soil::video::texture {
         }
     }
 
-    GLenum Manager::getGLFormat(const Texture::Format format) {
-        switch (format) {
-        case Texture::Format::RGB:
-            return GL_RGB;
-        case Texture::Format::RGBA:
-            return GL_RGBA;
-        case Texture::Format::RGBA16F:
-            return GL_RGBA16F;
-        case Texture::Format::sRGB:
-            return GL_SRGB;
-        case Texture::Format::sRGBA:
-            return GL_SRGB_ALPHA;
-        case Texture::Format::DepthComponent:
-            return GL_DEPTH_COMPONENT;
-        case Texture::Format::DepthComponent16:
-            return GL_DEPTH_COMPONENT16;
-        case Texture::Format::DepthComponent24:
-            return GL_DEPTH_COMPONENT24;
-        case Texture::Format::DepthComponent32:
-            return GL_DEPTH_COMPONENT32;
-        }
-        throw std::runtime_error("unknown format: " + std::to_string(static_cast<uint>(format)));
-    }
-
-    Texture::Format Manager::getTextureFormat(const uint format) {
-        switch (format) {
-        case GL_RGB:
-            return Texture::Format::RGB;
-        case GL_RGBA:
-            return Texture::Format::RGBA;
-        case GL_SRGB:
-            return Texture::Format::sRGB;
-        case GL_SRGB_ALPHA:
-            return Texture::Format::sRGBA;
-        default:
-            throw std::runtime_error("unknown format: " + std::to_string(format));
-        }
-    }
-
-    GLint Manager::getGLWrapType(const Parameter::WrapType type) {
-        switch (type) {
-        case Parameter::WrapType::CLAMP_TO_EDGE:
-            return GL_CLAMP_TO_EDGE;
-        case Parameter::WrapType::CLAMP_TO_BORDER:
-            return GL_CLAMP_TO_BORDER;
-        case Parameter::WrapType::REPEAT:
-            return GL_REPEAT;
-        case Parameter::WrapType::MIRRORED_REPEAT:
-            return GL_MIRRORED_REPEAT;
-        }
-
-        throw std::runtime_error("unknown wrapType");
-    }
-
-    GLint Manager::getGLMinFilter(const Parameter::MinFilterType type) {
-        switch (type) {
-        case Parameter::MinFilterType::LINEAR:
-            return GL_LINEAR;
-        case Parameter::MinFilterType::LINEAR_MIPMAP_LINEAR:
-            return GL_LINEAR_MIPMAP_LINEAR;
-        case Parameter::MinFilterType::LINEAR_MIPMAP_NEAREST:
-            return GL_LINEAR_MIPMAP_NEAREST;
-        case Parameter::MinFilterType::NEAREST:
-            return GL_NEAREST;
-        case Parameter::MinFilterType::NEAREST_MIPMAP_LINEAR:
-            return GL_NEAREST_MIPMAP_LINEAR;
-        case Parameter::MinFilterType::NEAREST_MIPMAP_NEAREST:
-            return GL_NEAREST_MIPMAP_NEAREST;
-        }
-
-        throw std::runtime_error("unknown MinFilterType");
-    }
-
     bool Manager::isMipMapping(const Parameter::MinFilterType type) {
-        switch (type) {
-        case Parameter::MinFilterType::LINEAR_MIPMAP_LINEAR:
-            [[fallthrough]];
-        case Parameter::MinFilterType::LINEAR_MIPMAP_NEAREST:
-            [[fallthrough]];
-        case Parameter::MinFilterType::NEAREST_MIPMAP_LINEAR:
-            [[fallthrough]];
-        case Parameter::MinFilterType::NEAREST_MIPMAP_NEAREST:
-            return true;
-        default:
-            return false;
-        }
+        return type == Parameter::MinFilterType::LINEAR_MIPMAP_LINEAR ||
+            type == Parameter::MinFilterType::LINEAR_MIPMAP_NEAREST ||
+            type == Parameter::MinFilterType::NEAREST_MIPMAP_LINEAR ||
+            type == Parameter::MinFilterType::NEAREST_MIPMAP_NEAREST;
     }
 
-    GLint Manager::getGLMagFilter(const Parameter::MagFilterType type) {
-        switch (type) {
-        case Parameter::MagFilterType::LINEAR:
-            return GL_LINEAR;
-        case Parameter::MagFilterType::NEAREST:
-            return GL_NEAREST;
-        }
-        throw std::runtime_error("unknown MagFilterType");
-    }
-
-    TextureCacheEntry::TextureCacheEntry(Texture *texture) : useCount(1), texture(texture) {}
+    TextureCacheEntry::TextureCacheEntry(Texture* texture) : useCount(1), texture(texture) {}
 } // namespace soil::video::texture

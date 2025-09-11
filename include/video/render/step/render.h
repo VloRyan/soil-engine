@@ -6,13 +6,14 @@
 namespace soil::video::render::step {
     class Render final : public Base {
     public:
-        explicit Render(const std::string &id, RenderDef renderDef = {}, StateDef stateDef = {});
+        explicit Render(const std::string& id, StateDef stateDef = {});
         ~Render() override = default;
-        void Process(Context &context) override;
+        void Process(Context& context) override;
+        StateDef& GetStateDef();
 
     private:
         StateDef stateDef_;
         RenderDef renderDef_;
     };
 } // namespace soil::video::render::step
-#endif /* SOIL_VIDEO_RENDER_STEP_RENDER_H */
+#endif

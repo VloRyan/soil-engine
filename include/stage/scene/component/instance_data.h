@@ -9,7 +9,7 @@ namespace soil::stage::scene::component {
         InstanceData(std::string batchKey, bool opaque);
         ~InstanceData() override = default;
         std::string GetBatchKey();
-        [[nodiscard]] video::render::Renderable* GetRenderable() override;
+        [[nodiscard]] video::render::RenderableObject* GetRenderable() override;
 
     private:
         std::string batchKey_;
@@ -17,4 +17,4 @@ namespace soil::stage::scene::component {
 } // namespace soil::stage::scene::component
 
 
-#endif // SOIL_STAGE_SCENE_COMPONENT_INSTANCE_DATA_H
+#endif

@@ -39,4 +39,4 @@ namespace soil::video::shader {
     };
 } // namespace soil::video::shader
 
-#endif // SOIL_VIDEO_SHADER_CACHE_H_
+#endif

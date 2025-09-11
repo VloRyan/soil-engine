@@ -36,4 +36,4 @@ namespace soil::input {
     };
 } // namespace soil::input
 
-#endif // SOIL_INPUT_MANAGER_H_
+#endif

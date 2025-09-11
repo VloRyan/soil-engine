@@ -72,7 +72,8 @@ namespace soil::input {
         Key_Space,
         Key_Left_Shift,
         /** 94 -> '^'*/
-        Circumflex
+        Circumflex,
+        Tab
     };
 
     enum class MouseButton : uint8_t { Left = 0, Right, Middle, Mouse_4, Mouse_5, Mouse_6, Mouse_7, Mouse_8 };

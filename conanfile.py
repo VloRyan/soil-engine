@@ -9,13 +9,6 @@ class SoilEngineRecipe(ConanFile):
     version = "0.1"
     package_type = "library"
 
-    # Optional metadata
-    license = "<Put the package license here>"
-    author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of engine package here>"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
-
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False], "skip_test": {True, False},
@@ -23,7 +16,7 @@ class SoilEngineRecipe(ConanFile):
     default_options = {"shared": False, "fPIC": True, "skip_test": False, "build_samples": False}
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*", "samples/*"
+    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*", "samples/*", "benchmark/*",
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -37,6 +30,7 @@ class SoilEngineRecipe(ConanFile):
         cmake_layout(self)
 
     def requirements(self):
+        self.requires("opengl/system")
         self.requires("glfw/3.4")
         self.requires("devil/1.8.0")
         self.requires("glm/1.0.1", transitive_headers=True)
@@ -45,6 +39,7 @@ class SoilEngineRecipe(ConanFile):
         self.requires("gl3w/1.0")
 
         self.test_requires("gtest/1.16.0")
+        self.test_requires("benchmark/1.9.0")
 
     def generate(self):
         deps = CMakeDeps(self)
@@ -62,13 +57,16 @@ class SoilEngineRecipe(ConanFile):
 
         if self.options.build_samples:
             cmake.configure(variables={"BUILD_SAMPLES": "ON"})
-            
+
         cmake.build()
         if do_tests:
             test_folder = os.path.join("test")
+            benchmark_folder = os.path.join("benchmark")
             if self.settings.os == "Windows":
                 test_folder = os.path.join("test", str(self.settings.build_type))
+                benchmark_folder = os.path.join("benchmark", str(self.settings.build_type))
             self.run(os.path.join(test_folder, "test_soil_engine"))
+            # self.run(os.path.join(benchmark_folder, "benchmark_soil_engine"))
 
     def package(self):
         cmake = CMake(self)

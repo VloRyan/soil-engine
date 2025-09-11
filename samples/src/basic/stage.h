@@ -1,26 +1,30 @@
 #ifndef BASIC_STAGE_H
 #define BASIC_STAGE_H
-#include <stage/stage.h>
 
-
-#include "engine.h"
+#include "common/stage.h"
 #include "shape.h"
 
 namespace soil_samples::basic {
-    class Stage final : public soil::stage::Stage {
+    constexpr int SHAPES_PER_DIM = 8;
+
+    class Stage final : public common::Stage {
     public:
-        explicit Stage(soil::stage::Manager* manager);
+        explicit Stage();
         ~Stage() override = default;
         void Handle(const soil::WindowEvent& event) override;
 
+        void OnLoad() override;
+
+    protected:
+        void RegisterInputEvents(soil::input::EventMap& eventMap) override;
+
     private:
-        void initInput(soil::stage::scene::Scene* scene);
-        void initBackground(soil::stage::scene::Scene* scene, const std::string& textureName) const;
-        void initCarrots(soil::stage::scene::Scene* scene, const std::string& textureName);
-        std::array<Shape*, 4> shapes_;
+        void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
+        void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
+        std::array<Shape*, SHAPES_PER_DIM * SHAPES_PER_DIM> shapes_;
         bool printStatistics_;
     };
 } // namespace soil_samples::basic
 
 
-#endif // BASIC_STAGE_H
+#endif

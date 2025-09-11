@@ -15,4 +15,4 @@ namespace soil::video::render {
     };
 } // namespace soil::video::render
 
-#endif // SOIL_VIDEO_RENDER_FORWARD_RENDERING_H_
+#endif

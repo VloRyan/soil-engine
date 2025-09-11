@@ -65,4 +65,4 @@ namespace soil::video::shader {
         std::string tessellationEvalShaderName_;
     };
 } // namespace soil::video::shader
-#endif /* SOIL_VIDEO_SHADER_DEFINITION_H */
+#endif

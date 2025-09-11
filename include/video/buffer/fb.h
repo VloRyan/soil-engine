@@ -64,4 +64,4 @@ namespace soil::video::buffer {
         int clearBufferBits_;
     };
 } // namespace soil::video::buffer
-#endif /* SOIL_VIDEO_BUFFER_FRAMEBUFFER_H */
+#endif

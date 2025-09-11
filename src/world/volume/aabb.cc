@@ -1,4 +1,5 @@
 #include "world/volume/aabb.h"
+
 #include <algorithm>
 #include <bits/ranges_algobase.h>
 
@@ -72,6 +73,10 @@ namespace soil::world::volume {
         UpdateWorldPoints(position);
     }
 
+    glm::vec3 AABB::GetPosition() const {
+        return maxPoint_ - minPoint_;
+    }
+
     glm::vec3 AABB::GetPoint(const Point point) const {
         return worldPoints_[static_cast<int>(point)];
     }
@@ -86,7 +91,7 @@ namespace soil::world::volume {
 
     bool AABB::IsInside(const glm::vec3& min, const glm::vec3& max) const {
         for (auto i = 0; i < 3; i++) {
-            if (min[i] > minPoint_[i] || max[i] < maxPoint_[i]) {
+            if (minPoint_[i] > max[i] || maxPoint_[i] < min[i]) {
                 return false;
             }
         }
@@ -94,10 +99,20 @@ namespace soil::world::volume {
     }
 
     bool AABB::IsInsideXZ(const glm::vec3& min, const glm::vec3& max) const {
-        if (min.x > minPoint_.x || max.x < maxPoint_.x) {
+        if (minPoint_.x > max.x || maxPoint_.x < min.x) {
             return false;
         }
-        if (min.z > minPoint_.z || max.z < maxPoint_.z) {
+        if (minPoint_.z > max.z || maxPoint_.z < min.z) {
+            return false;
+        }
+        return true;
+    }
+
+    bool AABB::IsInside(const glm::vec2& min, const glm::vec2& max) const {
+        if (minPoint_.x > max.x || //
+            maxPoint_.x < min.x || //
+            minPoint_.z > max.y || //
+            maxPoint_.z < min.y) {
             return false;
         }
         return true;
@@ -136,9 +151,8 @@ namespace soil::world::volume {
         float maxT[NUMDIM];
         float candidatePlane[NUMDIM];
 
-        // Find candidate planes; this loop can be avoided if rays cast all from the eye(assume perspective
-        // view)
-        for (i = 0; i < NUMDIM; i++)
+        // Find candidate planes; this loop can be avoided if rays cast all from the eye(assume perspective view)
+        for (i = 0; i < NUMDIM; i++) {
             if (start[i] < minPoint_[i]) {
                 quadrant[i] = LEFT;
                 candidatePlane[i] = minPoint_[i];
@@ -150,10 +164,11 @@ namespace soil::world::volume {
             } else {
                 quadrant[i] = MIDDLE;
             }
+        }
 
         // Ray origin inside bounding box
         if (inside) {
-            return IntersectionResult{.Intersecting = true, .IntersectionPoint = start};
+            return IntersectionResult {.Intersecting = true, .IntersectionPoint = start};
         }
 
         // Calculate T distances to candidate planes */
@@ -168,27 +183,61 @@ namespace soil::world::volume {
         // Get largest of the maxT's for final choice of intersection */
         int whichPlane = 0;
         for (i = 1; i < NUMDIM; i++) {
-            if (maxT[whichPlane] < maxT[i]) whichPlane = i;
+            if (maxT[whichPlane] < maxT[i]) {
+                whichPlane = i;
+            }
         }
 
         // Check final candidate actually inside box
         if (maxT[whichPlane] < 0.) {
-            return IntersectionResult{.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
+            return IntersectionResult {.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
         }
         for (i = 0; i < NUMDIM; i++) {
             if (whichPlane != i) {
                 hitPoint[i] = start[i] + maxT[whichPlane] * dir[i];
                 if (hitPoint[i] < minPoint_[i] || hitPoint[i] > maxPoint_[i]) {
-                    return IntersectionResult{.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
+                    return IntersectionResult {.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
                 }
             } else {
                 hitPoint[i] = candidatePlane[i];
             }
         }
-        return IntersectionResult{.Intersecting = true, .IntersectionPoint = hitPoint}; // ray hits box
+        return IntersectionResult {.Intersecting = true, .IntersectionPoint = hitPoint}; // ray hits box
     }
 
     IntersectionResult AABB::IntersectsRayXZ(const glm::vec3& start, const glm::vec3& dir) const {
         return IntersectsRay({start.x, 0.F, start.z}, {dir.x, 0.F, dir.z});
+    }
+
+    std::vector<Line> AABB::GenerateLines() const {
+        return {
+            {.Start = points_[static_cast<int>(Point::TOP_BACK_LEFT)],
+             .End = points_[static_cast<int>(Point::TOP_BACK_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::TOP_BACK_RIGHT)],
+             .End = points_[static_cast<int>(Point::TOP_FRONT_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::TOP_FRONT_RIGHT)],
+             .End = points_[static_cast<int>(Point::TOP_FRONT_LEFT)]},
+            {.Start = points_[static_cast<int>(Point::TOP_FRONT_LEFT)],
+             .End = points_[static_cast<int>(Point::TOP_BACK_LEFT)]},
+
+            {.Start = points_[static_cast<int>(Point::BOTTOM_BACK_LEFT)],
+             .End = points_[static_cast<int>(Point::BOTTOM_BACK_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_BACK_RIGHT)],
+             .End = points_[static_cast<int>(Point::BOTTOM_FRONT_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_FRONT_RIGHT)],
+             .End = points_[static_cast<int>(Point::BOTTOM_FRONT_LEFT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_FRONT_LEFT)],
+             .End = points_[static_cast<int>(Point::BOTTOM_BACK_LEFT)]},
+
+            {.Start = points_[static_cast<int>(Point::BOTTOM_BACK_LEFT)],
+             .End = points_[static_cast<int>(Point::TOP_BACK_LEFT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_BACK_RIGHT)],
+             .End = points_[static_cast<int>(Point::TOP_BACK_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_FRONT_RIGHT)],
+             .End = points_[static_cast<int>(Point::TOP_FRONT_RIGHT)]},
+            {.Start = points_[static_cast<int>(Point::BOTTOM_FRONT_LEFT)],
+             .End = points_[static_cast<int>(Point::TOP_FRONT_LEFT)]},
+
+        };
     }
 } // namespace soil::world::volume

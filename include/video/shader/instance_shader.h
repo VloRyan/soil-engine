@@ -20,4 +20,4 @@ namespace soil::video::shader {
     };
 } // namespace soil::video::shader
 
-#endif // SOIL_VIDEO_SHADER_INSTANCE_SHADER_H
+#endif

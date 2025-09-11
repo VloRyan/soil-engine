@@ -36,7 +36,7 @@ namespace soil::video::render::instance {
 
         std::vector<std::pair<float, Instance *>> sortedInstances;
         sortedInstances.reserve(instances_.size());
-        // TODO
+        // TODO sort
         /*for (auto *instance : instances_) {
             // sortedInstances.emplace_back(instance->DistanceTo(viewerPos), instance);
         }*/

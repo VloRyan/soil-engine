@@ -38,7 +38,7 @@ namespace soil::util {
         return s;
     }
 
-    std::string Strings::to_string(const glm::vec2 value, const int precision, const std::string &delimiter,
+    std::string Strings::to_string(const glm::vec2 value, const int precision, const std::string& delimiter,
                                    const bool surroundingParentheses) {
         std::stringstream stream;
         if (surroundingParentheses) {
@@ -49,7 +49,7 @@ namespace soil::util {
         return stream.str();
     }
 
-    std::string Strings::to_string(const glm::vec3 value, const int precision, const std::string &delimiter,
+    std::string Strings::to_string(const glm::vec3 value, const int precision, const std::string& delimiter,
                                    const bool surroundingParentheses) {
         std::stringstream stream;
         if (surroundingParentheses) {
@@ -62,7 +62,7 @@ namespace soil::util {
         return stream.str();
     }
 
-    std::string Strings::to_string(const glm::vec4 value, const int precision, const std::string &delimiter,
+    std::string Strings::to_string(const glm::vec4 value, const int precision, const std::string& delimiter,
                                    const bool surroundingParentheses) {
         std::stringstream stream;
         if (surroundingParentheses) {
@@ -75,7 +75,40 @@ namespace soil::util {
         return stream.str();
     }
 
-    std::string Strings::to_string(const glm::mat4 &matrix, const int precision, const std::string &delimiter,
+    std::string Strings::to_string(const glm::ivec2 value, const std::string& delimiter,
+                                   const bool surroundingParentheses) {
+        std::stringstream stream;
+        if (surroundingParentheses) {
+            stream << "(" << value.x << delimiter << value.y << ")";
+        } else {
+            stream << value.x << delimiter << value.y;
+        }
+        return stream.str();
+    }
+
+    std::string Strings::to_string(const glm::ivec3 value, const std::string& delimiter,
+                                   const bool surroundingParentheses) {
+        std::stringstream stream;
+        if (surroundingParentheses) {
+            stream << "(" << value.x << delimiter << value.y << delimiter << value.z << ")";
+        } else {
+            stream << value.x << delimiter << value.y << delimiter << value.z;
+        }
+        return stream.str();
+    }
+
+    std::string Strings::to_string(const glm::ivec4 value, const std::string& delimiter,
+                                   const bool surroundingParentheses) {
+        std::stringstream stream;
+        if (surroundingParentheses) {
+            stream << "(" << value.x << delimiter << value.y << delimiter << value.z << delimiter << value.w << ")";
+        } else {
+            stream << value.x << delimiter << value.y << delimiter << value.z << delimiter << value.w;
+        }
+        return stream.str();
+    }
+
+    std::string Strings::to_string(const glm::mat4& matrix, const int precision, const std::string& delimiter,
                                    const bool surroundingParentheses) {
         std::stringstream stream;
         for (int i = 0; i < 4; ++i) {
@@ -93,17 +126,17 @@ namespace soil::util {
         return stream.str();
     }
 
-    void Strings::ltrim(std::string &str) {
+    void Strings::ltrim(std::string& str) {
         str.erase(str.begin(), std::ranges::find_if(str, [](const int chr) { return !std::isspace(chr); }));
     }
 
-    void Strings::rtrim(std::string &str) {
+    void Strings::rtrim(std::string& str) {
         str.erase(std::ranges::find_if(std::ranges::reverse_view(str), [](const int chr) { return !std::isspace(chr); })
                       .base(),
                   str.end());
     }
 
-    void Strings::trim(std::string &str) {
+    void Strings::trim(std::string& str) {
         ltrim(str);
         rtrim(str);
     }
@@ -123,11 +156,11 @@ namespace soil::util {
         return str;
     }
 
-    bool Strings::equals(const std::string &str1, const std::string &str2) {
+    bool Strings::equals(const std::string& str1, const std::string& str2) {
         return str1 == str2;
     }
 
-    bool Strings::equalsIgnoreCase(const std::string &str1, const std::string &str2) {
+    bool Strings::equalsIgnoreCase(const std::string& str1, const std::string& str2) {
         toLower(str1);
         toLower(str2);
         return str1 == str2;
@@ -143,7 +176,7 @@ namespace soil::util {
                                [](const byte letter) -> byte { return static_cast<byte>(std::toupper(letter)); });
     }
 
-    std::vector<std::string> Strings::split(std::string text, const std::string &by) {
+    std::vector<std::string> Strings::split(std::string text, const std::string& by) {
         std::string tmpText = std::move(text);
 
         size_t pos = 0U;
@@ -157,11 +190,11 @@ namespace soil::util {
         return retList;
     }
 
-    bool Strings::to_bool(const std::string &str) {
+    bool Strings::to_bool(const std::string& str) {
         return str == "true";
     }
 
-    glm::vec2 Strings::to_vec2(const std::string &str, const std::string &delimiter) {
+    glm::vec2 Strings::to_vec2(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 2) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + "' : " + str);
@@ -173,7 +206,7 @@ namespace soil::util {
         return returnValue;
     }
 
-    glm::vec3 Strings::to_vec3(const std::string &str, const std::string &delimiter) {
+    glm::vec3 Strings::to_vec3(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 3) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter +
@@ -186,7 +219,7 @@ namespace soil::util {
         return returnValue;
     }
 
-    glm::vec4 Strings::to_vec4(const std::string &str, const std::string &delimiter) {
+    glm::vec4 Strings::to_vec4(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 4) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter + "#" +
@@ -199,7 +232,7 @@ namespace soil::util {
         return returnValue;
     }
 
-    glm::uvec2 Strings::to_uvec2(const std::string &str, const std::string &delimiter) {
+    glm::uvec2 Strings::to_uvec2(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 2) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + "' : " + str);
@@ -211,7 +244,7 @@ namespace soil::util {
         return returnValue;
     }
 
-    glm::uvec3 Strings::to_uvec3(const std::string &str, const std::string &delimiter) {
+    glm::uvec3 Strings::to_uvec3(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 3) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter +
@@ -224,7 +257,7 @@ namespace soil::util {
         return returnValue;
     }
 
-    glm::uvec4 Strings::to_uvec4(const std::string &str, const std::string &delimiter) {
+    glm::uvec4 Strings::to_uvec4(const std::string& str, const std::string& delimiter) {
         const std::vector<std::string> parts = split(str, delimiter);
         if (parts.size() != 4) {
             throw std::runtime_error("String format does not match format '#" + delimiter + "#" + delimiter + "#" +
@@ -237,14 +270,14 @@ namespace soil::util {
         return returnValue;
     }
 
-    bool Strings::startsWith(const std::string &text, const std::string &starting) {
+    bool Strings::startsWith(const std::string& text, const std::string& starting) {
         if (text.length() >= starting.length()) {
             return text.starts_with(starting);
         }
         return false;
     }
 
-    bool Strings::endsWith(const std::string &text, const std::string &ending) {
+    bool Strings::endsWith(const std::string& text, const std::string& ending) {
         if (text.length() >= ending.length()) {
             return 0 == text.compare(text.length() - ending.length(), ending.length(), ending);
         }

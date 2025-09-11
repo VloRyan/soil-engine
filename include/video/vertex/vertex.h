@@ -5,9 +5,25 @@
 #include "attribute_pointer.h"
 
 namespace soil::video::vertex {
-    enum class IndexType { TYPE_USHORT = sizeof(ushort), TYPE_UINT = sizeof(uint) };
+    enum class IndexType : std::int16_t {
+        TYPE_USHORT = GL_UNSIGNED_SHORT,
+        TYPE_UINT = GL_UNSIGNED_INT,
+    };
 
-    enum VertexType { VERT_2D = 0, VERT_3D = 1 };
+    static size_t IndexSize(const IndexType type) {
+        switch (type) {
+        case IndexType::TYPE_USHORT:
+            return 2; // 16 bit
+        case IndexType::TYPE_UINT:
+            return 4; // 32 bit
+        }
+        return -1;
+    }
+
+    enum VertexType : std::int8_t {
+        VERT_2D = 0,
+        VERT_3D = 1,
+    };
 
     struct Vertex2d {
         glm::vec2 Position{glm::vec2(0.F)};
@@ -22,4 +38,4 @@ namespace soil::video::vertex {
         AttributePointer::DataType Type;
     };
 } // namespace soil::video::vertex
-#endif // SOIL_VIDEO_VERTEX_VERTEX_H_
+#endif

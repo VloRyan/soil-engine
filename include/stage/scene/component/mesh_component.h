@@ -5,19 +5,22 @@
 
 namespace soil::stage::scene::component {
 
-    class MeshComponent : public VisualComponent, public video::render::Renderable {
+    class MeshComponent : public VisualComponent, public video::render::RenderableObject {
     public:
         MeshComponent(const video::mesh::Data& mesh, video::shader::Shader* shader, bool opaque);
         ~MeshComponent() override;
         [[nodiscard]] virtual video::shader::Shader* GetShader() const;
 
-        [[nodiscard]] Renderable* GetRenderable() override;
-        void Render() override;
+        [[nodiscard]] RenderableObject* GetRenderable() override;
+        void Render(video::render::State& state) override;
+        float DistanceTo(const glm::vec3& point) override;
 
     protected:
         virtual void BuildVaoFrom(const video::mesh::Data& mesh);
 
-        virtual void PrepareRender() {}
+        virtual void PrepareRender(video::render::State& state) {}
+
+        [[nodiscard]] virtual video::render::VertexArray* GetVertexArray() const;
 
     private:
         video::render::VertexArray* vertexArray_;
@@ -25,4 +28,4 @@ namespace soil::stage::scene::component {
     };
 } // namespace soil::stage::scene::component
 
-#endif // SOIL_STAGE_SCENE_COMPONENT_MESH_COMPONENT_H
+#endif

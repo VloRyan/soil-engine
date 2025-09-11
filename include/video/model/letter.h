@@ -12,8 +12,8 @@ namespace soil::video::model {
         glm::vec2 Size;
         float XAdvance;
 
-        [[nodiscard]] bool isPrintable() const;
+        [[nodiscard]] bool IsPrintable() const;
     };
 } // namespace soil::video::model
 
-#endif // SOIL_VIDEO_MODEL_CHARACTER_H_
+#endif

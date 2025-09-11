@@ -43,4 +43,4 @@ namespace soil::video::texture {
         InternalFormat InternalFormat{InternalFormat::RGBA};
     };
 } // namespace soil::video::texture
-#endif /* SOIL_VIDEO_TEXTURE_PARAMETER_H */
+#endif

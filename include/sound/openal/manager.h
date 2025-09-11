@@ -34,4 +34,4 @@ namespace soil::sound::openal {
     };
 } // namespace soil::sound::openal
 
-#endif // SOIL_SOUND_OPENAL_MANAGER_H
+#endif

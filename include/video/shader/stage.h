@@ -43,4 +43,4 @@ namespace soil::video::shader {
         uint type_;
     };
 } // namespace soil::video::shader
-#endif // SOIL_VIDEO_SHADER_STAGE_H
+#endif
