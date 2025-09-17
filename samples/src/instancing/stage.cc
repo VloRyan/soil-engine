@@ -26,8 +26,9 @@ namespace soil_samples::instancing {
 
 
         auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
-        const std::vector textures = {GetResources().GetTexture2D(asset::GetPath("Textures/soil.png")),
-                                      GetResources().GetTexture2D(asset::GetPath("Textures/carrot.png"))};
+        const std::vector textures = {
+            GetResources().Textures().GetTexture2D(asset::GetPath("Textures/soil_engine.png")),
+            GetResources().Textures().GetTexture2D(asset::GetPath("Textures/carrot.png"))};
         shader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
         shader->SetTextures(textures);
         auto& renderState = GetResources().GetRenderState();

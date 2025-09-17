@@ -11,7 +11,6 @@
 #include "component/shape_tile_instance.h"
 #include "component/text.h"
 #include "file/font.h"
-#include "instancing/shader.h"
 #include "label.h"
 #include "menu/item.h"
 #include "menu/menu.h"
@@ -36,17 +35,11 @@ namespace soil_samples::gui {
 
 
         auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
-        auto* fontTexture = GetResources().GetTexture2D(fontFile->TextureFileName);
+        auto* fontTexture = GetResources().Textures().GetTexture2D(fontFile->TextureFileName);
 
         spriteSheet_ = soil::file::SpriteSheet::Load(asset::GetPath("Textures/Tiles/Gui.json"));
-        constexpr auto texParam =
-            soil::video::texture::Parameter{.Wrap = soil::video::texture::Parameter::WrapType::REPEAT,
-                                            .MinFilter = soil::video::texture::Parameter::MinFilterType::NEAREST,
-                                            .MagFilter = soil::video::texture::Parameter::MagFilterType::NEAREST,
-                                            .Format = soil::video::texture::Texture::sRGBA,
-                                            .InternalFormat = soil::video::texture::Parameter::InternalFormat::RGBA};
         auto* guiTexture =
-            GetResources().GetTextureArray2D(spriteSheet_.GetTextureFile(), spriteSheet_.TilesPerDim, texParam);
+            GetResources().Textures().GetTextureArray2D(spriteSheet_.GetTextureFile(), spriteSheet_.TilesPerDim);
         textures_ = {fontTexture, guiTexture};
 
 
