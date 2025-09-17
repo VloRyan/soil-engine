@@ -8,7 +8,7 @@
 namespace soil::stage {
     class Stage;
 
-    class Manager final : public input::EventHandler, public WindowEventHandler {
+    class Manager final : public input::EventHandler, public WindowEventHandler, public IStages {
     public:
         Manager();
 
@@ -17,8 +17,8 @@ namespace soil::stage {
         void Init(Window* window, input::Manager* inputManager, Resources* resources);
 
         void RegisterStage(const std::string& name, Stage* stage);
-        void SetCurrent(const std::string& name);
-        Stage* GetCurrent() const;
+        void SetCurrent(const std::string& name) override;
+        Stage* GetCurrent() const override;
         Stage* GetStage(const std::string& name) const;
         Stage* RemoveStage(const std::string& name);
 
