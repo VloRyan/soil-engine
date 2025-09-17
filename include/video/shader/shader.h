@@ -48,6 +48,7 @@ namespace soil::video::shader {
         static void DrawElementsIndirect(uint mode, vertex::IndexType indexType);
         static void DispatchCompute(uint num_groups_x, uint num_groups_y = 1, uint num_groups_z = 1);
 
+        void SetUniform(const std::string& name, bool value);
         void SetUniform(const std::string& name, byte value);
         void SetUniform(const std::string& name, int value);
         void SetUniform(const std::string& name, uint value);

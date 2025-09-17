@@ -10,7 +10,6 @@
 #include "instancing/shader.h"
 #include "instancing/shape_instance.h"
 #include "node.h"
-#include "shader.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -32,7 +31,7 @@ namespace soil_samples::text {
             scene->AddChild(new soil::stage::scene::viewer::Ortho(GetResources().GetWindow()->GetSize()));
         auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
         auto* instancing = scene->AddHook(new soil::stage::scene::render::Instancing(scene->GetRenderContainer()));
-        auto* bgTexture = GetResources().GetTexture2D(asset::GetPath("Textures/crt.jpg"));
+        auto* bgTexture = GetResources().Textures().GetTexture2D(asset::GetPath("Textures/crt.jpg"));
         auto& renderState = GetResources().GetRenderState();
         auto* bgShader = dynamic_cast<instancing::Shader*>(GetResources().GetShader(instancing::Shader::NAME));
         bgShader->SetTextures({bgTexture});
@@ -51,10 +50,10 @@ namespace soil_samples::text {
         scene->AddHook(new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
 
         auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
-        auto* fontTexture = GetResources().GetTexture2D(fontFile->TextureFileName);
+        auto* fontTexture = GetResources().Textures().GetTexture2D(fontFile->TextureFileName);
         renderState.SetTexture(1, *fontTexture);
 
-        auto* charShader = dynamic_cast<gui::CharacterShader*>(GetResources().GetShader(Shader::NAME));
+        auto* charShader = dynamic_cast<gui::CharacterShader*>(GetResources().GetShader(gui::CharacterShader::NAME));
         charShader->Use();
         charShader->SetViewer(viewer); // will update PV matrix in Shader::Prepare())
 

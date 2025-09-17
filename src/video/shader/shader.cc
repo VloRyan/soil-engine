@@ -189,6 +189,10 @@ namespace soil::video::shader {
         SetUniform(name, static_cast<int>(value));
     }
 
+    void Shader::SetUniform(const std::string& name, const bool value) {
+        SetUniform(name, value ? 1 : 0);
+    }
+
     void Shader::SetUniform(const std::string& name, const int value) {
         const UniformLocation location = GetUniformLocation(name);
 #ifdef DEBUG

@@ -77,7 +77,7 @@ namespace soil::video::texture {
         glGenTextures(1, &id);
         logGLError("Error after glGenTextures");
         glBindTexture(GL_TEXTURE_2D, id);
-        const auto internalFormat = static_cast<GLint>(parameter.InternalFormat);
+        const auto internalFormat = static_cast<GLint>(parameter.Format);
         // Load texture from file, and build all mipmap levels
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, data.Size.x, data.Size.y, 0, data.Format, data.Type, data.Bytes);
 

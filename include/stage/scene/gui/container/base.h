@@ -16,12 +16,12 @@ namespace soil::stage::scene::gui::container {
         [[nodiscard]] virtual int GetMargin() const;
         virtual void SetMargin(int margin);
         [[nodiscard]] virtual const glm::ivec2& GetItemsSize() const;
+        void RemoveChild(Node* node) override;
 
     protected:
         explicit Base(int margin = 0, glm::ivec4 padding = glm::ivec4(0));
         void addChild(Node* node) override;
         void addChild(Node* node, bool asItem);
-        void RemoveChild(Node* node) override;
         void BeforeNodeUpdate() override;
 
         virtual void arrangeItems() = 0;

@@ -1,12 +1,7 @@
-
-
-#include <iostream>
-
 #include "asset.h"
 #include "basic/shader.h"
 #include "basic/stage.h"
 #include "gui/character_shader.h"
-#include "gui/component/shape_tile_instance.h"
 #include "gui/shape_tile_instance_shader.h"
 #include "gui/shape_tile_shader.h"
 #include "gui/stage.h"
@@ -14,7 +9,6 @@
 #include "instancing/stage.h"
 #include "line/shader.h"
 #include "line/stage.h"
-#include "text/shader.h"
 #include "text/stage.h"
 #include "volume/stage.h"
 
@@ -44,7 +38,6 @@ int main(const int argc, const char* argv[]) {
     auto* vidMgr = engine.GetVideoManager();
     vidMgr->PrepareShader(new soil_samples::basic::Shader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::instancing::Shader(asset::GetPath("Shader/")));
-    // vidMgr->PrepareShader(new soil_samples::text::Shader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::ShapeTileShader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::ShapeTileInstanceShader(asset::GetPath("Shader/")));
     vidMgr->PrepareShader(new soil_samples::gui::CharacterShader(asset::GetPath("Shader/")));

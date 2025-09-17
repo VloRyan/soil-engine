@@ -29,8 +29,9 @@ namespace soil_samples::basic {
             scene->AddChild(new soil::stage::scene::viewer::Ortho(GetResources().GetWindow()->GetSize()));
         viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
 
-        const std::vector textures = {GetResources().GetTexture2D(asset::GetPath("Textures/soil.png")),
-                                      GetResources().GetTexture2D(asset::GetPath("Textures/carrot.png"))};
+        const std::vector textures = {
+            GetResources().Textures().GetTexture2D(asset::GetPath("Textures/soil_engine.png")),
+            GetResources().Textures().GetTexture2D(asset::GetPath("Textures/carrot.png"))};
 
         auto& renderState = GetResources().GetRenderState();
         for (auto* texture : textures) {

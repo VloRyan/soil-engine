@@ -26,9 +26,9 @@ namespace soil::video::texture {
 
         ~Manager();
 
-        Texture* GetTexture2D(const std::string& fileName, const Parameter& parameter);
+        Texture* GetTexture2D(const std::string& fileName, const Parameter& parameter = {});
 
-        Texture* GetTextureArray2D(const std::string& fileName, int tilesPerDim, const Parameter& parameter);
+        Texture* GetTextureArray2D(const std::string& fileName, int tilesPerDim, const Parameter& parameter = {});
 
         Texture* GetCubeMap(const std::string& name, const std::string& ext = ".tga",
                             Texture::Format internalFormat = Texture::Format::sRGB);
@@ -39,10 +39,10 @@ namespace soil::video::texture {
 
         void operator=(const Manager&) = delete;
 
-        static Texture* GenerateTexture2D(const Data& data, const std::string& name, const Parameter& parameter);
+        static Texture* GenerateTexture2D(const Data& data, const std::string& name, const Parameter& parameter = {});
 
         static Texture* GenerateTextureArray2D(const Data& data, const std::string& name, int tilesPerDim,
-                                               const Parameter& parameter);
+                                               const Parameter& parameter = {});
 
     private:
         static void initDevIL();

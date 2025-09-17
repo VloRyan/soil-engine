@@ -28,19 +28,10 @@ namespace soil::video::texture {
             LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
         };
 
-        enum class InternalFormat : GLint {
-            DEPTH_COMPONENT = GL_DEPTH_COMPONENT,
-            DEPTH_STENCIL = GL_DEPTH_STENCIL,
-            RED = GL_RED,
-            RG = GL_RG,
-            RGB = GL_RGB,
-            RGBA = GL_RGBA
-        };
         WrapType Wrap{WrapType::REPEAT};
         MinFilterType MinFilter{MinFilterType::LINEAR_MIPMAP_LINEAR};
         MagFilterType MagFilter{MagFilterType::LINEAR};
         Texture::Format Format{Texture::Format::sRGBA};
-        InternalFormat InternalFormat{InternalFormat::RGBA};
     };
 } // namespace soil::video::texture
 #endif

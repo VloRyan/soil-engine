@@ -22,7 +22,8 @@ namespace soil {
         videoManager_->Init(window_);
         inputManager_->Init(window_);
         soundManager_->Init();
-        const auto resources = new stage::Resources(window_, videoManager_, soundManager_, inputManager_);
+        const auto resources =
+            new stage::Resources(window_, videoManager_, soundManager_, inputManager_, stageManager_);
         stageManager_->Init(window_, inputManager_, resources);
     }
 

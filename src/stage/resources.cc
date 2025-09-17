@@ -1,9 +1,12 @@
 #include "stage/resources.h"
 
+#include "stage/manager.h"
+
 namespace soil::stage {
     Resources::Resources(Window* window, video::Manager* videoManager, sound::Manager* soundManager,
-                         input::Manager* inputManager) :
-        videoManager_(videoManager), soundManager_(soundManager), inputManager_(inputManager), window_(window) {}
+                         input::Manager* inputManager, Manager* stageManager) :
+        videoManager_(videoManager), soundManager_(soundManager), inputManager_(inputManager), window_(window),
+        stageManager_(stageManager) {}
 
     video::mesh::Data* Resources::GetMesh(const video::mesh::Prefab::Definition& definition) const {
         return videoManager_->GetMesh(definition);
@@ -25,21 +28,19 @@ namespace soil::stage {
         return soundManager_->GetListener();
     }
 
-    video::texture::Texture* Resources::GetTexture2D(const std::string& fileName,
-                                                     const video::texture::Parameter& parameter) const {
-        return videoManager_->Texture().GetTexture2D(fileName, parameter);
-    }
-
-    video::texture::Texture* Resources::GetTextureArray2D(const std::string& fileName, const int tilesPerDim,
-                                                          const video::texture::Parameter& parameter) const {
-        return videoManager_->Texture().GetTextureArray2D(fileName, tilesPerDim, parameter);
-    }
-
     video::render::State& Resources::GetRenderState() const {
         return videoManager_->GetState();
     }
 
     Window* Resources::GetWindow() const {
         return window_;
+    }
+
+    video::texture::Manager& Resources::Textures() const {
+        return videoManager_->Texture();
+    }
+
+    IStages& Resources::Stages() const {
+        return *stageManager_;
     }
 } // namespace soil::stage
