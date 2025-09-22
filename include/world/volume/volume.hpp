@@ -38,6 +38,7 @@ namespace soil::world::volume {
         [[nodiscard]] virtual IntersectionResult IntersectsRay(const glm::vec3& start, const glm::vec3& dir) const = 0;
         [[nodiscard]] virtual IntersectionResult IntersectsRayXZ(const glm::vec3& start,
                                                                  const glm::vec3& dir) const = 0;
+        [[nodiscard]] virtual bool IntersectsCircle(const glm::vec2& circleCenter, float radius) const = 0;
 
         [[nodiscard]] virtual std::vector<Line> GenerateLines() const = 0;
 

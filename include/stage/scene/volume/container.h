@@ -17,6 +17,8 @@ namespace soil::stage::scene::volume {
         ~Container() override;
         void OnUpdate() override;
         void ForEachAt(glm::vec3 pos, const std::function<bool(const component::BoundingVolume* volume)>& f) const;
+        void ForEachInRange(glm::vec3 pos, float radius,
+                            const std::function<bool(const component::BoundingVolume* volume)>& f) const;
 
         [[nodiscard]] const world::volume::Container* GetContainer() const;
         void Handle(const event::Component& event) override;

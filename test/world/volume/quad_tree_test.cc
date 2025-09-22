@@ -29,11 +29,18 @@ namespace soil::world::volume {
             quadTree.QueryVolumesAt(point, vol);
             return vol;
         }
+
+        static std::vector<const Volume*> VolumesInRangeAt(const QuadTree& quadTree, const glm::vec3 point,
+                                                           const float radius) {
+            std::vector<const Volume*> vol;
+            quadTree.QueryVolumesInRange(point, radius, vol);
+            return vol;
+        }
     };
 
     TEST_F(QuadTreeTest, InsertOneItem) {
-        auto quadTree = QuadTree(20, 10, 5.0F);
-        auto* volume = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
+        auto quadTree = QuadTree(20, 10, 5.F);
+        auto* volume = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
 
         quadTree.Insert(volume);
 
@@ -44,11 +51,11 @@ namespace soil::world::volume {
     }
 
     TEST_F(QuadTreeTest, InsertFourItems) {
-        auto quadTree = QuadTree(20, 10, 5.0F);
-        const auto* topLeft = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* topRight = NewBoundingVolumeAt({5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* bottomRight = NewBoundingVolumeAt({5.0F, 5.0F}, glm::vec3(5.0F));
-        const auto* bottomLeft = NewBoundingVolumeAt({-5.0F, 5.0F}, glm::vec3(5.0F));
+        auto quadTree = QuadTree(20, 10, 5.F);
+        const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+        const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
+        const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
+        const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
 
         quadTree.Insert(topLeft);
         quadTree.Insert(topRight);
@@ -60,12 +67,12 @@ namespace soil::world::volume {
     }
 
     TEST_F(QuadTreeTest, InsertFiveItems) {
-        auto quadTree = QuadTree(20, 10, 5.0F);
-        const auto* topLeft = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* topLeft2 = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* topRight = NewBoundingVolumeAt({5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* bottomRight = NewBoundingVolumeAt({5.0F, 5.0F}, glm::vec3(5.0F));
-        const auto* bottomLeft = NewBoundingVolumeAt({-5.0F, 5.0F}, glm::vec3(5.0F));
+        auto quadTree = QuadTree(20, 10, 5.F);
+        const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+        const auto* topLeft2 = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+        const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
+        const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
+        const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
 
         quadTree.Insert(topLeft);
         quadTree.Insert(topLeft2);
@@ -82,12 +89,12 @@ namespace soil::world::volume {
     }
 
     TEST_F(QuadTreeTest, InsertOnEdges) {
-        auto quadTree = QuadTree(64, 2, 4.0F);
-        const auto* a = NewBoundingVolumeAt({-8.0, -8.0F}, glm::vec3(1.0F));
-        const auto* b = NewBoundingVolumeAt({0, 8.0F}, glm::vec3(1.0F));
-        const auto* c = NewBoundingVolumeAt({-8.0f, 0.0F}, glm::vec3(1.0F));
-        const auto* d = NewBoundingVolumeAt({8.0F, 0.0F}, glm::vec3(1.0F));
-        const auto* e = NewBoundingVolumeAt({0, -8.0F}, glm::vec3(1.0F));
+        auto quadTree = QuadTree(64, 2, 4.F);
+        const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
+        const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
+        const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
+        const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
+        const auto* e = NewBoundingVolumeAt({0, -8.F}, glm::vec3(1.F));
 
 
         quadTree.Insert(a);
@@ -105,12 +112,12 @@ namespace soil::world::volume {
     }
 
     TEST_F(QuadTreeTest, QueryVolumesAt) {
-        auto quadTree = QuadTree(64, 2, 4.0F);
-        const auto* a = NewBoundingVolumeAt({-8.0, -8.0F}, glm::vec3(1.0F));
-        const auto* b = NewBoundingVolumeAt({0, 8.0F}, glm::vec3(1.0F));
-        const auto* c = NewBoundingVolumeAt({-8.0f, 0.0F}, glm::vec3(1.0F));
-        const auto* d = NewBoundingVolumeAt({8.0F, 0.0F}, glm::vec3(1.0F));
-        const auto* e = NewBoundingVolumeAt({0, -8.0F}, glm::vec3(1.0F));
+        auto quadTree = QuadTree(64, 2, 4.F);
+        const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
+        const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
+        const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
+        const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
+        const auto* e = NewBoundingVolumeAt({0.F, -8.F}, glm::vec3(1.F));
 
         quadTree.Insert(a);
         quadTree.Insert(b);
@@ -119,8 +126,8 @@ namespace soil::world::volume {
         quadTree.Insert(e);
 
         ASSERT_THAT(quadTree.GetNodeCount(), 5);
-        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(1, 0, 1)), testing::ElementsAre(b, d));
-        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(-1, 0, -1)), testing::ElementsAre(a, c, e));
+        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(1.F, 0.F, 1.F)), testing::ElementsAre(b, d));
+        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(-1.F, 0.F, -1.F)), testing::ElementsAre(a, c, e));
     }
 
     TEST_F(QuadTreeTest, DetermineLevel) {
@@ -134,12 +141,12 @@ namespace soil::world::volume {
     }
 
     TEST_F(QuadTreeTest, Remove) {
-        auto quadTree = QuadTree(512, 4, 1.0F);
-        const auto* topLeft = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* topLeft2 = NewBoundingVolumeAt({-5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* topRight = NewBoundingVolumeAt({5.0F, -5.0F}, glm::vec3(5.0F));
-        const auto* bottomRight = NewBoundingVolumeAt({5.0F, 5.0F}, glm::vec3(5.0F));
-        const auto* bottomLeft = NewBoundingVolumeAt({-5.0F, 5.0F}, glm::vec3(5.0F));
+        auto quadTree = QuadTree(512, 4, 1.F);
+        const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+        const auto* topLeft2 = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+        const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
+        const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
+        const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
 
         quadTree.Insert(topLeft);
         quadTree.Insert(topLeft2);
@@ -158,5 +165,27 @@ namespace soil::world::volume {
         ret = quadTree.Remove(topLeft);
         EXPECT_TRUE(ret);
         EXPECT_THAT(VolumesAt(quadTree, 1), testing::ElementsAre(topLeft2));
+    }
+
+    TEST_F(QuadTreeTest, QueryVolumesInRange) {
+        auto quadTree = QuadTree(64, 2, 4.F);
+        const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
+        const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
+        const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
+        const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
+        const auto* e = NewBoundingVolumeAt({0, -8.F}, glm::vec3(1.F));
+
+        quadTree.Insert(a);
+        quadTree.Insert(b);
+        quadTree.Insert(c);
+        quadTree.Insert(d);
+        quadTree.Insert(e);
+
+        ASSERT_THAT(quadTree.GetNodeCount(), 5);
+
+        EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 1.F), testing::ElementsAre(a));
+        EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 7.F), testing::ElementsAre(a, c, e));
+        EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(0.F, 0.F, 0.F), 10.F), testing::ElementsAre(a, b, c, d, e));
+        EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(-33.F, 0.F, -33.F), 0.9F), testing::ElementsAre());
     }
 } // namespace soil::world::volume

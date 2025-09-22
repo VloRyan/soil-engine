@@ -70,6 +70,17 @@ namespace soil::stage::scene::volume {
         }
     }
 
+    void Container::ForEachInRange(const glm::vec3 pos, const float radius,
+                                   const std::function<bool(const component::BoundingVolume* volume)>& f) const {
+        std::vector<const world::volume::Volume*> volumes;
+        container_->QueryVolumesInRange(pos, radius, volumes);
+        for (const auto* volume : volumes) {
+            if (const auto ret = f(dynamic_cast<const component::BoundingVolume*>(volume)); !ret) {
+                return;
+            }
+        }
+    }
+
     const world::volume::Container* Container::GetContainer() const {
         return container_;
     }

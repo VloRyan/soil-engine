@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <debug/set>
 #include <queue>
 #include <stack>
 
@@ -204,6 +205,7 @@ namespace soil::world::volume {
             const auto& node = nodes_[index];
             nodeIndices.pop();
             if (node.VolumesIndex != Node::UNSET) {
+                // TODO: Need to check if the volume also contains the point?
                 volumes.insert(volumes.end(), nodeVolumes_[node.VolumesIndex].begin(),
                                nodeVolumes_[node.VolumesIndex].end());
             }
@@ -215,6 +217,59 @@ namespace soil::world::volume {
                     }
                 }
             }
+        }
+    }
+
+    void QuadTree::QueryVolumesInRange(const glm::vec3& point, const float radius,
+                                       std::vector<const Volume*>& volumes) const {
+        QueryVolumesInRange(glm::vec2(point.x, point.z), radius, volumes);
+    }
+
+    void QuadTree::QueryVolumesInRange(const glm::vec2& point, const float radius,
+                                       std::vector<const Volume*>& volumes) const {
+        if (!nodes_[0].Contains(point)) {
+            return;
+        }
+        std::set<const Volume*> volumeSet;
+        std::queue<std::uint16_t> nodeIndices;
+        nodeIndices.push(0);
+        while (!nodeIndices.empty()) {
+            const auto index = nodeIndices.front();
+            const auto& node = nodes_[index];
+            nodeIndices.pop();
+            if (node.VolumesIndex != Node::UNSET) {
+                for (auto* vol : nodeVolumes_[node.VolumesIndex]) {
+                    if (volumeSet.contains(vol)) {
+                        continue;
+                    }
+                    if (vol->IntersectsCircle(point, radius)) {
+                        volumeSet.insert(vol);
+                    }
+                }
+                // volumeSet.insert(nodeVolumes_[node.VolumesIndex].begin(), nodeVolumes_[node.VolumesIndex].end());
+            }
+            if (node.ChildrenStartIndex != Node::UNSET) {
+                for (std::uint16_t i = 0; i < 4; ++i) {
+                    const auto childIdx = node.ChildrenStartIndex + i;
+                    if (nodes_[childIdx].IntersectsCircle(point, radius)) {
+                        nodeIndices.push(childIdx);
+                    }
+                }
+            }
+        }
+        volumes.insert(volumes.end(), volumeSet.begin(), volumeSet.end());
+    }
+
+    bool QuadTree::isInsideCircle(const glm::vec2& point, const glm::vec2& circleCenter, const float radius) {
+        // Calculate the squared distance from the center to the point
+        const int distSq = (point.x - circleCenter.x) * (point.x - circleCenter.x) +
+            (point.y - circleCenter.y) * (point.y - circleCenter.y);
+
+        // Compare the squared distance with the squared radius
+        if (distSq <= radius * radius) {
+            return true; // Point is inside or on the circle
+        } else {
+            return false; // Point is outside the circle
         }
     }
 

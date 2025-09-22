@@ -15,7 +15,7 @@ namespace soil::stage::scene::component {
         glm::vec3 IntersectionPoint;
     };
 
-    class BoundingVolume : public Component, public world::volume::Volume {
+    class BoundingVolume final : public Component, public world::volume::Volume {
     public:
         enum class ContactType {
             View = 0,
@@ -31,9 +31,9 @@ namespace soil::stage::scene::component {
 
         void UpdateTransform(const glm::mat4& matrix) override;
 
-        [[nodiscard]] virtual bool IsContactType(ContactType type) const;
+        [[nodiscard]] bool IsContactType(ContactType type) const;
 
-        virtual void SetContactType(ContactType type, bool value);
+        void SetContactType(ContactType type, bool value);
 
         [[nodiscard]] bool IsInside(const glm::vec3& min, const glm::vec3& max) const override;
         [[nodiscard]] bool IsInsideXZ(const glm::vec3& min, const glm::vec3& max) const override;
@@ -47,13 +47,14 @@ namespace soil::stage::scene::component {
 
         [[nodiscard]] world::volume::IntersectionResult IntersectsRayXZ(const glm::vec3& start,
                                                                         const glm::vec3& dir) const override;
+        [[nodiscard]] bool IntersectsCircle(const glm::vec2& circleCenter, float radius) const override;
 
         void SetPosition(const glm::vec3& position) override;
         [[nodiscard]] glm::vec3 GetPosition() const override;
         void SetParent(Node* parent) override;
         void SetContainer(world::volume::Container* container);
-        [[nodiscard]] virtual world::volume::Container* GetContainer() const;
-        [[nodiscard]] virtual std::vector<world::volume::Line> GenerateLines() const;
+        [[nodiscard]] world::volume::Container* GetContainer() const;
+        [[nodiscard]] std::vector<world::volume::Line> GenerateLines() const override;
 
     protected:
         Volume* volume_;

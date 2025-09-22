@@ -61,6 +61,10 @@ namespace soil::stage::scene::component {
         return volume_->IntersectsRayXZ(start, dir);
     }
 
+    bool BoundingVolume::IntersectsCircle(const glm::vec2& circleCenter, const float radius) const {
+        return volume_->IntersectsCircle(circleCenter, radius);
+    }
+
     void BoundingVolume::SetPosition(const glm::vec3& position) {
         if (position == volume_->GetPosition()) {
             return;
