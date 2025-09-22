@@ -7,10 +7,10 @@
 #include "util/deque.hpp"
 
 namespace soil::stage::scene {
-
     Scene::Scene() :
         Node(Type::Scene), stage_(nullptr), dirtyNodesPtr_(&dirtyNodes_),
-        renderContainer_(new video::render::Container()), pipeline_(nullptr) {}
+        renderContainer_(new video::render::Container()), pipeline_(nullptr) {
+    }
 
     Scene::~Scene() {
         if (const auto stage = GetStage(); stage != nullptr) {
@@ -19,7 +19,9 @@ namespace soil::stage::scene {
         activeUpdateNodes_.clear();
         windowEventReceiverNodes_.clear();
         inputEventReceiverNodes_.clear();
-        ForEachChild(this, [this](Node* child) { child->RemoveListener(this); });
+        ForEachChild(this, [this](Node* child) {
+            child->RemoveListener(this);
+        });
         delete renderContainer_;
     }
 
@@ -34,9 +36,30 @@ namespace soil::stage::scene {
 
     void Scene::Update() {
         for (const auto* node : nodesToDelete_) {
+            if (node->GetUpdateType() == UpdateType::Active) {
+                for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
+                    if (*itr == node) {
+                        activeUpdateNodes_.erase(itr);
+                        break;
+                    }
+                }
+            }
             delete node;
         }
         nodesToDelete_.clear();
+        for (auto* node : dirtyActiveUpdateNodes_) {
+            if (node->GetUpdateType() == UpdateType::Active) {
+                activeUpdateNodes_.push_back(node);
+            } else {
+                for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
+                    if (*itr == node) {
+                        activeUpdateNodes_.erase(itr);
+                        break;
+                    }
+                }
+            }
+        }
+        dirtyActiveUpdateNodes_.clear();
         for (auto* node : activeUpdateNodes_) {
             node->Update();
         }
@@ -65,20 +88,27 @@ namespace soil::stage::scene {
             break;
         case event::Node::ChangeType::ChildAdded:
             OnNodeAdded(event.GetChangedNode());
-            ForEachChild(event.GetChangedNode(), [this](Node* child) { OnNodeAdded(child); });
+            ForEachChild(event.GetChangedNode(), [this](Node* child) {
+                OnNodeAdded(child);
+            });
             break;
         case event::Node::ChangeType::Deleted:
             OnNodeRemoved(event.GetOrigin());
-            ForEachChild(event.GetOrigin(), [this](Node* child) { OnNodeRemoved(child); });
+            ForEachChild(event.GetOrigin(), [this](Node* child) {
+                OnNodeRemoved(child);
+            });
             break;
         case event::Node::ChangeType::ChildRemoved:
             OnNodeRemoved(event.GetChangedNode());
-            ForEachChild(event.GetChangedNode(), [this](Node* child) { OnNodeRemoved(child); });
+            ForEachChild(event.GetChangedNode(), [this](Node* child) {
+                OnNodeRemoved(child);
+            });
             break;
         case event::Node::ChangeType::UpdateType:
-            switch (event.GetOrigin()->GetUpdateType()) {
+            dirtyActiveUpdateNodes_.emplace_back(event.GetOrigin());
+            /*switch (event.GetOrigin()->GetUpdateType()) {
             case UpdateType::Active:
-                activeUpdateNodes_.emplace_back(event.GetOrigin());
+
                 break;
             case UpdateType::Passive:
                 for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
@@ -88,10 +118,12 @@ namespace soil::stage::scene {
                     }
                 }
                 break;
-            }
+            }*/
+            break;
         case event::Node::ChangeType::Component:
             Handle(event.GetComponentEvent());
-        default:; // do nothing
+            break;
+        default: ; // do nothing
         }
     }
 
@@ -114,7 +146,7 @@ namespace soil::stage::scene {
         dirtyNodesPtr_->push_back(node);
 
         if (node->GetUpdateType() == UpdateType::Active) {
-            activeUpdateNodes_.push_back(node);
+            dirtyActiveUpdateNodes_.push_back(node);
         }
         if (node->GetReceiverType(ReceiverType::Window)) {
             windowEventReceiverNodes_.push_back(node);
@@ -133,7 +165,9 @@ namespace soil::stage::scene {
 
     void Scene::RemoveChild(Node* node) {
         OnNodeRemoved(node);
-        ForEachChild(node, [this](Node* child) { OnNodeRemoved(child); });
+        ForEachChild(node, [this](Node* child) {
+            OnNodeRemoved(child);
+        });
         Node::RemoveChild(node);
     }
 
@@ -144,13 +178,15 @@ namespace soil::stage::scene {
             throw std::runtime_error("node does not belong to this scene");
         }
 #endif*/
+
         if (node->GetUpdateType() == UpdateType::Active) {
-            for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
+            dirtyActiveUpdateNodes_.push_back(node);
+            /*for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
                 if (*itr == node) {
                     activeUpdateNodes_.erase(itr);
                     break;
                 }
-            }
+            }*/
         }
         if (node->GetReceiverType(ReceiverType::Window)) {
             for (auto itr = windowEventReceiverNodes_.begin(); itr != windowEventReceiverNodes_.end(); ++itr) {
@@ -173,34 +209,34 @@ namespace soil::stage::scene {
 
     void Scene::addChild(Node* node) {
         OnNodeAdded(node);
-        ForEachChild(node, [this](Node* child) { OnNodeAdded(child); });
+        ForEachChild(node, [this](Node* child) {
+            OnNodeAdded(child);
+        });
         Node::addChild(node);
     }
 
     void Scene::addHook(hook::Hook* hook) {
         switch (hook->GetType()) {
-        case hook::Type::AfterUpdateScene:
-            {
-                auto* uHook = dynamic_cast<hook::UpdateHook*>(hook);
+        case hook::Type::AfterUpdateScene: {
+            auto* uHook = dynamic_cast<hook::UpdateHook*>(hook);
 #ifdef DEBUG
-                if (uHook == nullptr) {
-                    throw std::invalid_argument("hook can not be cast to UpdateHook");
-                }
-#endif
-                updateHooks_.push_back(uHook);
-                break;
+            if (uHook == nullptr) {
+                throw std::invalid_argument("hook can not be cast to UpdateHook");
             }
-        case hook::Type::Render:
-            {
-                auto* rHook = dynamic_cast<hook::RenderHook*>(hook);
+#endif
+            updateHooks_.push_back(uHook);
+            break;
+        }
+        case hook::Type::Render: {
+            auto* rHook = dynamic_cast<hook::RenderHook*>(hook);
 #ifdef DEBUG
-                if (rHook == nullptr) {
-                    throw std::invalid_argument("hook can not be cast to RenderHook");
-                }
-#endif
-                renderHooks_.push_back(rHook);
-                break;
+            if (rHook == nullptr) {
+                throw std::invalid_argument("hook can not be cast to RenderHook");
             }
+#endif
+            renderHooks_.push_back(rHook);
+            break;
+        }
         }
         if (hook->GetHandlerType() == hook::Hook::HandlerType::Component) {
             componentEventHandler_.push_back(hook);
