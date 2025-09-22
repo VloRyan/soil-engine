@@ -37,6 +37,11 @@ namespace soil::stage::scene::gui {
         [[nodiscard]] bool Contains(glm::ivec2 pos) const;
         [[nodiscard]] bool Contains(const Rectangle* other) const;
 
+        [[nodiscard]] virtual glm::ivec2 GetMinSize() const;
+        virtual void SetMinSize(const glm::ivec2& minSize);
+        [[nodiscard]] virtual glm::ivec2 GetMaxSize() const;
+        virtual void SetMaxSize(const glm::ivec2& maxSize);
+
 
         virtual void SetVisible(bool visible);
         virtual bool IsVisible() const;
@@ -71,6 +76,7 @@ namespace soil::stage::scene::gui {
 
         glm::ivec2 size_;
         glm::ivec2 minSize_;
+        glm::ivec2 maxSize_;
         glm::vec2 relativeSize_;
         glm::vec2 aspectRatio_;
         video::render::Rect scissorRect_;
@@ -86,6 +92,8 @@ namespace soil::stage::scene::gui {
         std::function<void(glm::ivec2 pos)> onMouseOverFunc_;
         std::function<void()> onMouseOutFunc_;
     };
+
+
 } // namespace soil::stage::scene::gui
 
 #endif
