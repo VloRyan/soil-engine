@@ -5,7 +5,7 @@
 namespace soil::sound::openal {
     class Source final : public sound::Source {
     public:
-        explicit Source(sound::Buffer *buffer);
+        explicit Source(sound::Buffer* buffer);
 
         ~Source() override;
 
@@ -43,23 +43,28 @@ namespace soil::sound::openal {
 
         void SetReferenceDistance(float distance) const override;
 
-        void Play() const override;
+        void Play() override;
 
-        void Pause() const override;
+        void Pause() override;
 
-        void Rewind() const override;
+        void Rewind() override;
 
-        void Stop() const override;
+        void Stop() override;
 
-        void SetBuffer(sound::Buffer *Buffer) override;
+        void SetBuffer(sound::Buffer* Buffer) override;
 
-        [[nodiscard]] sound::Buffer *GetBuffer() const override;
+        [[nodiscard]] sound::Buffer* GetBuffer() const override;
+
+        PlayStateType GetPlayState() const override;
+
+        void UpdatePlayState();
 
     private:
         [[nodiscard]] uint GetId() const;
 
         uint id_;
-        Buffer *buffer_;
+        Buffer* buffer_;
+        PlayStateType playState_;
     };
 } // namespace soil::sound::openal
 #endif

@@ -7,7 +7,7 @@
 #include "video/manager.h"
 
 namespace soil {
-    Engine::Engine(const WindowParameter &params) :
+    Engine::Engine(const WindowParameter& params) :
         window_(new Window(params)), inputManager_(new input::Manager), videoManager_(new video::Manager),
         soundManager_(new sound::openal::Manager), stageManager_(new stage::Manager) {
         plog::init<plog::TxtFormatter>(plog::debug, plog::OutputStream::streamStdOut);
@@ -43,6 +43,7 @@ namespace soil {
         auto updateInputTime = 0L;
         auto updateStageTime = 0L;
         auto updateVideoTime = 0L;
+        auto updateSoundTime = 0L;
         auto startRenderTime = 0L;
         auto renderTime = 0L;
         auto endRenderTime = 0L;
@@ -56,17 +57,22 @@ namespace soil {
                 inputManager_->Update();
                 updateInputTime +=
                     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin)
-                        .count();
+                    .count();
+                begin = std::chrono::steady_clock::now();
+                soundManager_->Update();
+                updateSoundTime +=
+                    std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin)
+                    .count();
                 begin = std::chrono::steady_clock::now();
                 stageManager_->Update();
                 updateStageTime +=
                     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin)
-                        .count();
+                    .count();
                 begin = std::chrono::steady_clock::now();
                 videoManager_->Update();
                 updateVideoTime +=
                     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin)
-                        .count();
+                    .count();
 
                 if (nextGameTick == 0.0) {
                     nextGameTick = startLoopTime;
@@ -109,6 +115,7 @@ namespace soil {
                                            .updateInputTime = updateInputTime,
                                            .updateStageTime = updateStageTime,
                                            .updateVideoTime = updateVideoTime,
+                                           .updateSoundTime = updateSoundTime,
                                            .startRenderTime = startRenderTime,
                                            .renderTime = renderTime,
                                            .endRenderTime = endRenderTime});
@@ -137,24 +144,23 @@ namespace soil {
         window_->Close();
     }
 
-    input::Manager *Engine::GetInputManager() const {
+    input::Manager* Engine::GetInputManager() const {
         return inputManager_;
     }
 
-    video::Manager *Engine::GetVideoManager() const {
+    video::Manager* Engine::GetVideoManager() const {
         return videoManager_;
     }
 
-    stage::Manager *Engine::GetStageManager() const {
+    stage::Manager* Engine::GetStageManager() const {
         return stageManager_;
     }
 
-    sound::Manager *Engine::GetSoundManager() const {
+    sound::Manager* Engine::GetSoundManager() const {
         return soundManager_;
     }
 
-    Window *Engine::GetWindow() const {
+    Window* Engine::GetWindow() const {
         return window_;
     }
-
 } // namespace soil

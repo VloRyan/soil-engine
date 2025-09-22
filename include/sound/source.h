@@ -3,13 +3,20 @@
 #include "glm/vec3.hpp"
 
 #include "buffer.h"
+#include "event/observable.hpp"
+#include "event/source_event.h"
 
 namespace soil::sound {
-    class Source {
+    class Source : public soil::event::Observable<event::Event> {
     public:
+        enum class PlayStateType:std::uint8_t {
+            Playing = 0,
+            Stopped = 1,
+        };
+
         explicit Source() = default;
 
-        virtual ~Source() = default;
+        ~Source() override = default;
 
         [[nodiscard]] virtual glm::vec3 GetPosition() const = 0;
 
@@ -45,17 +52,19 @@ namespace soil::sound {
 
         virtual void SetReferenceDistance(float distance) const = 0;
 
-        virtual void Play() const = 0;
+        virtual void Play() = 0;
 
-        virtual void Pause() const = 0;
+        virtual void Pause() = 0;
 
-        virtual void Rewind() const = 0;
+        virtual void Rewind() = 0;
 
-        virtual void Stop() const = 0;
+        virtual void Stop() = 0;
 
-        virtual void SetBuffer(Buffer *Buffer) = 0;
+        virtual void SetBuffer(Buffer* Buffer) = 0;
 
-        [[nodiscard]] virtual Buffer *GetBuffer() const = 0;
+        [[nodiscard]] virtual Buffer* GetBuffer() const = 0;
+
+        virtual PlayStateType GetPlayState() const = 0;
     };
 } // namespace soil::sound
 #endif

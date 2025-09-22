@@ -18,15 +18,21 @@ namespace soil::sound {
             EXPONENT_DISTANCE_CLAMPED,
             NONE
         };
+
         Manager() = default;
+
         virtual ~Manager() = default;
+
         virtual void Init() = 0;
-        [[nodiscard]] virtual Source *GetSource(const std::string &fileName) = 0;
-        [[nodiscard]] virtual Buffer *GetBuffer(const std::string &fileName) = 0;
-        [[nodiscard]] virtual Listener *GetListener() const = 0;
+
+        virtual void Update() = 0;
+
+        [[nodiscard]] virtual Source* GetSource(const std::string& fileName) = 0;
+
+        [[nodiscard]] virtual Buffer* GetBuffer(const std::string& fileName) = 0;
+
+        [[nodiscard]] virtual Listener* GetListener() const = 0;
     };
-
-
 } // namespace soil::sound
 
 #endif

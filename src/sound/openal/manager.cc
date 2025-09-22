@@ -12,7 +12,9 @@
 #include "util/strings.h"
 
 namespace soil::sound::openal {
-    Manager::Manager() : device_(nullptr), context_(nullptr), listener_(nullptr) {}
+    Manager::Manager() :
+        device_(nullptr), context_(nullptr), listener_(nullptr) {
+    }
 
     Manager::~Manager() {
         alcMakeContextCurrent(nullptr);
@@ -43,8 +45,8 @@ namespace soil::sound::openal {
                    << "EAX 2.0: " << util::Strings::to_string(eax2Enabled);
     }
 
-    sound::Source *Manager::GetSource(const std::string &fileName) {
-        auto *const buffer = GetBuffer(fileName);
+    sound::Source* Manager::GetSource(const std::string& fileName) {
+        auto* const buffer = GetBuffer(fileName);
 
         // Create source
         const auto source = new openal::Source(buffer);
@@ -52,10 +54,11 @@ namespace soil::sound::openal {
         if (ALenum error = 0; (error = alGetError()) != AL_NO_ERROR) {
             throw std::runtime_error("Failed to get AudioSource from " + fileName + ": " + std::to_string(error));
         }
+        source->AddListener(this);
         return source;
     }
 
-    sound::Buffer *Manager::GetBuffer(const std::string &fileName) {
+    sound::Buffer* Manager::GetBuffer(const std::string& fileName) {
         std::string cacheKey = fileName;
 
         // Is source already loaded
@@ -71,12 +74,12 @@ namespace soil::sound::openal {
         return newBuffer;
     }
 
-    sound::Buffer *Manager::loadAudioFile(const std::string &filename) {
-        const File *file = Wave::LoadFile(filename);
+    sound::Buffer* Manager::loadAudioFile(const std::string& filename) {
+        const File* file = Wave::LoadFile(filename);
         if (file == nullptr) {
             throw std::runtime_error("Error loading audio file " + filename);
         }
-        auto *newBuffer = new Buffer(filename);
+        auto* newBuffer = new Buffer(filename);
 
         newBuffer->setData(file->Data, file->DataSize, file->Format, file->Frequency);
 
@@ -110,7 +113,65 @@ namespace soil::sound::openal {
         }
     }
 
-    sound::Listener *Manager::GetListener() const {
+    sound::Listener* Manager::GetListener() const {
         return listener_;
     }
+
+    void Manager::Handle(const event::Event& event) {
+        switch (event.Cause()) {
+        case event::Cause::Source: {
+            auto& sourceEvent = dynamic_cast<const event::SourceEvent&>(event);
+            auto* source = dynamic_cast<openal::Source*>(sourceEvent.Source());
+            switch (sourceEvent.Trigger()) {
+            case event::SourceEvent::TriggerType::Added:
+                sources_.push_back(source);
+                if (sourceEvent.Source()->IsPlaying()) {
+                    playingSources_.push_back(source);
+                }
+                break;
+            case event::SourceEvent::TriggerType::PlayStateChanged: {
+                int playingIndex = -1;
+                for (auto i = 0; i < playingSources_.size(); i++) {
+                    if (playingSources_[i] == sourceEvent.Source()) {
+                        playingIndex = i;
+                    }
+                }
+                if (sourceEvent.Source()->IsPlaying()) {
+                    if (playingIndex == -1) {
+                        playingSources_.push_back(source);
+                    }
+                } else {
+                    playingSources_.erase(playingSources_.begin() + playingIndex);
+                }
+                break;
+            }
+            case event::SourceEvent::TriggerType::Removed:
+                sourceEvent.Source()->RemoveListener(this);
+                if (sourceEvent.Source()->IsPlaying()) {
+                    for (auto itr = playingSources_.begin(); itr != playingSources_.end(); ++itr) {
+                        if (*itr == sourceEvent.Source()) {
+                            playingSources_.erase(itr);
+                            break;
+                        }
+                    }
+                }
+                for (auto itr = sources_.begin(); itr != sources_.end(); ++itr) {
+                    if (*itr == sourceEvent.Source()) {
+                        sources_.erase(itr);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        }
+    }
+
+    void Manager::Update() {
+        std::vector playingSources(playingSources_);
+        for (auto* source : playingSources) {
+            source->UpdatePlayState();
+        }
+    }
 } // namespace soil::sound::openal
+

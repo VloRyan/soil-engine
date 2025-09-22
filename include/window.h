@@ -21,6 +21,7 @@ namespace soil {
         long updateInputTime = 0L;
         long updateStageTime = 0L;
         long updateVideoTime = 0L;
+        long updateSoundTime = 0L;
         long startRenderTime = 0L;
         long renderTime = 0L;
         long endRenderTime = 0L;
@@ -41,7 +42,7 @@ namespace soil {
 
     class Window final : public event::Observable<WindowEvent> {
     public:
-        explicit Window(const WindowParameter &args);
+        explicit Window(const WindowParameter& args);
 
         void Open();
 
@@ -55,25 +56,25 @@ namespace soil {
 
         void Close();
 
-        [[nodiscard]] GLFWwindow *GetGLFWWindow() const;
+        [[nodiscard]] GLFWwindow* GetGLFWWindow() const;
 
         [[nodiscard]] glm::vec2 CenterMouseCursor() const;
 
         [[nodiscard]] glm::vec2 GetMouseCursorPos() const;
 
-        [[nodiscard]] const glm::ivec2 &GetSize() const;
+        [[nodiscard]] const glm::ivec2& GetSize() const;
 
-        [[nodiscard]] const glm::ivec2 &GetRenderSize() const;
+        [[nodiscard]] const glm::ivec2& GetRenderSize() const;
 
-        void SetParameter(const WindowParameter &params);
+        void SetParameter(const WindowParameter& params);
 
-        [[nodiscard]] const WindowParameter &GetParameter() const;
+        [[nodiscard]] const WindowParameter& GetParameter() const;
 
-        void SetTitle(const std::string &title) const;
+        void SetTitle(const std::string& title) const;
 
-        void UpdateStatistics(const Statistics &newStats);
+        void UpdateStatistics(const Statistics& newStats);
 
-        [[nodiscard]] const Statistics &GetStatistics() const;
+        [[nodiscard]] const Statistics& GetStatistics() const;
 
     protected:
         void registerCallbacks();
@@ -82,7 +83,7 @@ namespace soil {
         std::string title_;
         WindowParameter parameter_;
         std::bitset<5> stateFlags_;
-        GLFWwindow *glfwWindow_;
+        GLFWwindow* glfwWindow_;
         Statistics statistics_;
     };
 } // namespace soil

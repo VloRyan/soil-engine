@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME}
         include/event/observable.hpp
         include/file/sequence.hpp
         include/input/constants.hpp
+        include/sound/event/event.hpp
         include/stage/scene/render/type.hpp
         include/util/pointer_cache.hpp
         include/video/render/step/context.hpp
@@ -35,6 +36,7 @@ add_library(${PROJECT_NAME}
         src/input/event_map.cc
         src/input/manager.cc
         src/input/mouse/picker.cc
+        src/sound/event/source_event.cc
         src/sound/file.cc
         src/sound/openal/buffer.cc
         src/sound/openal/listener.cc
@@ -57,6 +59,7 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/container/base.cc
         src/stage/scene/gui/container/h_box.cc
         src/stage/scene/gui/container/v_box.cc
+        src/stage/scene/gui/overlay.cc
         src/stage/scene/gui/rectangle.cc
         src/stage/scene/gui/root.cc
         src/stage/scene/hook/hook.cc
@@ -120,11 +123,10 @@ add_library(${PROJECT_NAME}
         src/window.cc
         src/window_event.cc
         src/world/entity/object_3d.cc
+        src/world/intersection.cc
         src/world/volume/aabb.cc
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
-        src/stage/scene/gui/overlay.cc
-
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -142,8 +144,8 @@ target_sources(
         include/event/handler.hpp
         include/event/observable.hpp
         include/file/font.h
-        include/file/sprite_sheet.h
         include/file/sequence.hpp
+        include/file/sprite_sheet.h
         include/input/constants.hpp
         include/input/event.h
         include/input/event_map.h
@@ -151,6 +153,8 @@ target_sources(
         include/input/mouse
         include/input/mouse/picker.h
         include/sound/buffer.h
+        include/sound/event/event.hpp
+        include/sound/event/source_event.h
         include/sound/file.h
         include/sound/listener.h
         include/sound/manager.h
@@ -172,6 +176,7 @@ target_sources(
         include/stage/scene/gui/container/base.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
+        include/stage/scene/gui/overlay.h
         include/stage/scene/gui/rectangle.h
         include/stage/scene/gui/root.h
         include/stage/scene/hook/hook.h
@@ -244,6 +249,7 @@ target_sources(
         include/window.h
         include/window_event.h
         include/world/entity/object_3d.h
+        include/world/intersection.h
         include/world/volume/aabb.h
         include/world/volume/container.h
         include/world/volume/container.h
@@ -251,7 +257,6 @@ target_sources(
         include/world/volume/quad_tree.h
         include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
-        include/stage/scene/gui/overlay.h
 )
 
 target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog)
