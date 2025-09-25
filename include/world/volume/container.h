@@ -17,13 +17,6 @@ namespace soil::world::volume {
                         .Max = Max,
                     },
                     point);
-                /*if (point.x < Min.x || //
-                    point.x > Max.x || //
-                    point.y < Min.y || //
-                    point.y > Max.y) {
-                    return false;
-                }
-                return true;*/
             }
 
             [[nodiscard]] bool Contains(const glm::vec2& min, const glm::vec2& max) const {
@@ -36,12 +29,6 @@ namespace soil::world::volume {
                         .Min = min,
                         .Max = max,
                     });
-                /*if (Min.x > min.x && Max.x < max.x || //
-                    Min.y > min.y && Max.y < max.y) {
-                    return false;
-                }
-
-                return true;*/
             }
 
             [[nodiscard]] bool IntersectsCircle(const glm::vec2& circleCenter, const float radius) const {
@@ -54,15 +41,6 @@ namespace soil::world::volume {
                         .Center = circleCenter,
                         .Radius = radius,
                     });
-                /*const auto halfDim = (Max - Min) * glm::vec2(0.5F);
-                const auto center = Min + halfDim;
-                const auto dist = glm::abs(circleCenter - center);
-                if (dist.x <= radius && dist.y <= radius) {
-                    return true;
-                }
-                const auto dir = glm::normalize(center - circleCenter);
-                const auto maxPoint = dir * radius + circleCenter;
-                return Contains(maxPoint);*/
             }
 
             inline static uint UNSET = -1;
@@ -75,10 +53,13 @@ namespace soil::world::volume {
         virtual ~Container() = default;
 
         virtual void Insert(const Volume* volume) = 0;
+
         virtual bool Remove(const Volume* volume) = 0;
 
         virtual void QueryVolumesAt(const glm::vec3& point, std::vector<const Volume*>& volumes) const = 0;
+
         virtual void QueryNodeIndicesFor(const Volume*, std::vector<int>& indices) const = 0;
+
         virtual void QueryVolumesInRange(const glm::vec3& point, float radius,
                                          std::vector<const Volume*>& vector) const = 0;
 
@@ -88,8 +69,8 @@ namespace soil::world::volume {
         [[nodiscard]] virtual const Node* GetNode(int index) const = 0;
 
         [[nodiscard]] virtual size_t GetNodeCount() const = 0;
-        [[nodiscard]] virtual size_t GetChildrenPerNode() const = 0;
 
+        [[nodiscard]] virtual size_t GetChildrenPerNode() const = 0;
 
     protected:
         Container() = default;
