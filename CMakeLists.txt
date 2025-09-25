@@ -50,7 +50,7 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/bounding_volume.cc
         src/stage/scene/component/component.cc
         src/stage/scene/component/instance_data.cc
-        src/stage/scene/component/listener.cc
+        src/stage/scene/component/listener_component.cc
         src/stage/scene/component/mesh_component.cc
         src/stage/scene/component/sound.cc
         src/stage/scene/component/text/abstract_text.cc
@@ -167,7 +167,7 @@ target_sources(
         include/stage/scene/component/bounding_volume.h
         include/stage/scene/component/component.h
         include/stage/scene/component/instance_data.h
-        include/stage/scene/component/listener.h
+        include/stage/scene/component/listener_component.h
         include/stage/scene/component/mesh_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/text/abstract_text.h
