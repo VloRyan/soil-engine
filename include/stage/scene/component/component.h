@@ -21,6 +21,7 @@ namespace soil::stage::scene::component {
             Sound,
             Metadata,
             Lighting,
+            World,
             Any = 255
         };
 
@@ -46,8 +47,11 @@ namespace soil::stage::scene::component {
 
     protected:
         virtual void SetDirty();
+
         void SetState(State state);
+
         virtual void UpdateTransform(const glm::mat4& transform);
+
         virtual void SetParent(Node* parent);
 
     private:
