@@ -117,7 +117,7 @@ namespace soil::world::volume {
         const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
         const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
         const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
-        const auto* e = NewBoundingVolumeAt({0.F, -8.F}, glm::vec3(1.F));
+        const auto* e = NewBoundingVolumeAt({8.4F, 0.4F}, glm::vec3(1.F));
 
         quadTree.Insert(a);
         quadTree.Insert(b);
@@ -126,8 +126,8 @@ namespace soil::world::volume {
         quadTree.Insert(e);
 
         ASSERT_THAT(quadTree.GetNodeCount(), 5);
-        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(1.F, 0.F, 1.F)), testing::ElementsAre(b, d));
-        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(-1.F, 0.F, -1.F)), testing::ElementsAre(a, c, e));
+        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(0.F, 0.F, 8.F)), testing::ElementsAre(b));
+        EXPECT_THAT(VolumesAt(quadTree, glm::vec3(8.2F, 0.F, 0.2F)), testing::ElementsAre(d, e));
     }
 
     TEST_F(QuadTreeTest, DetermineLevel) {

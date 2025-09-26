@@ -212,8 +212,6 @@ namespace soil::world::volume {
                         volumeSet.insert(vol);
                     }
                 }
-                volumes.insert(volumes.end(), nodeVolumes_[node.VolumesIndex].begin(),
-                               nodeVolumes_[node.VolumesIndex].end());
             }
             if (node.ChildrenStartIndex != Node::UNSET) {
                 for (std::uint16_t i = 0; i < 4; ++i) {
