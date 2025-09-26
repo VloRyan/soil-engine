@@ -3,9 +3,10 @@
 #include <gtest/gtest.h>
 
 namespace soil::stage::scene::component {
-    class BoundingVolumeTest : public testing::Test {};
+    class BoundingVolumeTest : public testing::Test {
+    };
 
     TEST_F(BoundingVolumeTest, Contruct) {
-        const auto volume = BoundingVolume(nullptr);
+        const auto volume = BoundingVolume(nullptr, BoundingVolume::ContactType::Object);
     }
 } // namespace soil::stage::scene::component

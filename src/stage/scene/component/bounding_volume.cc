@@ -3,10 +3,11 @@
 #include "stage/scene/node.h"
 
 namespace soil::stage::scene::component {
-    BoundingVolume::BoundingVolume(Volume* volume, const std::vector<ContactType>& contactTypes) :
-        Component(Type::BoundingVolume), volume_(volume), container_(nullptr) {
-        for (const auto contactType : contactTypes) {
-            BoundingVolume::SetContactType(contactType, true);
+    BoundingVolume::BoundingVolume(Volume* volume, const ContactType contactType,
+                                   const std::vector<ContactType>& contactTypes) :
+        Component(Type::BoundingVolume), volume_(volume), container_(nullptr), contactType_(contactType) {
+        for (const auto type : contactTypes) {
+            SetCollideWith(type, true);
         }
     }
 
@@ -23,12 +24,12 @@ namespace soil::stage::scene::component {
         Component::UpdateTransform(matrix);
     }
 
-    bool BoundingVolume::IsContactType(ContactType type) const {
-        return contactTypes_[static_cast<std::int8_t>(type)];
+    bool BoundingVolume::CanCollideWith(ContactType type) const {
+        return collideWithTypes_[static_cast<std::int8_t>(type)];
     }
 
-    void BoundingVolume::SetContactType(ContactType type, const bool value) {
-        contactTypes_[static_cast<std::int8_t>(type)] = value;
+    void BoundingVolume::SetCollideWith(ContactType type, const bool value) {
+        collideWithTypes_[static_cast<std::int8_t>(type)] = value;
     }
 
     bool BoundingVolume::IsInside(const glm::vec3& min, const glm::vec3& max) const {
@@ -105,5 +106,9 @@ namespace soil::stage::scene::component {
 
     std::vector<world::volume::Line> BoundingVolume::GenerateLines() const {
         return volume_->GenerateLines();
+    }
+
+    BoundingVolume::ContactType BoundingVolume::GetContactType() const {
+        return contactType_;
     }
 } // namespace soil::stage::scene::component
