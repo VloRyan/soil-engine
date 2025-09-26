@@ -36,14 +36,6 @@ namespace soil::stage::scene {
 
     void Scene::Update() {
         for (const auto* node : nodesToDelete_) {
-            if (node->GetUpdateType() == UpdateType::Active) {
-                for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
-                    if (*itr == node) {
-                        activeUpdateNodes_.erase(itr);
-                        break;
-                    }
-                }
-            }
             delete node;
         }
         nodesToDelete_.clear();
@@ -106,19 +98,6 @@ namespace soil::stage::scene {
             break;
         case event::Node::ChangeType::UpdateType:
             dirtyActiveUpdateNodes_.emplace_back(event.GetOrigin());
-            /*switch (event.GetOrigin()->GetUpdateType()) {
-            case UpdateType::Active:
-
-                break;
-            case UpdateType::Passive:
-                for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
-                    if (*itr == event.GetOrigin()) {
-                        activeUpdateNodes_.erase(itr);
-                        break;
-                    }
-                }
-                break;
-            }*/
             break;
         case event::Node::ChangeType::Component:
             Handle(event.GetComponentEvent());
@@ -128,12 +107,6 @@ namespace soil::stage::scene {
     }
 
     void Scene::OnNodeStateChanged(Node* node) {
-        /*
-#ifdef DEBUG
-        if (node->GetScene() != this) {
-            throw std::runtime_error("node does not belong to this scene");
-        }
-#endif*/
         if (node->IsDirty() && node->GetUpdateType() != UpdateType::Active) {
             dirtyNodesPtr_->push_back(node);
         } else if (node->IsState(State::Delete)) {
@@ -172,21 +145,21 @@ namespace soil::stage::scene {
     }
 
     void Scene::OnNodeRemoved(Node* node) {
-        /*
-#ifdef DEBUG
-        if (node->GetScene() != this) {
-            throw std::runtime_error("node does not belong to this scene");
-        }
-#endif*/
-
         if (node->GetUpdateType() == UpdateType::Active) {
-            dirtyActiveUpdateNodes_.push_back(node);
-            /*for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
+            for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end(); ++itr) {
                 if (*itr == node) {
                     activeUpdateNodes_.erase(itr);
                     break;
                 }
-            }*/
+            }
+        }
+        if (node->IsDirty()) {
+            for (auto itr = dirtyNodesPtr_->begin(); itr != dirtyNodesPtr_->end(); ++itr) {
+                if (*itr == node) {
+                    dirtyNodesPtr_->erase(itr);
+                    break;
+                }
+            }
         }
         if (node->GetReceiverType(ReceiverType::Window)) {
             for (auto itr = windowEventReceiverNodes_.begin(); itr != windowEventReceiverNodes_.end(); ++itr) {

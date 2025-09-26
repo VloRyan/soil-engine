@@ -31,6 +31,11 @@ namespace soil::stage::scene::component {
             Delete,
         };
 
+        enum class UpdateType : std::uint8_t {
+            WhenDirty = 0,
+            Always,
+        };
+
         explicit Component(Type type);
 
         ~Component() override;
@@ -45,6 +50,8 @@ namespace soil::stage::scene::component {
 
         [[nodiscard]] bool IsDirty() const;
 
+        [[nodiscard]] virtual UpdateType GetUpdateType() const;
+
     protected:
         virtual void SetDirty();
 
@@ -54,10 +61,14 @@ namespace soil::stage::scene::component {
 
         virtual void SetParent(Node* parent);
 
+    public:
+        virtual void SetUpdateType(const UpdateType updateType);
+
     private:
         Node* parent_;
         Type type_;
         State state_;
+        UpdateType updateType_;
     };
 } // namespace soil::stage::scene::component
 

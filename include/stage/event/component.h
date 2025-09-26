@@ -15,6 +15,7 @@ namespace soil::stage::event {
             Added,
             Removed,
             State,
+            UpdateType,
         };
 
         Component(scene::component::Component* origin, ChangeType type);
@@ -36,6 +37,8 @@ namespace soil::stage::event {
         }
 
         static Component MakeStateChangedEvent(scene::component::Component* origin);
+
+        static Component MakeUpdateTypeChangedEvent(scene::component::Component* origin);
 
     private:
         scene::component::Component* origin_;
