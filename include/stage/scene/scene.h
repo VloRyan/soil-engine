@@ -74,6 +74,7 @@ namespace soil::stage::scene {
 
         Stage* stage_;
         std::vector<Node*> activeUpdateNodes_;
+        std::vector<Node*> dirtyActiveUpdateNodes_;
 
         std::vector<Node*> dirtyNodes_;
         std::vector<Node*> dirtyNodes2_;

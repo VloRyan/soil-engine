@@ -9,8 +9,8 @@
 #include "stage/stage.h"
 
 namespace soil::stage::scene {
-
-    class NodeTest : public testing::Test {};
+    class NodeTest : public testing::Test {
+    };
 
     TEST_F(NodeTest, Contruct) {
         const auto node = Node(Node::Type::Transform);
@@ -238,6 +238,29 @@ namespace soil::stage::scene {
         EXPECT_EQ(childOfChildComp->UpdateMatrixCalledCount, 1);
     }
 
+    TEST_F(NodeTest, UpdateAlwaysUpdateComponent) {
+        auto node = NodeMock();
+        auto* comp = node.AddComponent(new component::ComponentMock(component::Component::Type::Metadata));
+        auto* alwaysUpdateComp = node.AddComponent(new component::ComponentMock(component::Component::Type::Metadata));
+        alwaysUpdateComp->SetUpdateType(component::Component::UpdateType::Always);
+
+        ASSERT_EQ(comp->UpdateCalledCount, 0);
+        ASSERT_EQ(alwaysUpdateComp->UpdateCalledCount, 0);
+
+        node.Update();
+        EXPECT_EQ(comp->UpdateCalledCount, 1);
+        EXPECT_EQ(alwaysUpdateComp->UpdateCalledCount, 1);
+
+        node.Update();
+        EXPECT_EQ(comp->UpdateCalledCount, 1);
+        EXPECT_EQ(alwaysUpdateComp->UpdateCalledCount, 2);
+
+        alwaysUpdateComp->SetUpdateType(component::Component::UpdateType::WhenDirty);
+        node.Update();
+        EXPECT_EQ(comp->UpdateCalledCount, 1);
+        EXPECT_EQ(alwaysUpdateComp->UpdateCalledCount, 2);
+    }
+
     TEST_F(NodeTest, HandleComponentEventState) {
         auto eventListener = NodeEventMockListener();
         auto node = NodeMock();
@@ -284,8 +307,8 @@ namespace soil::stage::scene {
         ASSERT_FALSE(comp->IsDirty());
         ASSERT_THAT(eventListener.Events,
                     testing::ElementsAre(event::Node::MakeComponentEvent(
-                                             &node, event::Component(comp, event::Component::ChangeType::Added)),
-                                         event::Node(&node, event::Node::ChangeType::State)));
+                            &node, event::Component(comp, event::Component::ChangeType::Added)),
+                        event::Node(&node, event::Node::ChangeType::State)));
         eventListener.ResetMocks();
 
         comp->SetDirty();
@@ -337,7 +360,8 @@ namespace soil::stage::scene {
         constexpr auto probes = 10;
         for (auto probe = 0; probe < probes; probe++) {
             auto begin = std::chrono::steady_clock::now();
-            Node::ForEachChild(root, [](Node* child) {});
+            Node::ForEachChild(root, [](Node* child) {
+            });
             diffItr += std::chrono::steady_clock::now() - begin;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -364,11 +388,11 @@ namespace soil::stage::scene {
            }*/
 
         std::cout << "### Iterative: " << std::chrono::duration_cast<std::chrono::microseconds>(diffItr).count()
-                  << " ns"
-                  << " ###" << std::endl;
+            << " ns"
+            << " ###" << std::endl;
         std::cout << "### Iterative2: " << std::chrono::duration_cast<std::chrono::microseconds>(diffItr2).count()
-                  << " ns"
-                  << " ###" << std::endl;
+            << " ns"
+            << " ###" << std::endl;
         /*  std::cout << "### Iterative3: " << std::chrono::duration_cast<std::chrono::microseconds>(diffItr3).count()
                     << " ns"
                     << " ###" << std::endl;
@@ -435,7 +459,9 @@ namespace soil::stage::scene {
         auto child3300 = child3000->AddChild(new NodeMock(Node::Type::Game));
         children.push_back(child3300);
 
-        Node::ForEachChild(root, [](Node* child) { child->Update(); });
+        Node::ForEachChild(root, [](Node* child) {
+            child->Update();
+        });
 
         for (const auto* child : children) {
             if (child->UpdateCalledCount == 0) {

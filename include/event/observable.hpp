@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace soil::event {
-    template <class T, std::enable_if_t<std::is_base_of_v<Event, T> >* = nullptr>
+    template <class T, std::enable_if_t<std::is_base_of_v<Event, T>>* = nullptr>
     class Observable {
     public:
         Observable() = default;
@@ -28,7 +28,8 @@ namespace soil::event {
 
     protected:
         virtual void fire(const T& event) {
-            for (Handler<T>* listener : listeners_) {
+            std::vector<Handler<T>*> listeners(listeners_);
+            for (Handler<T>* listener : listeners) {
                 listener->Handle(event);
             }
         }

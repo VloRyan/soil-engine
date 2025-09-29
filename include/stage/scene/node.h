@@ -74,6 +74,7 @@ namespace soil::stage::scene {
         virtual void SetDirty(DirtyImpact cause);
 
         [[nodiscard]] bool IsState(State state) const;
+
         [[nodiscard]] bool IsDirtyImpact(DirtyImpact cause) const;
 
         [[nodiscard]] Node* GetParent() const;
@@ -82,8 +83,10 @@ namespace soil::stage::scene {
 
         void ForEachComponent(const std::function<void(component::Component*)>& func,
                               component::Component::Type ofType = component::Component::Type::Any) const;
+
         void GetComponents(std::vector<component::Component*>& comps,
                            component::Component::Type type = component::Component::Type::Any) const;
+
         component::Component* GetFirstComponent(
             component::Component::Type type = component::Component::Type::Any) const;
 
@@ -104,7 +107,7 @@ namespace soil::stage::scene {
 
         virtual void Update();
 
-        virtual void Handle(const event::Component& event);
+        void Handle(const event::Component& event) override;
 
         [[nodiscard]] UpdateType GetUpdateType() const;
 
@@ -120,9 +123,11 @@ namespace soil::stage::scene {
 
         void SetLocalTransform(const glm::mat4& transform) override;
 
-        void Handle(const input::Event& event) override {}
+        void Handle(const input::Event& event) override {
+        }
 
-        void Handle(const WindowEvent& event) override {}
+        void Handle(const WindowEvent& event) override {
+        }
 
         template <class T>
         T AddChild(T node) {
@@ -133,6 +138,7 @@ namespace soil::stage::scene {
         }
 
         static void ForEachChild(const Node* node, const std::function<void(Node* child)>& func);
+
         virtual void RemoveChild(Node* node);
 
     protected:
@@ -153,6 +159,7 @@ namespace soil::stage::scene {
         static bool IsDirtyImpact(const std::bitset<4>& dirtyImpacts, DirtyImpact impact);
 
         virtual void SetReceiverType(ReceiverType type, bool value);
+
         [[nodiscard]] virtual std::bitset<4> GetDirtyImpacts() const;
 
     private:
@@ -166,6 +173,7 @@ namespace soil::stage::scene {
         std::unordered_map<std::int8_t, std::vector<component::Component*>> components_;
         std::vector<component::Component*> addedComponents_;
         std::bitset<4> receiveTypeFlags_;
+        std::vector<component::Component*> alwaysUpdateComponents_;
     };
 } // namespace soil::stage::scene
 #endif

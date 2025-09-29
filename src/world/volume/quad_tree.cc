@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <debug/set>
 #include <queue>
 #include <stack>
 
@@ -60,11 +61,8 @@ namespace soil::world::volume {
                 if (!volume->IsInside(nodes_[childIdx].Min, nodes_[childIdx].Max)) {
                     continue;
                 }
-                if (nextFreeSlot >= bufferSize) { // enough space?
-                    /*memcpy(nodeIndices.data(), &nodeIndices[ni + 1], (bufferSize - ni - 1) * sizeof(state));
-                    nextFreeSlot = bufferSize - ni - 1;
-                    ni = -1;*/
-
+                // enough space?
+                if (nextFreeSlot >= bufferSize) {
                     if (ni == 0) {
                         bufferSize += defaultBufferSize;
                         nodeIndices.resize(bufferSize);
@@ -177,7 +175,8 @@ namespace soil::world::volume {
                     if (!volume->IsInside(nodes_[childIdx].Min, nodes_[childIdx].Max)) {
                         continue;
                     }
-                    if (nextFreeSlot >= bufferSize) { // space for the all children?
+                    // space for the all children?
+                    if (nextFreeSlot >= bufferSize) {
                         memcpy(nodeIndices.data(), &nodeIndices[ni + 1], (bufferSize - ni - 1) * sizeof(state));
                         nextFreeSlot = bufferSize - ni - 1;
                         ni = -1;
@@ -198,14 +197,21 @@ namespace soil::world::volume {
             return;
         }
         std::queue<std::uint16_t> nodeIndices;
+        std::set<const Volume*> volumeSet;
         nodeIndices.push(0);
         while (!nodeIndices.empty()) {
             const auto index = nodeIndices.front();
             const auto& node = nodes_[index];
             nodeIndices.pop();
             if (node.VolumesIndex != Node::UNSET) {
-                volumes.insert(volumes.end(), nodeVolumes_[node.VolumesIndex].begin(),
-                               nodeVolumes_[node.VolumesIndex].end());
+                for (auto* vol : nodeVolumes_[node.VolumesIndex]) {
+                    if (volumeSet.contains(vol)) {
+                        continue;
+                    }
+                    if (vol->ContainsXZ(glm::vec3(point.x, 0.F, point.y))) {
+                        volumeSet.insert(vol);
+                    }
+                }
             }
             if (node.ChildrenStartIndex != Node::UNSET) {
                 for (std::uint16_t i = 0; i < 4; ++i) {
@@ -215,6 +221,59 @@ namespace soil::world::volume {
                     }
                 }
             }
+        }
+        volumes.insert(volumes.end(), volumeSet.begin(), volumeSet.end());
+    }
+
+    void QuadTree::QueryVolumesInRange(const glm::vec3& point, const float radius,
+                                       std::vector<const Volume*>& volumes) const {
+        QueryVolumesInRange(glm::vec2(point.x, point.z), radius, volumes);
+    }
+
+    void QuadTree::QueryVolumesInRange(const glm::vec2& point, const float radius,
+                                       std::vector<const Volume*>& volumes) const {
+        if (!nodes_[0].Contains(point)) {
+            return;
+        }
+        std::set<const Volume*> volumeSet;
+        std::queue<std::uint16_t> nodeIndices;
+        nodeIndices.push(0);
+        while (!nodeIndices.empty()) {
+            const auto index = nodeIndices.front();
+            const auto& node = nodes_[index];
+            nodeIndices.pop();
+            if (node.VolumesIndex != Node::UNSET) {
+                for (auto* vol : nodeVolumes_[node.VolumesIndex]) {
+                    if (volumeSet.contains(vol)) {
+                        continue;
+                    }
+                    if (vol->IntersectsCircle(point, radius)) {
+                        volumeSet.insert(vol);
+                    }
+                }
+            }
+            if (node.ChildrenStartIndex != Node::UNSET) {
+                for (std::uint16_t i = 0; i < 4; ++i) {
+                    const auto childIdx = node.ChildrenStartIndex + i;
+                    if (nodes_[childIdx].IntersectsCircle(point, radius)) {
+                        nodeIndices.push(childIdx);
+                    }
+                }
+            }
+        }
+        volumes.insert(volumes.end(), volumeSet.begin(), volumeSet.end());
+    }
+
+    bool QuadTree::isInsideCircle(const glm::vec2& point, const glm::vec2& circleCenter, const float radius) {
+        // Calculate the squared distance from the center to the point
+        const int distSq = (point.x - circleCenter.x) * (point.x - circleCenter.x) +
+            (point.y - circleCenter.y) * (point.y - circleCenter.y);
+
+        // Compare the squared distance with the squared radius
+        if (distSq <= radius * radius) {
+            return true; // Point is inside or on the circle
+        } else {
+            return false; // Point is outside the circle
         }
     }
 
@@ -236,7 +295,8 @@ namespace soil::world::volume {
                     if (!volume->IsInside(nodes_[childIdx].Min, nodes_[childIdx].Max)) {
                         continue;
                     }
-                    if (nextFreeSlot >= bufferSize) { // space for the all children?
+                    // space for the all children?
+                    if (nextFreeSlot >= bufferSize) {
                         memcpy(nodeIndices.data(), &nodeIndices[ni + 1], (bufferSize - ni - 1) * sizeof(state));
                         nextFreeSlot = bufferSize - ni - 1;
                         ni = -1;

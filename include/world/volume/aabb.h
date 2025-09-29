@@ -41,7 +41,7 @@ namespace soil::world::volume {
         void SetDimension(glm::vec3 dimension);
 
         void SetPosition(const glm::vec3& position) override;
-        glm::vec3 GetPosition() const override;
+        [[nodiscard]] glm::vec3 GetPosition() const override;
 
         [[nodiscard]] glm::vec3 GetPoint(Point point) const;
 
@@ -55,6 +55,7 @@ namespace soil::world::volume {
 
         [[nodiscard]] IntersectionResult IntersectsRay(const glm::vec3& start, const glm::vec3& dir) const override;
         [[nodiscard]] IntersectionResult IntersectsRayXZ(const glm::vec3& start, const glm::vec3& dir) const override;
+        bool IntersectsCircle(const glm::vec2& circleCenter, float radius) const override;
         [[nodiscard]] std::vector<Line> GenerateLines() const override;
 
     private:

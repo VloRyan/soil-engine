@@ -18,6 +18,9 @@ namespace soil::world::volume {
 
         void QueryVolumesAt(const glm::vec3& point, std::vector<const Volume*>& volumes) const override;
         void QueryVolumesAt(const glm::vec2& point, std::vector<const Volume*>& volumes) const;
+        void QueryVolumesInRange(const glm::vec3& point, float radius,
+                                 std::vector<const Volume*>& volumes) const override;
+        void QueryVolumesInRange(const glm::vec2& point, float radius, std::vector<const Volume*>& volumes) const;
 
         void QueryNodeIndicesFor(const Volume*, std::vector<int>& indices) const override;
 
@@ -35,6 +38,7 @@ namespace soil::world::volume {
 
         void split(std::uint16_t index);
         void split2(std::uint16_t index, byte level);
+        static bool isInsideCircle(const glm::vec2& point, const glm::vec2& circleCenter, float radius);
 
         std::uint16_t freeNodeVolumesIndex();
 

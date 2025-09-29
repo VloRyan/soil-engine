@@ -9,7 +9,7 @@ namespace soil::sound::openal {
 
         ~Listener() override = default;
 
-        void SetOrientation(const glm::mat2x3 &orientation) override;
+        void SetOrientation(const glm::mat2x3& orientation) override;
 
         [[nodiscard]] glm::mat2x3 getOrientation() const override;
 

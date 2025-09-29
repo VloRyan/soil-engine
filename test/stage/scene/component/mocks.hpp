@@ -3,16 +3,18 @@
 
 #include "glm/glm.hpp"
 #include "stage/scene/component/component.h"
-#include "stage/scene/node.h"
+
 #include "stage/scene/scene.h"
 
 namespace soil::stage::scene::component {
-
     class ComponentMock : public Component {
     public:
-        explicit ComponentMock(const Type type) : Component(type) {}
+        explicit ComponentMock(const Type type) :
+            Component(type) {
+        }
 
         ~ComponentMock() override = default;
+
         int UpdateCalledCount = 0;
         int UpdateMatrixCalledCount = 0;
         std::vector<glm::mat4> UpdateMatrixParam;
@@ -36,6 +38,10 @@ namespace soil::stage::scene::component {
 
         void SetDirty() override {
             Component::SetDirty();
+        }
+
+        void SetUpdateType(const UpdateType updateType) override {
+            Component::SetUpdateType(updateType);
         }
     };
 } // namespace soil::stage::scene::component

@@ -13,7 +13,8 @@
 
 namespace soil::stage::scene {
     Node::Node(const Type type) :
-        parent_(nullptr), type_(type), state_(State::Normal), updateType_(UpdateType::Passive) {}
+        parent_(nullptr), type_(type), state_(State::Normal), updateType_(UpdateType::Passive) {
+    }
 
     Node::~Node() {
         for (auto* child : children_) {
@@ -125,6 +126,9 @@ namespace soil::stage::scene {
 
     void Node::Update() {
         if (!IsDirty()) {
+            for (auto* comp : alwaysUpdateComponents_) {
+                comp->Update();
+            }
             return;
         }
         UpdateDirty();
@@ -146,7 +150,9 @@ namespace soil::stage::scene {
             }
         } else {
             if (IsDirtyImpact(DirtyImpact::Components) || IsDirtyImpact(DirtyImpact::Dependents)) {
-                ForEachComponent([](component::Component* component) { component->Update(); });
+                ForEachComponent([](component::Component* component) {
+                    component->Update();
+                });
             }
             if (IsDirtyImpact(DirtyImpact::Dependents)) {
                 for (auto* child : children_) {
@@ -167,6 +173,9 @@ namespace soil::stage::scene {
             const auto compTypeIndex = static_cast<std::int8_t>(comp->GetType());
 
             components_[compTypeIndex].push_back(comp);
+            if (comp->GetUpdateType() == component::Component::UpdateType::Always) {
+                alwaysUpdateComponents_.push_back(comp);
+            }
             const auto addedEvent = event::Component(comp, event::Component::ChangeType::Added);
             Observable::fire(event::Node::MakeComponentEvent(this, addedEvent));
         }
@@ -192,7 +201,7 @@ namespace soil::stage::scene {
     }
 
     void Node::SetState(const State state) {
-        if (state_ == state) {
+        if (state_ == state || state_ == State::Delete) {
             return;
         }
         state_ = state;
@@ -245,6 +254,14 @@ namespace soil::stage::scene {
                 break;
             }
         }
+        if (comp->GetUpdateType() == component::Component::UpdateType::Always) {
+            for (auto itr = alwaysUpdateComponents_.begin(); itr != alwaysUpdateComponents_.end(); ++itr) {
+                if (comp == *itr) {
+                    alwaysUpdateComponents_.erase(itr);
+                    break;
+                }
+            }
+        }
         const auto removedEvent = event::Component(comp, event::Component::ChangeType::Removed);
         Observable::fire(event::Node::MakeComponentEvent(this, removedEvent));
     }
@@ -257,7 +274,8 @@ namespace soil::stage::scene {
         if (event.GetOrigin()->GetParent() != this) {
             return;
         }
-        if (event.GetChangeType() == event::Component::ChangeType::State) {
+        switch (event.GetChangeType()) {
+        case event::Component::ChangeType::State: {
             for (const auto* justAddedComp : addedComponents_) {
                 if (event.GetOrigin() == justAddedComp) {
                     return;
@@ -266,6 +284,22 @@ namespace soil::stage::scene {
             if (event.GetOrigin()->IsDirty()) {
                 SetDirty(DirtyImpact::Components);
             }
+            break;
+        }
+        case event::Component::ChangeType::UpdateType: {
+            if (event.GetOrigin()->GetUpdateType() == component::Component::UpdateType::Always) {
+                alwaysUpdateComponents_.push_back(event.GetOrigin());
+            } else {
+                for (auto itr = alwaysUpdateComponents_.begin(); itr != alwaysUpdateComponents_.end(); ++itr) {
+                    if (event.GetOrigin() == *itr) {
+                        alwaysUpdateComponents_.erase(itr);
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+        default: ;
         }
         Observable::fire(event::Node::MakeComponentEvent(this, event));
     }
@@ -290,7 +324,8 @@ namespace soil::stage::scene {
     }
 
     void Node::ForEachComponent(const std::function<void(component::Component*)>& func,
-                                component::Component::Type ofType) const {
+                                component::Component::Type ofType)
+    const {
         if (ofType == component::Component::Type::Any) {
             for (const auto& comps : components_ | std::views::values) {
                 for (auto* comp : comps) {
@@ -388,5 +423,4 @@ namespace soil::stage::scene {
         }
         delete[] buffer;
     }
-
 } // namespace soil::stage::scene

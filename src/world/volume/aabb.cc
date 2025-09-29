@@ -1,7 +1,7 @@
 #include "world/volume/aabb.h"
-
 #include <algorithm>
 #include <bits/ranges_algobase.h>
+#include "world/intersection.h"
 
 #include "stage/scene/node.h"
 
@@ -168,7 +168,7 @@ namespace soil::world::volume {
 
         // Ray origin inside bounding box
         if (inside) {
-            return IntersectionResult {.Intersecting = true, .IntersectionPoint = start};
+            return IntersectionResult{.Intersecting = true, .IntersectionPoint = start};
         }
 
         // Calculate T distances to candidate planes */
@@ -190,23 +190,44 @@ namespace soil::world::volume {
 
         // Check final candidate actually inside box
         if (maxT[whichPlane] < 0.) {
-            return IntersectionResult {.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
+            return IntersectionResult{.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
         }
         for (i = 0; i < NUMDIM; i++) {
             if (whichPlane != i) {
                 hitPoint[i] = start[i] + maxT[whichPlane] * dir[i];
                 if (hitPoint[i] < minPoint_[i] || hitPoint[i] > maxPoint_[i]) {
-                    return IntersectionResult {.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
+                    return IntersectionResult{.Intersecting = false, .IntersectionPoint = glm::vec3(0, 0, 0)};
                 }
             } else {
                 hitPoint[i] = candidatePlane[i];
             }
         }
-        return IntersectionResult {.Intersecting = true, .IntersectionPoint = hitPoint}; // ray hits box
+        return IntersectionResult{.Intersecting = true, .IntersectionPoint = hitPoint}; // ray hits box
     }
 
     IntersectionResult AABB::IntersectsRayXZ(const glm::vec3& start, const glm::vec3& dir) const {
         return IntersectsRay({start.x, 0.F, start.z}, {dir.x, 0.F, dir.z});
+    }
+
+    bool AABB::IntersectsCircle(const glm::vec2& circleCenter, const float radius) const {
+        return Intersection::Test(
+            Intersection::Box2d{
+                .Min = glm::vec2(minPoint_.x, minPoint_.z),
+                .Max = glm::vec2(maxPoint_.x, maxPoint_.z),
+            },
+            Intersection::Circle2d{
+                .Center = circleCenter,
+                .Radius = radius,
+            });
+        /*const auto halfDim = glm::vec2(maxPoint_.x - minPoint_.x, maxPoint_.z - minPoint_.z) * glm::vec2(0.5F);
+        const auto center = glm::vec2(minPoint_.x, minPoint_.z) + halfDim;
+        const auto dist = glm::abs(circleCenter - center);
+        if (dist.x <= radius && dist.y <= radius) {
+            return true;
+        }
+        const auto dir = glm::normalize(center - circleCenter);
+        const auto maxPoint = dir * radius + circleCenter;
+        return ContainsXZ(glm::vec3(maxPoint.x, 0.F, maxPoint.y));*/
     }
 
     std::vector<Line> AABB::GenerateLines() const {

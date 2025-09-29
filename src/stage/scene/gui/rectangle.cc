@@ -2,7 +2,7 @@
 
 namespace soil::stage::scene::gui {
     Rectangle::Rectangle() :
-        Node(Type::Game), isMouseOver_(false), size_(glm::ivec2(10)), minSize_(glm::ivec2(10)),
+        Node(Type::Game), isMouseOver_(false), size_(glm::ivec2(10)), minSize_(glm::ivec2(10)), maxSize_(glm::ivec2(0)),
         relativeSize_(glm::vec2(0.F)), aspectRatio_(glm::vec2(0.F)), padding_(0.F),
         horizontalAnchors_(HorizontalAnchors::None), verticalAnchors_(VerticalAnchors::None), visible_(true),
         visibleEffective_(true), onMouseOverFunc_(nullptr), onMouseOutFunc_(nullptr) {
@@ -14,7 +14,12 @@ namespace soil::stage::scene::gui {
     }
 
     void Rectangle::SetSize(const glm::ivec2& size) {
-        const auto newSize = glm::max(size, minSize_);
+        auto newSize = glm::max(size, minSize_);
+        for (auto i = 0; i < 2; i++) {
+            if (maxSize_[i] > 0) {
+                newSize[i] = std::min(newSize[i], maxSize_[i]);
+            }
+        }
         if (size_ == newSize) {
             return;
         }
@@ -261,7 +266,7 @@ namespace soil::stage::scene::gui {
         if (horizontalAnchors_ == HorizontalAnchors::None && verticalAnchors_ == VerticalAnchors::None) {
             return;
         }
-        glm::vec3 pos {parentCenter.x, parentCenter.y, GetPosition().z};
+        glm::vec3 pos{parentCenter.x, parentCenter.y, GetPosition().z};
         const glm::vec2 parentHalfSize = parentSize / glm::ivec2(2);
         const glm::vec2 halfSize = GetSize() / glm::ivec2(2);
         switch (horizontalAnchors_) {
@@ -308,5 +313,21 @@ namespace soil::stage::scene::gui {
                                otherPos.y + otherHalfSize.y <= pos.y + halfSize.y) ||
             (otherPos.y - otherHalfSize.y <= pos.y + halfSize.y && otherPos.y - otherHalfSize.y >= pos.y - halfSize.y);
         return betweenX && betweenY;
+    }
+
+    glm::ivec2 Rectangle::GetMinSize() const {
+        return minSize_;
+    }
+
+    void Rectangle::SetMinSize(const glm::ivec2& minSize) {
+        minSize_ = minSize;
+    }
+
+    glm::ivec2 Rectangle::GetMaxSize() const {
+        return maxSize_;
+    }
+
+    void Rectangle::SetMaxSize(const glm::ivec2& maxSize) {
+        maxSize_ = maxSize;
     }
 } // namespace soil::stage::scene::gui

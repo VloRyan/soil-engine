@@ -42,8 +42,6 @@ namespace soil::video::mesh {
         [[nodiscard]] GLsizei GetVertexSize() const;
 
     private:
-        // std::string id_; TODO: Needed?
-
         vertex::IndexType indexType_;
         uint indexCount_;
         byte* indices_;

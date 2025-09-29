@@ -21,6 +21,7 @@ namespace soil::stage::scene::component {
             Sound,
             Metadata,
             Lighting,
+            World,
             Any = 255
         };
 
@@ -28,6 +29,11 @@ namespace soil::stage::scene::component {
             Dirty = 0,
             Normal,
             Delete,
+        };
+
+        enum class UpdateType : std::uint8_t {
+            WhenDirty = 0,
+            Always,
         };
 
         explicit Component(Type type);
@@ -44,16 +50,25 @@ namespace soil::stage::scene::component {
 
         [[nodiscard]] bool IsDirty() const;
 
+        [[nodiscard]] virtual UpdateType GetUpdateType() const;
+
     protected:
         virtual void SetDirty();
+
         void SetState(State state);
+
         virtual void UpdateTransform(const glm::mat4& transform);
+
         virtual void SetParent(Node* parent);
+
+    public:
+        virtual void SetUpdateType(const UpdateType updateType);
 
     private:
         Node* parent_;
         Type type_;
         State state_;
+        UpdateType updateType_;
     };
 } // namespace soil::stage::scene::component
 
