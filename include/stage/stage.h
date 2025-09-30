@@ -5,6 +5,9 @@
 #include "input/event.h"
 #include "resources.h"
 #include "window_event.h"
+#include "event/stage_event.h"
+#include "interfaces.h"
+#include "event/game_event.h"
 
 namespace soil::stage {
     namespace scene {
@@ -15,12 +18,16 @@ namespace soil::stage {
 
     class StageNotRegisteredException : public std::runtime_error {
     public:
-        StageNotRegisteredException() : runtime_error("Stage not registered to stage manager") {}
+        StageNotRegisteredException() :
+            runtime_error("Stage not registered to stage manager") {
+        }
     };
 
-    class Stage : public input::EventHandler, public WindowEventHandler {
+    class Stage : public input::EventHandler, public WindowEventHandler, public event::StageEventHandler,
+                  public soil::event::Observable<event::GameEvent> {
     public:
         friend class Manager;
+
         explicit Stage();
 
         ~Stage() override;
@@ -42,17 +49,28 @@ namespace soil::stage {
         [[nodiscard]] Resources& GetResources() const;
 
         virtual void Load();
+
         virtual void Unload();
+
         [[nodiscard]] bool IsLoaded() const;
 
         void Handle(const input::Event& event) override;
+
         void Handle(const WindowEvent& event) override;
+
+        void Handle(const event::StageEvent& event) override;
+
+        void SetCurrent();
+
+        IManager* Manager() const;
 
     protected:
         void addScene(scene::Scene* scene);
+
         [[nodiscard]] virtual std::vector<scene::Scene*> GetScenes() const;
 
     private:
+        IManager* manager_;
         bool loaded_;
         std::vector<scene::Scene*> scenes_;
         Resources* resources_;

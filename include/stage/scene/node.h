@@ -59,7 +59,7 @@ namespace soil::stage::scene {
         };
 
 
-        enum class ReceiverType : std::uint8_t { None = 0, Window, Input };
+        enum class ReceiverType : std::uint8_t { None = 0, Window, Input, COUNT };
 
         explicit Node(Type type);
 

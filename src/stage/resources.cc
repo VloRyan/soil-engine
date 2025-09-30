@@ -4,9 +4,9 @@
 
 namespace soil::stage {
     Resources::Resources(Window* window, video::Manager* videoManager, sound::Manager* soundManager,
-                         input::Manager* inputManager, Manager* stageManager) :
-        videoManager_(videoManager), soundManager_(soundManager), inputManager_(inputManager), window_(window),
-        stageManager_(stageManager) {}
+                         input::Manager* inputManager) :
+        videoManager_(videoManager), soundManager_(soundManager), inputManager_(inputManager), window_(window) {
+    }
 
     video::mesh::Data* Resources::GetMesh(const video::mesh::Prefab::Definition& definition) const {
         return videoManager_->GetMesh(definition);
@@ -38,9 +38,5 @@ namespace soil::stage {
 
     video::texture::Manager& Resources::Textures() const {
         return videoManager_->Texture();
-    }
-
-    IStages& Resources::Stages() const {
-        return *stageManager_;
     }
 } // namespace soil::stage

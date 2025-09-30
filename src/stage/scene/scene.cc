@@ -4,12 +4,14 @@
 #include <deque>
 
 #include "stage/stage.h"
+#include "stage/scene/node.h"
 #include "util/deque.hpp"
 
 namespace soil::stage::scene {
     Scene::Scene() :
         Node(Type::Scene), stage_(nullptr), dirtyNodesPtr_(&dirtyNodes_),
         renderContainer_(new video::render::Container()), pipeline_(nullptr) {
+        eventReceiverNodes_.resize(static_cast<int>(ReceiverType::COUNT));
     }
 
     Scene::~Scene() {
@@ -17,8 +19,7 @@ namespace soil::stage::scene {
             stage->RemoveScene(this);
         }
         activeUpdateNodes_.clear();
-        windowEventReceiverNodes_.clear();
-        inputEventReceiverNodes_.clear();
+        eventReceiverNodes_.clear();
         ForEachChild(this, [this](Node* child) {
             child->RemoveListener(this);
         });
@@ -121,11 +122,11 @@ namespace soil::stage::scene {
         if (node->GetUpdateType() == UpdateType::Active) {
             dirtyActiveUpdateNodes_.push_back(node);
         }
-        if (node->GetReceiverType(ReceiverType::Window)) {
-            windowEventReceiverNodes_.push_back(node);
-        }
-        if (node->GetReceiverType(ReceiverType::Input)) {
-            inputEventReceiverNodes_.push_back(node);
+        for (auto i = 1; i < static_cast<int>(ReceiverType::COUNT); ++i) {
+            const auto type = static_cast<ReceiverType>(i);
+            if (node->GetReceiverType(type)) {
+                eventReceiverNodes_[i].push_back(node);
+            }
         }
         if (!componentEventHandler_.empty()) {
             node->ForEachComponent([this](component::Component* component) {
@@ -161,19 +162,14 @@ namespace soil::stage::scene {
                 }
             }
         }
-        if (node->GetReceiverType(ReceiverType::Window)) {
-            for (auto itr = windowEventReceiverNodes_.begin(); itr != windowEventReceiverNodes_.end(); ++itr) {
-                if (*itr == node) {
-                    windowEventReceiverNodes_.erase(itr);
-                    break;
-                }
-            }
-        }
-        if (node->GetReceiverType(ReceiverType::Input)) {
-            for (auto itr = inputEventReceiverNodes_.begin(); itr != inputEventReceiverNodes_.end(); ++itr) {
-                if (*itr == node) {
-                    inputEventReceiverNodes_.erase(itr);
-                    break;
+        for (auto i = 1; i < static_cast<int>(ReceiverType::COUNT); ++i) {
+            const auto type = static_cast<ReceiverType>(i);
+            if (node->GetReceiverType(type)) {
+                for (auto itr = eventReceiverNodes_[i].begin(); itr != eventReceiverNodes_[i].end(); ++itr) {
+                    if (*itr == node) {
+                        eventReceiverNodes_[i].erase(itr);
+                        break;
+                    }
                 }
             }
         }
@@ -269,23 +265,30 @@ namespace soil::stage::scene {
         pipeline_ = pipeline;
     }
 
-    void Scene::SetStage(Stage* const stage) {
+    void Scene::SetStage(Stage* stage) {
         if (stage_ != nullptr) {
             stage_->RemoveScene(this);
+            stage_->RemoveListener(this);
         }
         stage_ = stage;
+        if (stage_ != nullptr) {
+            stage_->AddListener(this);
+        }
     }
 
     void Scene::Handle(const input::Event& event) {
-        for (auto* const node : inputEventReceiverNodes_) {
+        for (auto* const node : eventReceiverNodes_[static_cast<int>(ReceiverType::Input)]) {
             node->Handle(event);
         }
     }
 
     void Scene::Handle(const WindowEvent& event) {
-        for (auto* const node : windowEventReceiverNodes_) {
+        for (auto* const node : eventReceiverNodes_[static_cast<int>(ReceiverType::Window)]) {
             node->Handle(event);
         }
+    }
+
+    void Scene::Handle(const event::GameEvent& event) {
     }
 
     Stage* Scene::GetStage() const {

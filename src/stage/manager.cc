@@ -6,33 +6,47 @@
 #include "input/manager.h"
 #include "stage/scene/scene.h"
 #include "stage/stage.h"
-#include "window.h"
 
 namespace soil::stage {
-    Manager::Manager() : currentStage_(nullptr), resources_(nullptr), window_(nullptr), inputManager_(nullptr) {}
+    Manager::Manager(Resources* resources) :
+        currentStage_(nullptr), nextStage_(nullptr), resources_(resources) {
+    }
 
     Manager::~Manager() {
-        if (window_ != nullptr) {
-            window_->RemoveListener(this);
-        }
-        if (inputManager_ != nullptr) {
-            inputManager_->RemoveListener(this);
-        }
-        delete resources_;
         for (const auto& stage : stages_ | std::views::values) {
             delete stage;
         }
     }
 
     void Manager::SetCurrent(const std::string& name) {
-        auto* stage = GetStage(name);
-        if (stage == nullptr) {
+        nextStage_ = GetStage(name);
+        if (nextStage_ == nullptr) {
             throw std::runtime_error("Stage with name " + name + " not registered");
         }
-        if (!stage->IsLoaded()) {
-            stage->Load();
+        if (!nextStage_->IsLoaded()) {
+            nextStage_->Load();
         }
-        currentStage_ = stage;
+        if (currentStage_ == nullptr) {
+            currentStage_ = nextStage_;
+        }
+    }
+
+    void Manager::SetCurrent(Stage* stage) {
+        nextStage_ = stage;
+#ifdef DEBUG
+        auto known = false;
+        for (const auto* regStage : stages_ | std::views::values) {
+            if (stage == regStage) {
+                known = true;
+            }
+        }
+        if (!known) {
+            throw std::runtime_error("Stage is unknown");
+        }
+#endif
+        if (!nextStage_->IsLoaded()) {
+            nextStage_->Load();
+        }
     }
 
     Stage* Manager::GetCurrent() const {
@@ -44,6 +58,7 @@ namespace soil::stage {
             throw std::runtime_error("Stage with name " + name + " already registered");
         }
         stage->resources_ = resources_;
+        stage->manager_ = this;
         stages_.insert({name, stage});
     }
 
@@ -60,15 +75,16 @@ namespace soil::stage {
         return stage;
     }
 
-    void Manager::Init(Window* window, input::Manager* inputManager, Resources* resources) {
-        window_ = window;
-        inputManager_ = inputManager;
-        resources_ = resources;
-        window_->AddListener(this);
-        inputManager_->AddListener(this);
-    }
-
-    void Manager::Update() const {
+    void Manager::Update() {
+        if (nextStage_ != nullptr) {
+            auto* prevStage = currentStage_;
+            currentStage_ = nextStage_;
+            nextStage_ = nullptr;
+            const auto stageChangedEvent = event::StageEvent::MakeActiveStageChanged(currentStage_, prevStage);
+            for (auto* stage : stages_ | std::views::values) {
+                stage->Handle(stageChangedEvent);
+            }
+        }
         if (currentStage_ == nullptr) {
             return;
         }
@@ -107,6 +123,4 @@ namespace soil::stage {
         }
         return itr->second;
     }
-
-
 } // namespace soil::stage

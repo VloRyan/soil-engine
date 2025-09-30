@@ -8,24 +8,11 @@
 #include "video/shader/instance_shader.h"
 
 namespace soil::stage {
-    class Stage;
-
-    class Manager;
-
-    class IStages {
-    public:
-        virtual ~IStages() = default;
-        virtual void SetCurrent(const std::string& name) = 0;
-        virtual Stage* GetCurrent() const = 0;
-
-    protected:
-        IStages() = default;
-    };
-
     class Resources {
     public:
         explicit Resources(Window* window, video::Manager* videoManager, sound::Manager* soundManager,
-                           input::Manager* inputManager, Manager* stageManager);
+                           input::Manager* inputManager);
+
         ~Resources() = default;
 
         Resources(const Resources& other) = delete;
@@ -49,7 +36,7 @@ namespace soil::stage {
         [[nodiscard]] Window* GetWindow() const;
 
         [[nodiscard]] video::texture::Manager& Textures() const;
-        [[nodiscard]] IStages& Stages() const;
+
 
         [[nodiscard]] video::render::State& GetRenderState() const;
 
@@ -57,7 +44,6 @@ namespace soil::stage {
         video::Manager* videoManager_;
         sound::Manager* soundManager_;
         input::Manager* inputManager_;
-        Manager* stageManager_;
         Window* window_;
     };
 } // namespace soil::stage

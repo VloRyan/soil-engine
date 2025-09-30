@@ -4,7 +4,9 @@
 #include "stage/scene/scene.h"
 
 namespace soil::stage {
-    Stage::Stage() : loaded_(false), resources_(nullptr) {}
+    Stage::Stage() :
+        manager_(nullptr), loaded_(false), resources_(nullptr) {
+    }
 
     Stage::~Stage() {
         if (IsLoaded()) {
@@ -37,6 +39,10 @@ namespace soil::stage {
         return scenes_;
     }
 
+    IManager* Stage::Manager() const {
+        return manager_;
+    }
+
     void Stage::Handle(const input::Event& event) {
         for (auto* scene : scenes_) {
             scene->Handle(event);
@@ -47,6 +53,19 @@ namespace soil::stage {
         for (auto* scene : scenes_) {
             scene->Handle(event);
         }
+    }
+
+    void Stage::Handle(const event::StageEvent& event) {
+        if (event.Trigger() == event::StageEvent::TriggerType::ActiveStageChanged && event.GetStage() == this &&
+            IsLoaded()
+        ) {
+            const auto winEvent = WindowEvent(GetResources().GetWindow(), WindowEvent::SizeChanged);
+            Handle(winEvent);
+        }
+    }
+
+    void Stage::SetCurrent() {
+        manager_->SetCurrent(this);
     }
 
     void Stage::RemoveScene(const scene::Scene* scene) {

@@ -127,6 +127,8 @@ add_library(${PROJECT_NAME}
         src/world/volume/aabb.cc
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
+        src/stage/event/stage_event.cc
+        src/stage/event/game_event.cc
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -143,6 +145,8 @@ target_sources(
         include/event/event.h
         include/event/handler.hpp
         include/event/observable.hpp
+        include/stage/interfaces.h
+        include/stage/event/game_event.h
         include/file/font.h
         include/file/sequence.hpp
         include/file/sprite_sheet.h
@@ -160,10 +164,12 @@ target_sources(
         include/sound/manager.h
         include/sound/source.h
         include/sound/wave.h
+        include/stage/interfaces.h
         include/stage/event/component.h
         include/stage/event/node.h
         include/stage/manager.h
         include/stage/resources.h
+        include/stage/event/stage_event.h
         include/stage/scene/component/bounding_volume.h
         include/stage/scene/component/component.h
         include/stage/scene/component/instance_data.h

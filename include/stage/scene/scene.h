@@ -7,6 +7,7 @@
 #include "render/instancing.h"
 #include "stage/manager.h"
 #include "stage/resources.h"
+#include "stage/event/game_event.h"
 #include "video/render/container.h"
 #include "video/render/pipeline.h"
 
@@ -19,10 +20,13 @@ namespace soil::stage::scene {
                   public soil::event::Handler<event::Node>,
                   public soil::event::Handler<event::Component>,
                   public input::EventHandler,
-                  public WindowEventHandler {
+                  public WindowEventHandler,
+                  public event::GameEventHandler {
     public:
         friend class soil::stage::Stage;
+
         explicit Scene();
+
         ~Scene() override;
 
         void Update() override;
@@ -35,11 +39,14 @@ namespace soil::stage::scene {
 
         void Handle(const WindowEvent& event) override;
 
+        void Handle(const event::GameEvent& event) override;
+
         virtual void Render(video::render::State& state);
 
         [[nodiscard]] Stage* GetStage() const;
 
         [[nodiscard]] virtual video::render::Pipeline* GetPipeline() const;
+
         virtual void SetPipeline(video::render::Pipeline* pipeline);
 
         template <class T>
@@ -51,6 +58,7 @@ namespace soil::stage::scene {
         }
 
         virtual void RemoveHook(hook::Hook* theHook);
+
         [[nodiscard]] virtual video::render::Container* GetRenderContainer() const;
 
         void RemoveChild(Node* node) override;
@@ -63,8 +71,8 @@ namespace soil::stage::scene {
         virtual void OnNodeRemoved(Node* node);
 
         void addChild(Node* node) override;
-        virtual void SetStage(Stage* stage);
 
+        virtual void SetStage(Stage* stage);
 
     private:
         void addHook(hook::Hook* hook);
@@ -81,8 +89,7 @@ namespace soil::stage::scene {
         std::vector<Node*>* dirtyNodesPtr_;
         std::vector<Node*> nodesToDelete_;
 
-        std::vector<Node*> inputEventReceiverNodes_;
-        std::vector<Node*> windowEventReceiverNodes_;
+        std::vector<std::vector<Node*>> eventReceiverNodes_;
         std::vector<event::ComponentEventHandler*> componentEventHandler_;
         video::render::Container* renderContainer_;
 

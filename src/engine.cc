@@ -7,9 +7,15 @@
 #include "video/manager.h"
 
 namespace soil {
+    Engine* Engine::INSTANCE_ = nullptr;
+
     Engine::Engine(const WindowParameter& params) :
-        window_(new Window(params)), inputManager_(new input::Manager), videoManager_(new video::Manager),
-        soundManager_(new sound::openal::Manager), stageManager_(new stage::Manager) {
+        window_(new Window(params)), resources_(nullptr), inputManager_(new input::Manager),
+        videoManager_(new video::Manager), soundManager_(new sound::openal::Manager), stageManager_(nullptr) {
+        if (INSTANCE_ != nullptr) {
+            throw std::runtime_error("instance of engine already exits");
+        }
+        INSTANCE_ = this;
         plog::init<plog::TxtFormatter>(plog::debug, plog::OutputStream::streamStdOut);
         PLOG_DEBUG << "init engine";
         if (glfwInit() == 0) {
@@ -22,9 +28,11 @@ namespace soil {
         videoManager_->Init(window_);
         inputManager_->Init(window_);
         soundManager_->Init();
-        const auto resources =
-            new stage::Resources(window_, videoManager_, soundManager_, inputManager_, stageManager_);
-        stageManager_->Init(window_, inputManager_, resources);
+        resources_ =
+            new stage::Resources(window_, videoManager_, soundManager_, inputManager_);
+        stageManager_ = new stage::Manager(resources_);
+        window_->AddListener(stageManager_);
+        inputManager_->AddListener(stageManager_);
     }
 
     void Engine::Run() const {
@@ -133,7 +141,10 @@ namespace soil {
             }
         }
         PLOG_DEBUG << "Stop engine";
+        window_->RemoveListener(stageManager_);
+        inputManager_->RemoveListener(stageManager_);
         delete stageManager_;
+        delete resources_;
         delete soundManager_;
         delete videoManager_;
         delete inputManager_;
@@ -162,5 +173,9 @@ namespace soil {
 
     Window* Engine::GetWindow() const {
         return window_;
+    }
+
+    void Engine::Quit() {
+        INSTANCE_->window_->Close();
     }
 } // namespace soil
