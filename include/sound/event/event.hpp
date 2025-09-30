@@ -4,27 +4,24 @@
 #include "event/handler.hpp"
 
 namespace soil::sound::event {
-    enum class Cause :std::uint8_t {
-        Source,
-    };
+enum class Cause : std::uint8_t {
+  Source,
+};
 
-    class Event : public soil::event::Event {
-    public:
-        explicit Event(const Cause cause) :
-            soil::event::Event(Type::Sound), cause_(cause) {
-        }
+class Event : public soil::event::Event {
+ public:
+  explicit Event(const Cause cause)
+      : soil::event::Event(Type::Sound), cause_(cause) {}
 
-        ~Event() override = default;
+  ~Event() override = default;
 
-        event::Cause Cause() const noexcept {
-            return cause_;
-        }
+  event::Cause Cause() const noexcept { return cause_; }
 
-    protected:
-        event::Cause cause_;
-    };
+ protected:
+  event::Cause cause_;
+};
 
-    using EventHandler = soil::event::Handler<Event>;
-}
+using EventHandler = soil::event::Handler<Event>;
+}  // namespace soil::sound::event
 
 #endif

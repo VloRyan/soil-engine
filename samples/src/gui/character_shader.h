@@ -8,18 +8,17 @@
 
 namespace soil_samples::gui {
 
-    class CharacterShader final : public soil::video::shader::Shader {
-    public:
-        explicit CharacterShader(const std::string& path);
-        void Prepare(soil::video::render::State& state) override;
-        void SetViewer(soil::stage::scene::viewer::Node* viewer);
+class CharacterShader final : public soil::video::shader::Shader {
+ public:
+  explicit CharacterShader(const std::string& path);
+  void Prepare(soil::video::render::State& state) override;
+  void SetViewer(soil::stage::scene::viewer::Node* viewer);
 
-        inline static const auto NAME = std::string("Character");
+  inline static const auto NAME = std::string("Character");
 
-    private:
-        soil::stage::scene::viewer::Node* viewer_;
-    };
-} // namespace soil_samples::gui
-
+ private:
+  soil::stage::scene::viewer::Node* viewer_;
+};
+}  // namespace soil_samples::gui
 
 #endif

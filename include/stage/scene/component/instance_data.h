@@ -4,17 +4,20 @@
 #include "visual_component.h"
 
 namespace soil::stage::scene::component {
-    class InstanceData : public VisualComponent, public video::render::instance::Instance {
-    public:
-        InstanceData(std::string batchKey, bool opaque);
-        ~InstanceData() override = default;
-        std::string GetBatchKey();
-        [[nodiscard]] video::render::RenderableObject* GetRenderable() override;
+class InstanceData : public VisualComponent,
+                     public video::render::instance::Instance {
+ public:
+  InstanceData(std::string batchKey, bool opaque);
 
-    private:
-        std::string batchKey_;
-    };
-} // namespace soil::stage::scene::component
+  ~InstanceData() override = default;
 
+  std::string GetBatchKey();
+
+  [[nodiscard]] video::render::RenderableObject* GetRenderable() override;
+
+ private:
+  std::string batchKey_;
+};
+}  // namespace soil::stage::scene::component
 
 #endif

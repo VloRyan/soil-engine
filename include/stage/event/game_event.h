@@ -4,21 +4,21 @@
 #include "event/handler.hpp"
 
 namespace soil::stage::event {
-    class GameEvent : soil::event::Event {
-    public:
-        explicit GameEvent(int trigger);
+class GameEvent : soil::event::Event {
+ public:
+  explicit GameEvent(int trigger);
 
-        ~GameEvent() override = default;
+  ~GameEvent() override = default;
 
-        [[nodiscard]] int Trigger() const;
+  [[nodiscard]] int Trigger() const;
 
-        [[nodiscard]] bool IsTrigger(int trigger) const;
+  [[nodiscard]] bool IsTrigger(int trigger) const;
 
-    private:
-        int trigger_;
-    };
+ private:
+  int trigger_;
+};
 
-    using GameEventHandler = soil::event::Handler<GameEvent>;
-}
+using GameEventHandler = soil::event::Handler<GameEvent>;
+}  // namespace soil::stage::event
 
 #endif

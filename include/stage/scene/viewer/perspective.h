@@ -5,54 +5,55 @@
 #include "node.h"
 
 namespace soil::stage::scene::viewer {
-    class Perspective : public Node {
-    public:
-        explicit Perspective();
+class Perspective : public Node {
+ public:
+  explicit Perspective();
 
-        ~Perspective() override = default;
+  ~Perspective() override = default;
 
-        [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
+  [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
 
-        [[nodiscard]] glm::mat4 GetViewMatrix() const override;
+  [[nodiscard]] glm::mat4 GetViewMatrix() const override;
 
-        void Look(glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
+  void Look(glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
 
-        void Move(glm::vec3 move);
+  void Move(glm::vec3 move);
 
-        void AddVelocity(glm::vec3 velocity, bool relative = true);
+  void AddVelocity(glm::vec3 velocity, bool relative = true);
 
-        [[nodiscard]] glm::vec3 GetRotate() const;
+  [[nodiscard]] glm::vec3 GetRotate() const;
 
-        void SetRotate(glm::vec3 rot);
+  void SetRotate(glm::vec3 rot);
 
-        [[nodiscard]] glm::vec3 GetRight() const override;
+  [[nodiscard]] glm::vec3 GetRight() const override;
 
-        [[nodiscard]] glm::vec3 GetUp() const override;
+  [[nodiscard]] glm::vec3 GetUp() const override;
 
-        [[nodiscard]] glm::vec3 GetDirection() const override;
+  [[nodiscard]] glm::vec3 GetDirection() const override;
 
-        void SetRight(const glm::vec3& right) override;
+  void SetRight(const glm::vec3& right) override;
 
-        void SetUp(const glm::vec3& up) override;
+  void SetUp(const glm::vec3& up) override;
 
-        void SetPosition(const glm::vec3& pos) override;
+  void SetPosition(const glm::vec3& pos) override;
 
-        void SetDirection(const glm::vec3& direction) override;
+  void SetDirection(const glm::vec3& direction) override;
 
-        void Update() override;
+  void Update() override;
 
-    protected:
-        void UpdateDirty() override;
-        void UpdateProjection(const glm::ivec2& size) override;
+ protected:
+  void UpdateDirty() override;
 
-        bool updateVelocity_;
-        glm::vec3 moveSpeed_;
-        glm::vec3 rotate_;
-        glm::vec3 velocity_;
-        float fovY_;
-        glm::mat4 perspective_;
-        glm::mat4 view_;
-    };
-} // namespace soil::stage::scene::viewer
+  void UpdateProjection(const glm::ivec2& size) override;
+
+  bool updateVelocity_;
+  glm::vec3 moveSpeed_;
+  glm::vec3 rotate_;
+  glm::vec3 velocity_;
+  float fovY_;
+  glm::mat4 perspective_;
+  glm::mat4 view_;
+};
+}  // namespace soil::stage::scene::viewer
 
 #endif

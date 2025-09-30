@@ -6,28 +6,28 @@
 #include "event/handler.hpp"
 
 namespace soil {
-    class Window;
+class Window;
 
-    class WindowEvent final : public event::Event {
-    public:
-        enum Cause : std::uint8_t {
-            SizeChanged,
-            StatisticsChanged,
-        };
+class WindowEvent final : public event::Event {
+ public:
+  enum Cause : std::uint8_t {
+    SizeChanged,
+    StatisticsChanged,
+  };
 
-        explicit WindowEvent(Window *window, Cause cause);
+  explicit WindowEvent(Window* window, Cause cause);
 
-        ~WindowEvent() override;
+  ~WindowEvent() override;
 
-        [[nodiscard]] Cause GetCause() const;
+  [[nodiscard]] Cause GetCause() const;
 
-        [[nodiscard]] Window *GetWindow() const;
+  [[nodiscard]] Window* GetWindow() const;
 
-    private:
-        Cause cause_;
-        Window *window_;
-    };
+ private:
+  Cause cause_;
+  Window* window_;
+};
 
-    using WindowEventHandler = event::Handler<WindowEvent>;
-} // namespace soil
+using WindowEventHandler = event::Handler<WindowEvent>;
+}  // namespace soil
 #endif

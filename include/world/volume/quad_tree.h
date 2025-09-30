@@ -6,49 +6,63 @@
 #include "stage/scene/component/bounding_volume.h"
 
 namespace soil::world::volume {
+class QuadTree : public Container {
+ public:
+  explicit QuadTree(float size, byte maxLevel = 4, float minChildSize = 6.0F);
 
+  void Insert(const Volume* volume) override;
 
-    class QuadTree : public Container {
-    public:
-        explicit QuadTree(float size, byte maxLevel = 4, float minChildSize = 6.0F);
+  void Insert2(const Volume* volume);
 
-        void Insert(const Volume* volume) override;
-        void Insert2(const Volume* volume);
-        bool Remove(const Volume* volume) override;
+  bool Remove(const Volume* volume) override;
 
-        void QueryVolumesAt(const glm::vec3& point, std::vector<const Volume*>& volumes) const override;
-        void QueryVolumesAt(const glm::vec2& point, std::vector<const Volume*>& volumes) const;
-        void QueryVolumesInRange(const glm::vec3& point, float radius,
-                                 std::vector<const Volume*>& volumes) const override;
-        void QueryVolumesInRange(const glm::vec2& point, float radius, std::vector<const Volume*>& volumes) const;
+  void QueryVolumesAt(const glm::vec3& point,
+                      std::vector<const Volume*>& volumes) const override;
 
-        void QueryNodeIndicesFor(const Volume*, std::vector<int>& indices) const override;
+  void QueryVolumesAt(const glm::vec2& point,
+                      std::vector<const Volume*>& volumes) const;
 
-        const Node* GetNode(int index) const override;
-        void GetVolumes(int index, std::vector<const Volume*>& volumes) const override;
-        size_t GetVolumeCount() const;
+  void QueryVolumesInRange(const glm::vec3& point, float radius,
+                           std::vector<const Volume*>& volumes) const override;
 
-        size_t GetNodeCount() const override;
-        size_t GetChildrenPerNode() const override;
+  void QueryVolumesInRange(const glm::vec2& point, float radius,
+                           std::vector<const Volume*>& volumes) const;
 
-        byte DetermineLevel(std::uint16_t index) const;
+  void QueryNodeIndicesFor(const Volume*,
+                           std::vector<int>& indices) const override;
 
-    private:
-        bool insert(const Volume* volume, int index, byte level);
+  const Node* GetNode(int index) const override;
 
-        void split(std::uint16_t index);
-        void split2(std::uint16_t index, byte level);
-        static bool isInsideCircle(const glm::vec2& point, const glm::vec2& circleCenter, float radius);
+  void GetVolumes(int index,
+                  std::vector<const Volume*>& volumes) const override;
 
-        std::uint16_t freeNodeVolumesIndex();
+  size_t GetVolumeCount() const;
 
-        std::vector<Node> nodes_;
-        std::vector<std::vector<const Volume*>> nodeVolumes_;
-        std::vector<std::uint16_t> freeNodeVolumes_;
+  size_t GetNodeCount() const override;
 
-        byte maxLevel_;
-        float minChildSize_;
-    };
-} // namespace soil::world::volume
+  size_t GetChildrenPerNode() const override;
+
+  byte DetermineLevel(std::uint16_t index) const;
+
+ private:
+  bool insert(const Volume* volume, int index, byte level);
+
+  void split(std::uint16_t index);
+
+  void split2(std::uint16_t index, byte level);
+
+  static bool isInsideCircle(const glm::vec2& point,
+                             const glm::vec2& circleCenter, float radius);
+
+  std::uint16_t freeNodeVolumesIndex();
+
+  std::vector<Node> nodes_;
+  std::vector<std::vector<const Volume*>> nodeVolumes_;
+  std::vector<std::uint16_t> freeNodeVolumes_;
+
+  byte maxLevel_;
+  float minChildSize_;
+};
+}  // namespace soil::world::volume
 
 #endif

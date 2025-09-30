@@ -6,38 +6,43 @@
 #include "renderable_object.h"
 
 namespace soil::video::render {
-    struct RenderDef {
-        bool Blending{false};
+struct RenderDef {
+  bool Blending{false};
 
-        friend bool operator==(const RenderDef& lhs, const RenderDef& rhs) {
-            return lhs.Blending == rhs.Blending;
-        }
+  friend bool operator==(const RenderDef& lhs, const RenderDef& rhs) {
+    return lhs.Blending == rhs.Blending;
+  }
 
-        friend bool operator!=(const RenderDef& lhs, const RenderDef& rhs) {
-            return !(lhs == rhs);
-        }
-    };
+  friend bool operator!=(const RenderDef& lhs, const RenderDef& rhs) {
+    return !(lhs == rhs);
+  }
+};
 
-    class Container {
-    public:
-        Container() = default;
-        ~Container() = default;
-        void Add(RenderableObject* renderable, const RenderDef& state);
-        bool Remove(RenderableObject* renderable, const RenderDef& state);
-        void GetPerDef(std::vector<RenderableObject*>& v, const RenderDef& state);
-        bool Empty() const;
+class Container {
+ public:
+  Container() = default;
 
-        inline static auto OPAQUE = RenderDef{.Blending = false};
-        inline static auto NON_OPAQUE = RenderDef{.Blending = true};
+  ~Container() = default;
 
-    private:
-        struct RenderableWithState {
-            RenderableObject* Ptr;
-            RenderDef State;
-        };
+  void Add(RenderableObject* renderable, const RenderDef& state);
 
-        std::vector<RenderableWithState> renderables_;
-    };
-} // namespace soil::video::render
+  bool Remove(RenderableObject* renderable, const RenderDef& state);
+
+  void GetPerDef(std::vector<RenderableObject*>& v, const RenderDef& state);
+
+  bool Empty() const;
+
+  inline static auto OPAQUE = RenderDef{.Blending = false};
+  inline static auto NON_OPAQUE = RenderDef{.Blending = true};
+
+ private:
+  struct RenderableWithState {
+    RenderableObject* Ptr;
+    RenderDef State;
+  };
+
+  std::vector<RenderableWithState> renderables_;
+};
+}  // namespace soil::video::render
 
 #endif

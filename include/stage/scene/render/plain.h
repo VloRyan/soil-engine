@@ -5,24 +5,28 @@
 #include "stage/scene/hook/render_hook.h"
 
 namespace soil::stage::scene::render {
-    class Plain : public hook::RenderHook {
-    public:
-        explicit Plain(video::render::Container* renderContainer);
-        ~Plain() override = default;
-        void OnRender(video::render::State& state) override;
+class Plain : public hook::RenderHook {
+ public:
+  explicit Plain(video::render::Container* renderContainer);
 
-        void Handle(const event::Component& event) override;
+  ~Plain() override = default;
 
-    protected:
-        void OnAdded(component::VisualComponent* component);
-        void OnRemoved(component::VisualComponent* component);
-        void OnStateChanged(component::VisualComponent* component);
+  void OnRender(video::render::State& state) override;
 
-        video::render::Container* renderContainer_;
-        std::vector<component::VisualComponent*> added_;
-        std::vector<component::VisualComponent*> removed_;
-        std::vector<component::VisualComponent*> changed_;
-    };
-} // namespace soil::stage::scene::render
+  void Handle(const event::Component& event) override;
+
+ protected:
+  void OnAdded(component::VisualComponent* component);
+
+  void OnRemoved(component::VisualComponent* component);
+
+  void OnStateChanged(component::VisualComponent* component);
+
+  video::render::Container* renderContainer_;
+  std::vector<component::VisualComponent*> added_;
+  std::vector<component::VisualComponent*> removed_;
+  std::vector<component::VisualComponent*> changed_;
+};
+}  // namespace soil::stage::scene::render
 
 #endif

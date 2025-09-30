@@ -4,41 +4,41 @@
 #include "glm/glm.hpp"
 
 namespace soil::video::buffer {
-    class Cursor final {
-    public:
-        explicit Cursor(byte *data);
+class Cursor final {
+ public:
+  explicit Cursor(byte* data);
 
-        Cursor(const Cursor &orig) = delete;
+  Cursor(const Cursor& orig) = delete;
 
-        ~Cursor() = default;
+  ~Cursor() = default;
 
-        void Write(const int &data);
+  void Write(const int& data);
 
-        void Write(const uint &data);
+  void Write(const uint& data);
 
-        void Write(const float &data);
+  void Write(const float& data);
 
-        void Write(const glm::vec2 &data);
+  void Write(const glm::vec2& data);
 
-        void Write(const glm::vec3 &data);
+  void Write(const glm::vec3& data);
 
-        void Write(const glm::vec4 &data);
+  void Write(const glm::vec4& data);
 
-        void Write(const glm::mat4 &data);
+  void Write(const glm::mat4& data);
 
-        void Write(const void *data, size_t dataSize);
+  void Write(const void* data, size_t dataSize);
 
-        void Move(size_t offset);
+  void Move(size_t offset);
 
-        void MoveTo(size_t offset);
+  void MoveTo(size_t offset);
 
-        [[nodiscard]] size_t GetDataWritten() const;
+  [[nodiscard]] size_t GetDataWritten() const;
 
-    private:
-        byte *pos_;
-        byte *start_;
-        byte *max_;
-    };
-} // namespace soil::video::buffer
+ private:
+  byte* pos_;
+  byte* start_;
+  byte* max_;
+};
+}  // namespace soil::video::buffer
 
 #endif

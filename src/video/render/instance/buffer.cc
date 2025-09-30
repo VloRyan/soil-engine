@@ -3,110 +3,102 @@
 #include <stdexcept>
 
 namespace soil::video::render::instance {
-    Buffer::Buffer(buffer::Object* buffer, const size_t instanceSize) :
-        buffer_(buffer), instanceSize_(instanceSize), dirty_(false) {}
+Buffer::Buffer(buffer::Object* buffer, const size_t instanceSize)
+    : buffer_(buffer), instanceSize_(instanceSize), dirty_(false) {}
 
-    Buffer::~Buffer() {
-        instances_.clear();
-        dirtyInstances_.clear();
+Buffer::~Buffer() {
+  instances_.clear();
+  dirtyInstances_.clear();
+}
+
+buffer::Object* Buffer::GetPerInstanceBuffer() const { return buffer_; }
+
+size_t Buffer::GetInstanceSize() const { return instanceSize_; }
+
+size_t Buffer::GetInstancesCount() const { return instances_.size(); }
+
+size_t Buffer::GetDirtyInstancesCount() const { return dirtyInstances_.size(); }
+
+void Buffer::Update(const glm::vec3& viewerPos) {
+  if (!dirty_) {
+    return;
+  }
+
+  buffer::Object* perInstanceBuffer = this->GetPerInstanceBuffer();
+  if (perInstanceBuffer == nullptr) {
+    return;
+  }
+
+  const auto instanceSize = this->GetInstanceSize();
+  const auto bufferSizeInInstances =
+      perInstanceBuffer->GetBufferSize() / instanceSize;
+  const auto maxInstancesPerDraw = bufferSizeInInstances;
+
+  auto* cursor = perInstanceBuffer->GetCursor();
+
+  for (auto* instance : dirtyInstances_) {
+    if (instance->GetIndex() == -1) {
+      if (maxInstancesPerDraw == instances_.size()) {
+        throw std::runtime_error("Buffer is too small");
+      }
+      instance->SetIndex(static_cast<int>(instances_.size()));
+      instances_.push_back(instance);
     }
+    cursor->MoveTo(instanceSize * instance->GetIndex());
+    instance->WriteData(cursor);
+  }
+  dirtyInstances_.clear();
+  perInstanceBuffer->Flush();
+  dirty_ = false;
+}
 
-    buffer::Object* Buffer::GetPerInstanceBuffer() const {
-        return buffer_;
+std::vector<Instance*>& Buffer::GetInstances() { return instances_; }
+
+void Buffer::AddChangedInstance(Instance* instance) {
+  if (instance->GetIndex() == -1) {
+    // unknown
+    return;
+  }
+  for (const auto* dirtyInstance : dirtyInstances_) {
+    if (dirtyInstance == instance) {
+      return;
     }
+  }
+  dirtyInstances_.push_back(instance);
+  dirty_ = true;
+}
 
-    size_t Buffer::GetInstanceSize() const {
-        return instanceSize_;
+void Buffer::PrepareInstance(Instance* instance) {
+  for (const auto& dirtyInstance : dirtyInstances_) {
+    if (dirtyInstance == instance) {
+      return;
     }
+  }
+  dirtyInstances_.push_back(instance);
+  dirty_ = true;
+}
 
-    size_t Buffer::GetInstancesCount() const {
-        return instances_.size();
+bool Buffer::RemoveInstance(Instance* instance) {
+  for (auto itr = dirtyInstances_.begin(); itr != dirtyInstances_.end();
+       ++itr) {
+    if (*itr == instance) {
+      dirtyInstances_.erase(itr);
+      break;
     }
-
-    size_t Buffer::GetDirtyInstancesCount() const {
-        return dirtyInstances_.size();
+  }
+  for (auto i = 0; i < instances_.size(); ++i) {
+    if (instances_[i] == instance) {
+      if (instances_[i] != instances_.back()) {
+        instances_[i] = instances_.back();
+        instances_[i]->SetIndex(i);
+        dirtyInstances_.push_back(instances_[i]);
+      }
+      instance->SetIndex(-1);
+      instances_.pop_back();
+      dirty_ = true;
+      return true;
     }
-
-    void Buffer::Update(const glm::vec3& viewerPos) {
-        if (!dirty_) {
-            return;
-        }
-
-        buffer::Object* perInstanceBuffer = this->GetPerInstanceBuffer();
-        if (perInstanceBuffer == nullptr) {
-            return;
-        }
-
-        const auto instanceSize = this->GetInstanceSize();
-        const auto bufferSizeInInstances = perInstanceBuffer->GetBufferSize() / instanceSize;
-        const auto maxInstancesPerDraw = bufferSizeInInstances;
-
-        auto* cursor = perInstanceBuffer->GetCursor();
-
-        for (auto* instance : dirtyInstances_) {
-            if (instance->GetIndex() == -1) {
-                if (maxInstancesPerDraw == instances_.size()) {
-                    throw std::runtime_error("Buffer is too small");
-                }
-                instance->SetIndex(static_cast<int>(instances_.size()));
-                instances_.push_back(instance);
-            }
-            cursor->MoveTo(instanceSize * instance->GetIndex());
-            instance->WriteData(cursor);
-        }
-        dirtyInstances_.clear();
-        perInstanceBuffer->Flush();
-        dirty_ = false;
-    }
-
-    std::vector<Instance*>& Buffer::GetInstances() {
-        return instances_;
-    }
-
-    void Buffer::AddChangedInstance(Instance* instance) {
-        if (instance->GetIndex() == -1) {
-            // unknown
-            return;
-        }
-        for (const auto* dirtyInstance : dirtyInstances_) {
-            if (dirtyInstance == instance) {
-                return;
-            }
-        }
-        dirtyInstances_.push_back(instance);
-        dirty_ = true;
-    }
-
-    void Buffer::PrepareInstance(Instance* instance) {
-        for (const auto& dirtyInstance : dirtyInstances_) {
-            if (dirtyInstance == instance) {
-                return;
-            }
-        }
-        dirtyInstances_.push_back(instance);
-        dirty_ = true;
-    }
-
-    bool Buffer::RemoveInstance(Instance* instance) {
-        for (auto itr = dirtyInstances_.begin(); itr != dirtyInstances_.end(); ++itr) {
-            if (*itr == instance) {
-                dirtyInstances_.erase(itr);
-                break;
-            }
-        }
-        for (auto i = 0; i < instances_.size(); ++i) {
-            if (instances_[i] == instance) {
-                if (instances_[i] != instances_.back()) {
-                    instances_[i] = instances_.back();
-                    instances_[i]->SetIndex(i);
-                    dirtyInstances_.push_back(instances_[i]);
-                }
-                instance->SetIndex(-1);
-                instances_.pop_back();
-                dirty_ = true;
-                return true;
-            }
-        }
-        return false;
-    }
-} // namespace soil::video::render::instance
+  }
+  return false;
+}
+}  // namespace soil::video::render::instance

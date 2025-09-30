@@ -4,32 +4,39 @@
 #include "node.h"
 
 namespace soil::stage::scene::viewer {
-    enum class OrthoType { OrthoHeight, Full };
+enum class OrthoType { OrthoHeight, Full };
 
-    class Ortho final : public Node {
-    public:
-        explicit Ortho(glm::ivec2 resolution);
-        ~Ortho() override = default;
-        void Look(glm::vec3 pos, glm::vec3 center, glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
-        [[nodiscard]] OrthoType GetOrthoType() const;
-        void SetOrthoType(OrthoType orthoType);
+class Ortho final : public Node {
+ public:
+  explicit Ortho(glm::ivec2 resolution);
 
-        [[nodiscard]] glm::mat4 GetViewMatrix() const override;
-        [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
-        void Update() override;
+  ~Ortho() override = default;
 
-    protected:
-        void UpdateProjection(const glm::ivec2& size) override;
+  void Look(glm::vec3 pos, glm::vec3 center,
+            glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F));
 
-    private:
-        void UpdateDirty() override;
+  [[nodiscard]] OrthoType GetOrthoType() const;
 
-        glm::mat4 projection_;
-        glm::mat4 view_;
+  void SetOrthoType(OrthoType orthoType);
 
-        float orthoSize_;
-        OrthoType orthoType_;
-    };
-} // namespace soil::stage::scene::viewer
+  [[nodiscard]] glm::mat4 GetViewMatrix() const override;
+
+  [[nodiscard]] glm::mat4 GetProjectionMatrix() const override;
+
+  void Update() override;
+
+ protected:
+  void UpdateProjection(const glm::ivec2& size) override;
+
+ private:
+  void UpdateDirty() override;
+
+  glm::mat4 projection_;
+  glm::mat4 view_;
+
+  float orthoSize_;
+  OrthoType orthoType_;
+};
+}  // namespace soil::stage::scene::viewer
 
 #endif

@@ -3,15 +3,15 @@
 #include "renderable.h"
 
 namespace soil::video::render {
-    class RenderableObject : public Renderable {
-    public:
-        RenderableObject() = default;
-        ~RenderableObject() override = default;
-        virtual float DistanceTo(const glm::vec3& point) = 0;
+class RenderableObject : public Renderable {
+ public:
+  RenderableObject() = default;
 
-        [[nodiscard]] virtual bool IsSortable() const {
-            return true;
-        }
-    };
-} // namespace soil::video::render
+  ~RenderableObject() override = default;
+
+  virtual float DistanceTo(const glm::vec3& point) = 0;
+
+  [[nodiscard]] virtual bool IsSortable() const { return true; }
+};
+}  // namespace soil::video::render
 #endif

@@ -7,22 +7,22 @@
 #include "event/handler.hpp"
 
 namespace soil::video {
-    class Event final : public event::Event {
-    public:
-        enum class Cause : std::uint8_t { WindowResized };
+class Event final : public event::Event {
+ public:
+  enum class Cause : std::uint8_t { WindowResized };
 
-        ~Event() override;
+  ~Event() override;
 
-        [[nodiscard]] Cause GetCause() const;
+  [[nodiscard]] Cause GetCause() const;
 
-    protected:
-        explicit Event(Cause cause);
+ protected:
+  explicit Event(Cause cause);
 
-    private:
-        Cause cause_;
-    };
+ private:
+  Cause cause_;
+};
 
-    using EventHandler = event::Handler<Event>;
-} // namespace soil::video
+using EventHandler = event::Handler<Event>;
+}  // namespace soil::video
 
 #endif

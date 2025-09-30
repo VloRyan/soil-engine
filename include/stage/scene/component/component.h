@@ -6,70 +6,70 @@
 #include "stage/event/component.h"
 
 namespace soil::stage::scene {
-    class Node;
+class Node;
 }
 
 namespace soil::stage::scene::component {
-    class Component : public soil::event::Observable<event::Component> {
-        friend class scene::Node;
+class Component : public soil::event::Observable<event::Component> {
+  friend class scene::Node;
 
-    public:
-        enum class Type : std::uint8_t {
-            Visual = 0,
-            BoundingVolume,
-            Interaction,
-            Sound,
-            Metadata,
-            Lighting,
-            World,
-            Any = 255
-        };
+ public:
+  enum class Type : std::uint8_t {
+    Visual = 0,
+    BoundingVolume,
+    Interaction,
+    Sound,
+    Metadata,
+    Lighting,
+    World,
+    Any = 255
+  };
 
-        enum class State : std::uint8_t {
-            Dirty = 0,
-            Normal,
-            Delete,
-        };
+  enum class State : std::uint8_t {
+    Dirty = 0,
+    Normal,
+    Delete,
+  };
 
-        enum class UpdateType : std::uint8_t {
-            WhenDirty = 0,
-            Always,
-        };
+  enum class UpdateType : std::uint8_t {
+    WhenDirty = 0,
+    Always,
+  };
 
-        explicit Component(Type type);
+  explicit Component(Type type);
 
-        ~Component() override;
+  ~Component() override;
 
-        [[nodiscard]] Node* GetParent() const;
+  [[nodiscard]] Node* GetParent() const;
 
-        [[nodiscard]] Type GetType() const;
+  [[nodiscard]] Type GetType() const;
 
-        virtual void Update();
+  virtual void Update();
 
-        [[nodiscard]] State GetState() const;
+  [[nodiscard]] State GetState() const;
 
-        [[nodiscard]] bool IsDirty() const;
+  [[nodiscard]] bool IsDirty() const;
 
-        [[nodiscard]] virtual UpdateType GetUpdateType() const;
+  [[nodiscard]] virtual UpdateType GetUpdateType() const;
 
-    protected:
-        virtual void SetDirty();
+ protected:
+  virtual void SetDirty();
 
-        void SetState(State state);
+  void SetState(State state);
 
-        virtual void UpdateTransform(const glm::mat4& transform);
+  virtual void UpdateTransform(const glm::mat4& transform);
 
-        virtual void SetParent(Node* parent);
+  virtual void SetParent(Node* parent);
 
-    public:
-        virtual void SetUpdateType(const UpdateType updateType);
+ public:
+  virtual void SetUpdateType(const UpdateType updateType);
 
-    private:
-        Node* parent_;
-        Type type_;
-        State state_;
-        UpdateType updateType_;
-    };
-} // namespace soil::stage::scene::component
+ private:
+  Node* parent_;
+  Type type_;
+  State state_;
+  UpdateType updateType_;
+};
+}  // namespace soil::stage::scene::component
 
 #endif

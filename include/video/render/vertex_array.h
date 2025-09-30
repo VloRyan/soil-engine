@@ -7,18 +7,21 @@
 #include "video/vertex/vao.h"
 
 namespace soil::video::render {
-    class VertexArray : public Renderable {
-    public:
-        explicit VertexArray(const mesh::Data& mesh);
-        ~VertexArray() override;
-        void Render(State& state) override;
-        [[nodiscard]] vertex::Vao* GetVao() const;
+class VertexArray : public Renderable {
+ public:
+  explicit VertexArray(const mesh::Data& mesh);
 
-    private:
-        vertex::Vao* vao_;
-        buffer::Vbo* vbo_;
-        shader::DrawMode drawMode_;
-    };
-} // namespace soil::video::render
+  ~VertexArray() override;
+
+  void Render(State& state) override;
+
+  [[nodiscard]] vertex::Vao* GetVao() const;
+
+ private:
+  vertex::Vao* vao_;
+  buffer::Vbo* vbo_;
+  shader::DrawMode drawMode_;
+};
+}  // namespace soil::video::render
 
 #endif

@@ -4,29 +4,32 @@
 #include "video/buffer/cursor.h"
 
 namespace soil::video::render {
-    class Batch;
+class Batch;
 }
 
 namespace soil::video::render::instance {
-    class Instance {
-    public:
-        explicit Instance();
+class Instance {
+ public:
+  explicit Instance();
 
-        virtual ~Instance() = default;
+  virtual ~Instance() = default;
 
-        Instance(const Instance &other) = delete;
+  Instance(const Instance& other) = delete;
 
-        virtual void WriteData(buffer::Cursor *cursor) const = 0;
+  virtual void WriteData(buffer::Cursor* cursor) const = 0;
 
-        [[nodiscard]] virtual int GetIndex() const;
-        virtual void SetIndex(int index);
-        [[nodiscard]] virtual const Batch *GetBatch() const;
-        virtual void SetBatch(const Batch *batch);
+  [[nodiscard]] virtual int GetIndex() const;
 
-    private:
-        int index_;
-        const Batch *batch_;
-    };
-} // namespace soil::video::render::instance
+  virtual void SetIndex(int index);
+
+  [[nodiscard]] virtual const Batch* GetBatch() const;
+
+  virtual void SetBatch(const Batch* batch);
+
+ private:
+  int index_;
+  const Batch* batch_;
+};
+}  // namespace soil::video::render::instance
 
 #endif

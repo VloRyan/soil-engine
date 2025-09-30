@@ -8,92 +8,115 @@
 #include "video/texture/texture.h"
 
 namespace soil::stage::scene::component::text {
-    struct Word {
-        std::vector<const file::Font::Character*> Characters{};
+struct Word {
+  std::vector<const file::Font::Character*> Characters{};
 #ifdef DEBUG
-        std::string Text{};
+  std::string Text{};
 #endif
-        int Length{0};
-        void Append(const file::Font::Character* character);
-    };
+  int Length{0};
 
-    struct Line {
-        std::vector<Word> Words{};
+  void Append(const file::Font::Character* character);
+};
+
+struct Line {
+  std::vector<Word> Words{};
 #ifdef DEBUG
-        std::string Text{};
+  std::string Text{};
 #endif
-        int Length{0};
-        void Append(const Word& word);
-    };
+  int Length{0};
 
-    class AbstractText : public MeshComponent {
-    public:
-        struct PrefabData {
-            video::mesh::Data* MeshData{nullptr};
-            video::shader::Shader* Shader{nullptr};
-            const file::Font* Font{nullptr};
-            video::texture::Texture* FontTexture{nullptr};
-        };
+  void Append(const Word& word);
+};
 
-        explicit AbstractText(const std::string& prefab, const std::string& text = "");
-        ~AbstractText() override = default;
+class AbstractText : public MeshComponent {
+ public:
+  struct PrefabData {
+    video::mesh::Data* MeshData{nullptr};
+    video::shader::Shader* Shader{nullptr};
+    const file::Font* Font{nullptr};
+    video::texture::Texture* FontTexture{nullptr};
+  };
 
-        static void InitPrefab(const std::string& name, const PrefabData& data);
-        static bool HasPrefab(const std::string& name);
-        static void RemovePrefab(const std::string& name);
+  explicit AbstractText(const std::string& prefab,
+                        const std::string& text = "");
 
-        [[nodiscard]] virtual std::string GetText() const;
-        virtual void SetText(const std::string& text);
-        [[nodiscard]] glm::vec2 GetSize() const;
-        virtual void SetBorderOutline(const glm::vec2& borderOutline);
-        [[nodiscard]] glm::vec2 GetBorderOutline() const;
-        [[nodiscard]] glm::vec2 GetCharacterOutline() const;
-        virtual void SetCharacterOutline(const glm::vec2& characterOutline);
-        virtual void SetCharacterSize(float size);
-        [[nodiscard]] virtual float GetCharacterSize() const;
+  ~AbstractText() override = default;
 
-        void SetColor(glm::vec4 color);
-        [[nodiscard]] glm::vec4 GetColor() const;
+  static void InitPrefab(const std::string& name, const PrefabData& data);
 
-        void SetBorderColor(glm::vec3 color);
-        [[nodiscard]] glm::vec3 GetBorderColor() const;
+  static bool HasPrefab(const std::string& name);
 
-        [[nodiscard]] const file::Font* GetFont() const;
+  static void RemovePrefab(const std::string& name);
 
-        [[nodiscard]] virtual glm::vec2 GetMaxSize() const;
-        virtual void SetMaxSize(const glm::vec2& maxSize);
+  [[nodiscard]] virtual std::string GetText() const;
 
-        [[nodiscard]] virtual byte GetTextureSlot() const;
+  virtual void SetText(const std::string& text);
 
-        virtual void SetPositionOffset(const glm::vec3& positionOffset);
-        [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
+  [[nodiscard]] glm::vec2 GetSize() const;
 
-        float DistanceTo(const glm::vec3& point) override;
-        void UpdateTransform(const glm::mat4& transform) override;
-        void Update() override;
+  virtual void SetBorderOutline(const glm::vec2& borderOutline);
 
-        void Render(video::render::State& state) override = 0;
-        const std::vector<Line>& GetLines() const;
+  [[nodiscard]] glm::vec2 GetBorderOutline() const;
 
-    private:
-        static std::unordered_map<std::string, PrefabData> PREFABS;
-        void updateText();
-        PrefabData* data_;
-        glm::vec2 size_;
+  [[nodiscard]] glm::vec2 GetCharacterOutline() const;
 
-        glm::vec3 positionOffset_;
+  virtual void SetCharacterOutline(const glm::vec2& characterOutline);
 
-        glm::vec2 characterOutline_;
-        glm::vec2 borderOutline_;
+  virtual void SetCharacterSize(float size);
 
-        std::string text_;
-        float characterSize_;
-        glm::vec2 maxSize_;
-        glm::vec4 color_;
-        glm::vec3 borderColor_;
+  [[nodiscard]] virtual float GetCharacterSize() const;
 
-        std::vector<Line> lines_;
-    };
-} // namespace soil::stage::scene::component::text
+  void SetColor(glm::vec4 color);
+
+  [[nodiscard]] glm::vec4 GetColor() const;
+
+  void SetBorderColor(glm::vec3 color);
+
+  [[nodiscard]] glm::vec3 GetBorderColor() const;
+
+  [[nodiscard]] const file::Font* GetFont() const;
+
+  [[nodiscard]] virtual glm::vec2 GetMaxSize() const;
+
+  virtual void SetMaxSize(const glm::vec2& maxSize);
+
+  [[nodiscard]] virtual byte GetTextureSlot() const;
+
+  virtual void SetPositionOffset(const glm::vec3& positionOffset);
+
+  [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
+
+  float DistanceTo(const glm::vec3& point) override;
+
+  void UpdateTransform(const glm::mat4& transform) override;
+
+  void Update() override;
+
+  void Render(video::render::State& state) override = 0;
+
+  const std::vector<Line>& GetLines() const;
+
+ private:
+  static std::unordered_map<std::string, PrefabData> PREFABS;
+
+  void updateText();
+
+  PrefabData* data_;
+  glm::vec2 size_;
+
+  glm::vec3 positionOffset_;
+
+  glm::vec2 characterOutline_;
+  glm::vec2 borderOutline_;
+
+  std::string text_;
+  float characterSize_;
+  glm::vec2 maxSize_;
+  glm::vec4 color_;
+  glm::vec3 borderColor_;
+
+  std::vector<Line> lines_;
+};
+}  // namespace soil::stage::scene::component::text
 
 #endif

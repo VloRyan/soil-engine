@@ -3,20 +3,21 @@
 #include "object.h"
 
 namespace soil::video::buffer {
-    class UniformBufferObject final : public Object {
-    public:
-        enum class Layout : std::uint8_t { STD140 };
+class UniformBufferObject final : public Object {
+ public:
+  enum class Layout : std::uint8_t { STD140 };
 
-        explicit UniformBufferObject(UsageType usage = UsageType::Dynamic, AccessType access = AccessType::Draw);
+  explicit UniformBufferObject(UsageType usage = UsageType::Dynamic,
+                               AccessType access = AccessType::Draw);
 
-        UniformBufferObject(const UniformBufferObject &orig) = delete;
+  UniformBufferObject(const UniformBufferObject& orig) = delete;
 
-        void SetLayout(Layout layout);
+  void SetLayout(Layout layout);
 
-        ~UniformBufferObject() override = default;
+  ~UniformBufferObject() override = default;
 
-    private:
-        Layout m_Layout;
-    };
-} // namespace soil::video::buffer
+ private:
+  Layout m_Layout;
+};
+}  // namespace soil::video::buffer
 #endif

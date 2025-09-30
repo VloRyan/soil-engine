@@ -14,41 +14,41 @@
 #endif
 
 namespace soil {
-    class Engine {
-    public:
-        explicit Engine(const WindowParameter& params);
+class Engine {
+ public:
+  explicit Engine(const WindowParameter& params);
 
-        ~Engine() = default;
+  ~Engine() = default;
 
-        void Run() const;
+  void Run() const;
 
-        void Stop() const;
+  void Stop() const;
 
-        [[nodiscard]] input::Manager* GetInputManager() const;
+  [[nodiscard]] input::Manager* GetInputManager() const;
 
-        [[nodiscard]] video::Manager* GetVideoManager() const;
+  [[nodiscard]] video::Manager* GetVideoManager() const;
 
-        [[nodiscard]] stage::Manager* GetStageManager() const;
+  [[nodiscard]] stage::Manager* GetStageManager() const;
 
-        [[nodiscard]] sound::Manager* GetSoundManager() const;
+  [[nodiscard]] sound::Manager* GetSoundManager() const;
 
-        [[nodiscard]] Window* GetWindow() const;
+  [[nodiscard]] Window* GetWindow() const;
 
-        Engine(Engine const&) = delete;
+  Engine(Engine const&) = delete;
 
-        void operator=(Engine const&) = delete;
+  void operator=(Engine const&) = delete;
 
-        static void Quit();
+  static void Quit();
 
-    private:
-        Window* window_;
-        stage::Resources* resources_;
-        input::Manager* inputManager_;
-        video::Manager* videoManager_;
-        sound::Manager* soundManager_;
-        stage::Manager* stageManager_;
-        static Engine* INSTANCE_;
-    };
-} // namespace soil
+ private:
+  Window* window_;
+  stage::Resources* resources_;
+  input::Manager* inputManager_;
+  video::Manager* videoManager_;
+  sound::Manager* soundManager_;
+  stage::Manager* stageManager_;
+  static Engine* INSTANCE_;
+};
+}  // namespace soil
 
 #endif

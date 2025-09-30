@@ -7,18 +7,20 @@
 #include "state.h"
 
 namespace soil::video::render {
-    enum class TechniqueType : std::uint8_t {
-        Forward,
-        Deferred,
-    };
+enum class TechniqueType : std::uint8_t {
+  Forward,
+  Deferred,
+};
 
-    class Technique {
-    public:
-        virtual ~Technique() = default;
-        virtual void Render(State &state, const std::vector<Renderable *> &renderables) const = 0;
+class Technique {
+ public:
+  virtual ~Technique() = default;
 
-        static Technique *GetTechnique(TechniqueType type);
-    };
-} // namespace soil::video::render
+  virtual void Render(State& state,
+                      const std::vector<Renderable*>& renderables) const = 0;
+
+  static Technique* GetTechnique(TechniqueType type);
+};
+}  // namespace soil::video::render
 
 #endif

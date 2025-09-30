@@ -6,14 +6,14 @@
 #include "video/texture/texture.h"
 
 namespace soil_samples::gui::component {
-    class Text : public soil::stage::scene::component::text::AbstractText {
-    public:
-        explicit Text(const std::string& prefab, const std::string& text = "");
-        ~Text() override = default;
+class Text : public soil::stage::scene::component::text::AbstractText {
+ public:
+  explicit Text(const std::string& prefab, const std::string& text = "");
+  ~Text() override = default;
 
-        void Render(soil::video::render::State& state) override;
-        float DistanceTo(const glm::vec3& point) override;
-    };
-} // namespace soil_samples::gui::component
+  void Render(soil::video::render::State& state) override;
+  float DistanceTo(const glm::vec3& point) override;
+};
+}  // namespace soil_samples::gui::component
 
 #endif

@@ -3,21 +3,25 @@
 #include "root.h"
 
 namespace soil::stage::scene::gui {
-    class Overlay : public Rectangle {
-    public:
-        explicit Overlay(Root* root, bool positionRelativeToRoot = false);
-        ~Overlay() override = default;
-        Rectangle* GetParentRect() const override;
-        [[nodiscard]] virtual bool IsPositionRelativeToRoot() const;
-        virtual void SetPositionRelativeToRoot(const bool positionRelativeToRoot);
+class Overlay : public Rectangle {
+ public:
+  explicit Overlay(Root* root, bool positionRelativeToRoot = false);
 
-    protected:
-        void ComputeWorldTransform(const glm::mat4& parentWorldTransform) override;
+  ~Overlay() override = default;
 
-    private:
-        Root* root_;
-        bool positionRelativeToRoot_;
-    };
-} // namespace soil::stage::scene::gui
+  Rectangle* GetParentRect() const override;
+
+  [[nodiscard]] virtual bool IsPositionRelativeToRoot() const;
+
+  virtual void SetPositionRelativeToRoot(const bool positionRelativeToRoot);
+
+ protected:
+  void ComputeWorldTransform(const glm::mat4& parentWorldTransform) override;
+
+ private:
+  Root* root_;
+  bool positionRelativeToRoot_;
+};
+}  // namespace soil::stage::scene::gui
 
 #endif

@@ -7,43 +7,46 @@
 #include "video/render/step/base.h"
 
 namespace soil::video::render {
-    class Pipeline final {
-    public:
-        explicit Pipeline(std::string name, Container* container);
+class Pipeline final {
+ public:
+  explicit Pipeline(std::string name, Container* container);
 
-        ~Pipeline();
+  ~Pipeline();
 
-        void Run(State& state);
+  void Run(State& state);
 
-        void Clear();
+  void Clear();
 
-        void InsertStep(step::Base* step);
+  void InsertStep(step::Base* step);
 
-        void RemoveStep(const step::Base* step);
+  void RemoveStep(const step::Base* step);
 
-        void Print() const;
+  void Print() const;
 
-        [[nodiscard]] bool Empty() const;
+  [[nodiscard]] bool Empty() const;
 
-        [[nodiscard]] step::Base* GetStep(const std::string& id) const;
-        [[nodiscard]] std::vector<step::Base*>& GetSteps();
+  [[nodiscard]] step::Base* GetStep(const std::string& id) const;
 
-        void SetName(std::string Name);
+  [[nodiscard]] std::vector<step::Base*>& GetSteps();
 
-        [[nodiscard]] std::string GetName() const;
-        [[nodiscard]] step::Context& GetContext();
+  void SetName(std::string Name);
 
-        static Pipeline* NewForwardRenderingPipeline(Container* container, bool depthTest = true,
-                                                     const std::string& name = "");
+  [[nodiscard]] std::string GetName() const;
 
-    protected:
-        void find(std::vector<step::Base*>::iterator& itr, const step::Base* step);
+  [[nodiscard]] step::Context& GetContext();
 
-    private:
-        std::string name_;
-        std::vector<step::Base*> steps_;
-        step::Context context_;
-    };
-} // namespace soil::video::render
+  static Pipeline* NewForwardRenderingPipeline(Container* container,
+                                               bool depthTest = true,
+                                               const std::string& name = "");
+
+ protected:
+  void find(std::vector<step::Base*>::iterator& itr, const step::Base* step);
+
+ private:
+  std::string name_;
+  std::vector<step::Base*> steps_;
+  step::Context context_;
+};
+}  // namespace soil::video::render
 
 #endif

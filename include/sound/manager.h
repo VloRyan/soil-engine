@@ -7,32 +7,32 @@
 #include "source.h"
 
 namespace soil::sound {
-    class Manager {
-    public:
-        enum class DistanceModel : std::uint8_t {
-            INVERSE_DISTANCE,
-            INVERSE_DISTANCE_CLAMPED,
-            LINEAR_DISTANCE,
-            LINEAR_DISTANCE_CLAMPED,
-            EXPONENT_DISTANCE,
-            EXPONENT_DISTANCE_CLAMPED,
-            NONE
-        };
+class Manager {
+ public:
+  enum class DistanceModel : std::uint8_t {
+    INVERSE_DISTANCE,
+    INVERSE_DISTANCE_CLAMPED,
+    LINEAR_DISTANCE,
+    LINEAR_DISTANCE_CLAMPED,
+    EXPONENT_DISTANCE,
+    EXPONENT_DISTANCE_CLAMPED,
+    NONE
+  };
 
-        Manager() = default;
+  Manager() = default;
 
-        virtual ~Manager() = default;
+  virtual ~Manager() = default;
 
-        virtual void Init() = 0;
+  virtual void Init() = 0;
 
-        virtual void Update() = 0;
+  virtual void Update() = 0;
 
-        [[nodiscard]] virtual Source* GetSource(const std::string& fileName) = 0;
+  [[nodiscard]] virtual Source* GetSource(const std::string& fileName) = 0;
 
-        [[nodiscard]] virtual Buffer* GetBuffer(const std::string& fileName) = 0;
+  [[nodiscard]] virtual Buffer* GetBuffer(const std::string& fileName) = 0;
 
-        [[nodiscard]] virtual Listener* GetListener() const = 0;
-    };
-} // namespace soil::sound
+  [[nodiscard]] virtual Listener* GetListener() const = 0;
+};
+}  // namespace soil::sound
 
 #endif

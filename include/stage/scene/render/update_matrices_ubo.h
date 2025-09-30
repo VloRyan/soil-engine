@@ -4,16 +4,18 @@
 #include "stage/scene/viewer/node.h"
 
 namespace soil::stage::scene::render {
-    class UpdateMatricesUbo : public hook::RenderHook {
-    public:
-        UpdateMatricesUbo(viewer::Node* viewer, int uboMatricesBindingTarget);
-        ~UpdateMatricesUbo() override = default;
-        void OnRender(video::render::State& state) override;
+class UpdateMatricesUbo : public hook::RenderHook {
+ public:
+  UpdateMatricesUbo(viewer::Node* viewer, int uboMatricesBindingTarget);
 
-    private:
-        int uboMatricesBindingTarget_;
-        viewer::Node* viewer_;
-    };
-} // namespace soil::stage::scene::render
+  ~UpdateMatricesUbo() override = default;
+
+  void OnRender(video::render::State& state) override;
+
+ private:
+  int uboMatricesBindingTarget_;
+  viewer::Node* viewer_;
+};
+}  // namespace soil::stage::scene::render
 
 #endif

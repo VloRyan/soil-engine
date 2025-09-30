@@ -1,9 +1,8 @@
 #include "stage/scene/text/parser.h"
 
 namespace soil::stage::scene::text { /*
-     std::vector<Line> Parser::Parse(const std::string& text, file::Font* font, const float letterSize,
-                                     const float maxLineLength) {
-         std::vector<Line> lines;
+     std::vector<Line> Parser::Parse(const std::string& text, file::Font* font,
+ const float letterSize, const float maxLineLength) { std::vector<Line> lines;
          auto currentLine = Line();
          auto currentWord = Word();
          glm::vec2 cursorPosition(0);
@@ -31,8 +30,8 @@ namespace soil::stage::scene::text { /*
              if (newWord) {
                  for (const auto letter : currentWord.Letters) {
                      const auto advance = letter->XAdvance * letterSize;
-                     if (maxLineLength > 0 && cursorPosition.x + advance > maxLineLength) {
-                         break;
+                     if (maxLineLength > 0 && cursorPosition.x + advance >
+ maxLineLength) { break;
                      }
                      cursorPosition.x += advance;
                  }
@@ -40,8 +39,8 @@ namespace soil::stage::scene::text { /*
                  cursorPosition.x += spaceLetter->XAdvance * letterSize;
                  currentWord = Word();
              } else {
-                 const video::model::Letter* letter = font->GetLetter(static_cast<std::uint32_t>(c));
-                 if (letter == nullptr) {
+                 const video::model::Letter* letter =
+ font->GetLetter(static_cast<std::uint32_t>(c)); if (letter == nullptr) {
                      continue;
                  }
                  currentWord.Append(letter, letterSize);
@@ -53,8 +52,8 @@ namespace soil::stage::scene::text { /*
              }
          }
          if (currentWord.Length > 0) {
-             if (maxLineLength > 0 && currentLine.Length > 0 && cursorPosition.x + currentWord.Length > maxLineLength) {
-                 cursorPosition.x = 0;
+             if (maxLineLength > 0 && currentLine.Length > 0 && cursorPosition.x
+ + currentWord.Length > maxLineLength) { cursorPosition.x = 0;
                  lines.push_back(currentLine);
                  currentLine = Line();
              }
@@ -84,4 +83,4 @@ namespace soil::stage::scene::text { /*
  #endif
          Length += word.Length;
      }*/
-} // namespace soil::stage::scene::text
+}  // namespace soil::stage::scene::text

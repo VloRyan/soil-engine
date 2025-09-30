@@ -5,20 +5,21 @@
 #include "text/node.h"
 
 namespace soil_samples::gui {
-    class Label final : public Plane {
-    public:
-        explicit Label(const std::string& text = "", const std::string& font = "Calibri");
-        ~Label() override = default;
-        void SetVisible(bool visible) override;
-        void SetText(const std::string& text) const;
-        component::Text& Text() const;
+class Label final : public Plane {
+ public:
+  explicit Label(const std::string& text = "",
+                 const std::string& font = "Calibri");
+  ~Label() override = default;
+  void SetVisible(bool visible) override;
+  void SetText(const std::string& text) const;
+  component::Text& Text() const;
 
-    protected:
-        void BeforeNodeUpdate() override;
+ protected:
+  void BeforeNodeUpdate() override;
 
-    private:
-        component::Text* text_;
-    };
-} // namespace soil_samples::gui
+ private:
+  component::Text* text_;
+};
+}  // namespace soil_samples::gui
 
 #endif

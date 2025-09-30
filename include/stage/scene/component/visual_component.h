@@ -5,34 +5,39 @@
 #include "video/render/renderable_object.h"
 
 namespace soil::stage::scene::component {
-    class VisualComponent : public Component {
-    public:
-        ~VisualComponent() override = default;
+class VisualComponent : public Component {
+ public:
+  ~VisualComponent() override = default;
 
-        [[nodiscard]] virtual render::Type GetRenderType() const;
+  [[nodiscard]] virtual render::Type GetRenderType() const;
 
-        [[nodiscard]] virtual bool IsVisible() const;
-        virtual void SetVisible(bool visible);
+  [[nodiscard]] virtual bool IsVisible() const;
 
-        [[nodiscard]] bool IsOpaque() const;
-        virtual void SetOpaque(bool opaque);
+  virtual void SetVisible(bool visible);
 
-        [[nodiscard]] virtual bool IsCulled() const;
-        virtual void SetCulled(bool culled);
+  [[nodiscard]] bool IsOpaque() const;
 
-        [[nodiscard]] virtual video::render::RenderableObject* GetRenderable() = 0;
+  virtual void SetOpaque(bool opaque);
 
-        static VisualComponent* Cast(Component* component);
-        static bool IsRenderType(Component* component, render::Type renderType);
+  [[nodiscard]] virtual bool IsCulled() const;
 
-    protected:
-        explicit VisualComponent(render::Type renderType, bool opaque = true, bool visible = true);
+  virtual void SetCulled(bool culled);
 
-    private:
-        render::Type renderType_;
-        bool visible_;
-        bool opaque_;
-        bool culled_;
-    };
-} // namespace soil::stage::scene::component
+  [[nodiscard]] virtual video::render::RenderableObject* GetRenderable() = 0;
+
+  static VisualComponent* Cast(Component* component);
+
+  static bool IsRenderType(Component* component, render::Type renderType);
+
+ protected:
+  explicit VisualComponent(render::Type renderType, bool opaque = true,
+                           bool visible = true);
+
+ private:
+  render::Type renderType_;
+  bool visible_;
+  bool opaque_;
+  bool culled_;
+};
+}  // namespace soil::stage::scene::component
 #endif

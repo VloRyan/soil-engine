@@ -1,4 +1,3 @@
-
 #ifndef SOIL_VIDEO_SHADER_STAGE_H
 #define SOIL_VIDEO_SHADER_STAGE_H
 #include <list>
@@ -13,34 +12,35 @@
 #define GLSL_SHADER_FILE_COMPUTE "comp"
 
 namespace soil::video::shader {
-    /**
-     * Stage of a shader program. E.g. vertex, fragment etc.
-     */
-    class Stage final {
-    public:
-        ~Stage();
+/**
+ * Stage of a shader program. E.g. vertex, fragment etc.
+ */
+class Stage final {
+ public:
+  ~Stage();
 
-        static Stage *load(std::string fileName, uint type);
+  static Stage* load(std::string fileName, uint type);
 
-        static void PrintShaderInfoLog(uint shader);
+  static void PrintShaderInfoLog(uint shader);
 
-        void AttachToProgram(uint programId);
+  void AttachToProgram(uint programId);
 
-        [[nodiscard]] uint GetId() const;
+  [[nodiscard]] uint GetId() const;
 
-    protected:
-        Stage(uint id, uint type);
+ protected:
+  Stage(uint id, uint type);
 
-        static size_t replaceLine(const std::string &line, std::list<std::string> &lineBuffer,
-                                  std::string &originFileName);
+  static size_t replaceLine(const std::string& line,
+                            std::list<std::string>& lineBuffer,
+                            std::string& originFileName);
 
-    private:
-        static Stage *compile(const char *source, uint type);
+ private:
+  static Stage* compile(const char* source, uint type);
 
-    protected:
-        uint id_;
-        uint programId_;
-        uint type_;
-    };
-} // namespace soil::video::shader
+ protected:
+  uint id_;
+  uint programId_;
+  uint type_;
+};
+}  // namespace soil::video::shader
 #endif

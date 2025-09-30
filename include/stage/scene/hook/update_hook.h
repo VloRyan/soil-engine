@@ -3,15 +3,14 @@
 #include "hook.h"
 
 namespace soil::stage::scene::hook {
-    class UpdateHook : public Hook {
-    public:
-        explicit UpdateHook(HandlerType handlerType = HandlerType::None);
-        ~UpdateHook() override = default;
-        virtual void OnUpdate() = 0;
-    };
+class UpdateHook : public Hook {
+ public:
+  explicit UpdateHook(HandlerType handlerType = HandlerType::None);
 
+  ~UpdateHook() override = default;
 
-} // namespace soil::stage::scene::hook
-
+  virtual void OnUpdate() = 0;
+};
+}  // namespace soil::stage::scene::hook
 
 #endif

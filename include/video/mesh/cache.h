@@ -3,29 +3,32 @@
 
 #include <functional>
 #include <string>
+
 #include "base.h"
 #include "data.h"
 #include "prefab.h"
 
 namespace soil::video::mesh {
-    class Cache final {
-    public:
-        Cache() = default;
+class Cache final {
+ public:
+  Cache() = default;
 
-        ~Cache();
+  ~Cache();
 
-        Data *GetOrPut(const Prefab::Definition &definition,
-                       const std::function<Data *(const Prefab::Definition &definition)> &newFunc);
+  Data* GetOrPut(const Prefab::Definition& definition,
+                 const std::function<Data*(const Prefab::Definition& definition)
 
-        Data *Get(const Prefab::Definition &definition) const;
+                                     >& newFunc);
 
-        Cache(Cache const &) = delete;
+  Data* Get(const Prefab::Definition& definition) const;
 
-        void operator=(Cache const &) = delete;
+  Cache(Cache const&) = delete;
 
-    private:
-        HashMap<std::string, Data *> meshes_;
-    };
-} // namespace soil::video::mesh
+  void operator=(Cache const&) = delete;
+
+ private:
+  HashMap<std::string, Data*> meshes_;
+};
+}  // namespace soil::video::mesh
 
 #endif

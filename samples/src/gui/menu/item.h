@@ -3,26 +3,24 @@
 #include "gui/plane.h"
 
 namespace soil_samples::gui::menu {
-    class Menu;
+class Menu;
 
-    class Item : public Plane {
-    public:
-        explicit Item(std::string value = "");
-        ~Item() override = default;
-        [[nodiscard]] virtual std::string GetValue() const;
-        void SetOnClick(const std::function<void(Item& item)>& onClick);
+class Item : public Plane {
+ public:
+  explicit Item(std::string value = "");
+  ~Item() override = default;
+  [[nodiscard]] virtual std::string GetValue() const;
+  void SetOnClick(const std::function<void(Item& item)>& onClick);
 
-    protected:
-        void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
-                           soil::input::Event::State state) override;
+ protected:
+  void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
+                     soil::input::Event::State state) override;
 
-    private:
-        std::string value_;
-        std::function<void(Item& item)> onClick_;
-    };
+ private:
+  std::string value_;
+  std::function<void(Item& item)> onClick_;
+};
 
-
-} // namespace soil_samples::gui::menu
-
+}  // namespace soil_samples::gui::menu
 
 #endif

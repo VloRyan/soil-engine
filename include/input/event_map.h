@@ -3,58 +3,67 @@
 
 #include <functional>
 #include <vector>
+
 #include "constants.hpp"
 #include "event.h"
 
 namespace soil::input {
-    struct KeyEventMapping {
-        KeyEventMapping(Keys key, Event::State state, std::function<void(const Event &)> action);
+struct KeyEventMapping {
+  KeyEventMapping(Keys key, Event::State state,
+                  std::function<void(const Event&)> action);
 
-        [[nodiscard]] bool Matches(const Event &event) const;
+  [[nodiscard]] bool Matches(const Event& event) const;
 
-        Keys key_;
-        Event::State state_;
-        std::function<void(const Event &)> fun_;
-    };
+  Keys key_;
+  Event::State state_;
+  std::function<void(const Event&)> fun_;
+};
 
-    struct MouseButtonEventMapping {
-        MouseButtonEventMapping(MouseButton button, Event::State state, std::function<void(const Event &)> action);
+struct MouseButtonEventMapping {
+  MouseButtonEventMapping(MouseButton button, Event::State state,
+                          std::function<void(const Event&)> action);
 
-        [[nodiscard]] bool Matches(const Event &event) const;
+  [[nodiscard]] bool Matches(const Event& event) const;
 
-        MouseButton button_;
-        Event::State state_;
-        std::function<void(const Event &)> fun_;
-    };
+  MouseButton button_;
+  Event::State state_;
+  std::function<void(const Event&)> fun_;
+};
 
-    struct MouseWheelEventMapping {
-        explicit MouseWheelEventMapping(MouseWheelDirection direction, std::function<void(const Event &)> action);
+struct MouseWheelEventMapping {
+  explicit MouseWheelEventMapping(MouseWheelDirection direction,
+                                  std::function<void(const Event&)> action);
 
-        [[nodiscard]] bool Matches(const Event &event) const;
-        MouseWheelDirection direction_;
-        std::function<void(const Event &)> fun_;
-    };
+  [[nodiscard]] bool Matches(const Event& event) const;
 
-    class EventMap final : public EventHandler {
-    public:
-        explicit EventMap();
+  MouseWheelDirection direction_;
+  std::function<void(const Event&)> fun_;
+};
 
-        ~EventMap() override;
+class EventMap final : public EventHandler {
+ public:
+  explicit EventMap();
 
-        void Handle(const Event &event) override;
+  ~EventMap() override;
 
-        EventMap &AddKeyMapping(Keys key, Event::State state, const std::function<void(const Event &)> &action);
+  void Handle(const Event& event) override;
 
-        EventMap &AddMouseButtonMapping(MouseButton button, Event::State state,
-                                        const std::function<void(const Event &)> &action);
+  EventMap& AddKeyMapping(Keys key, Event::State state,
+                          const std::function<void(const Event&)>& action);
 
-        EventMap &AddMouseWheelMapping(MouseWheelDirection direction, const std::function<void(const Event &)> &action);
+  EventMap& AddMouseButtonMapping(
+      MouseButton button, Event::State state,
+      const std::function<void(const Event&)>& action);
 
-    private:
-        std::vector<KeyEventMapping> keyMappings_;
-        std::vector<MouseButtonEventMapping> mouseButtonMappings_;
-        std::vector<MouseWheelEventMapping> mouseWheelMappings_;
-    };
-} // namespace soil::input
+  EventMap& AddMouseWheelMapping(
+      MouseWheelDirection direction,
+      const std::function<void(const Event&)>& action);
+
+ private:
+  std::vector<KeyEventMapping> keyMappings_;
+  std::vector<MouseButtonEventMapping> mouseButtonMappings_;
+  std::vector<MouseWheelEventMapping> mouseWheelMappings_;
+};
+}  // namespace soil::input
 
 #endif

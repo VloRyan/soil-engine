@@ -6,40 +6,47 @@
 #include "world/volume/frustum.h"
 
 namespace soil::stage::scene::viewer {
-    class Node : public scene::Node {
-    public:
-        ~Node() override;
+class Node : public scene::Node {
+ public:
+  ~Node() override;
 
-        [[nodiscard]] virtual glm::mat4 GetViewMatrix() const = 0;
-        [[nodiscard]] virtual glm::mat4 GetProjectionMatrix() const = 0;
+  [[nodiscard]] virtual glm::mat4 GetViewMatrix() const = 0;
 
+  [[nodiscard]] virtual glm::mat4 GetProjectionMatrix() const = 0;
 
-        [[nodiscard]] virtual float GetNearZ() const;
-        virtual void SetNearZ(float nearZ);
-        [[nodiscard]] virtual float GetFarZ() const;
-        virtual void SetFarZ(float farZ);
-        virtual world::volume::Frustum* GetFrustum();
+  [[nodiscard]] virtual float GetNearZ() const;
 
-        [[nodiscard]] glm::vec3 GetDirection() const override;
-        [[nodiscard]] glm::vec3 GetRight() const override;
-        [[nodiscard]] glm::vec3 GetUp() const override;
+  virtual void SetNearZ(float nearZ);
 
-        void Handle(const WindowEvent& event) override;
+  [[nodiscard]] virtual float GetFarZ() const;
 
-    protected:
-        Node();
-        virtual void UpdateProjection(const glm::ivec2& size) = 0;
+  virtual void SetFarZ(float farZ);
 
-        glm::vec3 direction_;
-        glm::vec3 right_;
-        glm::vec3 up_;
+  virtual world::volume::Frustum* GetFrustum();
 
-        float nearZ_;
-        float farZ_;
+  [[nodiscard]] glm::vec3 GetDirection() const override;
 
-        glm::ivec2 windowSize_;
+  [[nodiscard]] glm::vec3 GetRight() const override;
 
-        world::volume::Frustum* frustum_;
-    };
-} // namespace soil::stage::scene::viewer
+  [[nodiscard]] glm::vec3 GetUp() const override;
+
+  void Handle(const WindowEvent& event) override;
+
+ protected:
+  Node();
+
+  virtual void UpdateProjection(const glm::ivec2& size) = 0;
+
+  glm::vec3 direction_;
+  glm::vec3 right_;
+  glm::vec3 up_;
+
+  float nearZ_;
+  float farZ_;
+
+  glm::ivec2 windowSize_;
+
+  world::volume::Frustum* frustum_;
+};
+}  // namespace soil::stage::scene::viewer
 #endif

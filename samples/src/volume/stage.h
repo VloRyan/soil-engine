@@ -7,22 +7,21 @@
 #include "stage/stage.h"
 
 namespace soil_samples::volume {
-    class Stage final : public soil::stage::Stage {
-    public:
-        explicit Stage();
-        ~Stage() override = default;
-        void Handle(const soil::WindowEvent& event) override;
-        void Load() override;
+class Stage final : public soil::stage::Stage {
+ public:
+  explicit Stage();
+  ~Stage() override = default;
+  void Handle(const soil::WindowEvent& event) override;
+  void Load() override;
 
-    private:
-        void initInput(soil::stage::scene::Scene* scene);
-        void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
-        void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
-        std::array<basic::Shape*, 4> shapes_;
-        bool printStatistics_;
-        soil::stage::scene::volume::Container* container_;
-    };
-} // namespace soil_samples::volume
-
+ private:
+  void initInput(soil::stage::scene::Scene* scene);
+  void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
+  void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
+  std::array<basic::Shape*, 4> shapes_;
+  bool printStatistics_;
+  soil::stage::scene::volume::Container* container_;
+};
+}  // namespace soil_samples::volume
 
 #endif

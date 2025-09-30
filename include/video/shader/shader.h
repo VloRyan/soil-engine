@@ -1,4 +1,3 @@
-
 #ifndef SOIL_VIDEO_SHADER_SHADER_H
 #define SOIL_VIDEO_SHADER_SHADER_H
 #include <glm/glm.hpp>
@@ -20,85 +19,121 @@
 using UniformLocation = int;
 
 namespace soil::video::shader {
-    enum class DrawMode : std::uint8_t {
-        Points = GL_POINTS,
-        Lines = GL_LINES,
-        Triangles = GL_TRIANGLES,
-        TriangleStrip = GL_TRIANGLE_STRIP,
-        Quads = GL_QUADS,
-    };
+enum class DrawMode : std::uint8_t {
+  Points = GL_POINTS,
+  Lines = GL_LINES,
+  Triangles = GL_TRIANGLES,
+  TriangleStrip = GL_TRIANGLE_STRIP,
+  Quads = GL_QUADS,
+};
 
-    class Shader {
-    public:
-        explicit Shader(const std::string& name, const std::string& path);
-        explicit Shader(const Definition& def);
-        virtual ~Shader();
-        bool IsLinked() const;
-        uint GetId() const;
-        virtual void Create();
-        virtual void Use();
-        virtual void Leave();
-        UniformLocation GetUniformLocation(const std::string& name);
-        bool UniformLocationExists(const std::string& name);
-        void BindUniformBlock(const std::string& name, int target);
+class Shader {
+ public:
+  explicit Shader(const std::string& name, const std::string& path);
 
-        static void DrawElements(uint mode, GLsizei indexCount, vertex::IndexType indexType);
-        static void DrawElementsInstanced(uint mode, uint indexCount, vertex::IndexType indexType, int instanceCount,
-                                          uint baseInstance);
-        static void DrawElementsIndirect(uint mode, vertex::IndexType indexType);
-        static void DispatchCompute(uint num_groups_x, uint num_groups_y = 1, uint num_groups_z = 1);
+  explicit Shader(const Definition& def);
 
-        void SetUniform(const std::string& name, bool value);
-        void SetUniform(const std::string& name, byte value);
-        void SetUniform(const std::string& name, int value);
-        void SetUniform(const std::string& name, uint value);
-        void SetUniform(const std::string& name, float value);
-        void SetUniform(const std::string& name, glm::vec2 value);
-        void SetUniform(const std::string& name, glm::vec3 value);
-        void SetUniform(const std::string& name, glm::vec4 value);
-        void SetUniform(const std::string& name, glm::ivec2 value);
-        void SetUniform(const std::string& name, glm::ivec3 value);
-        void SetUniform(const std::string& name, glm::ivec4 value);
-        void SetUniform(const std::string& name, glm::uvec2 value);
-        void SetUniform(const std::string& name, glm::uvec3 value);
-        void SetUniform(const std::string& name, glm::uvec4 value);
-        void SetUniform(const std::string& name, const glm::mat4& value, bool transpose = false);
-        void SetUniform(UniformLocation location, glm::mat4 value, bool transpose = false) const;
-        void SetUniformHandle(const std::string& name, uint handle);
-        void SetUniform(UniformLocation location, float value) const;
+  virtual ~Shader();
 
-        static void SetPatchVertices(int value);
+  bool IsLinked() const;
 
-        static uint GetVerticeCount();
+  uint GetId() const;
 
-        static uint GetDrawCount();
+  virtual void Create();
 
-        static void ResetCounter();
+  virtual void Use();
 
-        std::vector<Stage*> GetShaderStages() const;
+  virtual void Leave();
 
-        void SetName(std::string Name);
+  UniformLocation GetUniformLocation(const std::string& name);
 
-        std::string GetName() const;
+  bool UniformLocationExists(const std::string& name);
 
-        static void DrawArrays(uint mode, int count, int indexOffset = 0);
+  void BindUniformBlock(const std::string& name, int target);
 
-        virtual void Prepare(render::State& state);
+  static void DrawElements(uint mode, GLsizei indexCount,
+                           vertex::IndexType indexType);
 
-    private:
-        virtual void Link();
+  static void DrawElementsInstanced(uint mode, uint indexCount,
+                                    vertex::IndexType indexType,
+                                    int instanceCount, uint baseInstance);
 
-        void AddStageIfExists(const std::string& basePath, const std::string& ext, uint type);
+  static void DrawElementsIndirect(uint mode, vertex::IndexType indexType);
 
-        std::string name_;
-        uint id_;
-        std::vector<Stage*> shaderStages_;
-        bool linked_;
-        std::unordered_map<std::string, UniformLocation> uniformLocator_;
-        uint attribCount_;
-        static uint vertexCount_;
-        static uint drawCount_;
-        static uint currentShaderId_;
-    };
-} // namespace soil::video::shader
+  static void DispatchCompute(uint num_groups_x, uint num_groups_y = 1,
+                              uint num_groups_z = 1);
+
+  void SetUniform(const std::string& name, bool value);
+
+  void SetUniform(const std::string& name, byte value);
+
+  void SetUniform(const std::string& name, int value);
+
+  void SetUniform(const std::string& name, uint value);
+
+  void SetUniform(const std::string& name, float value);
+
+  void SetUniform(const std::string& name, glm::vec2 value);
+
+  void SetUniform(const std::string& name, glm::vec3 value);
+
+  void SetUniform(const std::string& name, glm::vec4 value);
+
+  void SetUniform(const std::string& name, glm::ivec2 value);
+
+  void SetUniform(const std::string& name, glm::ivec3 value);
+
+  void SetUniform(const std::string& name, glm::ivec4 value);
+
+  void SetUniform(const std::string& name, glm::uvec2 value);
+
+  void SetUniform(const std::string& name, glm::uvec3 value);
+
+  void SetUniform(const std::string& name, glm::uvec4 value);
+
+  void SetUniform(const std::string& name, const glm::mat4& value,
+                  bool transpose = false);
+
+  void SetUniform(UniformLocation location, glm::mat4 value,
+                  bool transpose = false) const;
+
+  void SetUniformHandle(const std::string& name, uint handle);
+
+  void SetUniform(UniformLocation location, float value) const;
+
+  static void SetPatchVertices(int value);
+
+  static uint GetVerticeCount();
+
+  static uint GetDrawCount();
+
+  static void ResetCounter();
+
+  std::vector<Stage*> GetShaderStages() const;
+
+  void SetName(std::string Name);
+
+  std::string GetName() const;
+
+  static void DrawArrays(uint mode, int count, int indexOffset = 0);
+
+  virtual void Prepare(render::State& state);
+
+ private:
+  virtual void Link();
+
+  void AddStageIfExists(const std::string& basePath, const std::string& ext,
+                        uint type);
+
+  std::string name_;
+  uint id_;
+  std::vector<Stage*> shaderStages_;
+  bool linked_;
+  std::unordered_map<std::string, UniformLocation> uniformLocator_;
+  uint attribCount_;
+  static uint vertexCount_;
+  static uint drawCount_;
+  static uint currentShaderId_;
+};
+}  // namespace soil::video::shader
 #endif
