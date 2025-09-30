@@ -38,8 +38,7 @@ class SoilEngineRecipe(ConanFile):
         self.requires("openal-soft/1.24.3")
         self.requires("gl3w/1.0")
 
-        self.test_requires("gtest/1.16.0")
-        self.test_requires("benchmark/1.9.0")
+        self.test_requires("gtest/1.17.0")
 
     def generate(self):
         deps = CMakeDeps(self)
