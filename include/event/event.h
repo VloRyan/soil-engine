@@ -23,12 +23,8 @@ namespace soil::event {
 
         [[nodiscard]] Type GetType() const;
 
-        void Consume();
-
-        [[nodiscard]] bool IsConsumed() const;
-
         friend bool operator==(const Event& lhs, const Event& rhs) {
-            return lhs.type_ == rhs.type_ && lhs.consumed_ == rhs.consumed_;
+            return lhs.type_ == rhs.type_;
         }
 
         friend bool operator!=(const Event& lhs, const Event& rhs) {
@@ -37,7 +33,6 @@ namespace soil::event {
 
     private:
         Type type_;
-        bool consumed_;
     };
 } // namespace soil::event
 #endif
