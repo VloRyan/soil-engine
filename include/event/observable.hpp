@@ -5,21 +5,29 @@
 #include <vector>
 
 namespace soil::event {
-    template <class T, std::enable_if_t<std::is_base_of_v<Event, T>>* = nullptr>
+    template <class T, std::enable_if_t<std::is_base_of_v<Event, T>>*>
     class Observable {
     public:
         Observable() = default;
 
-        virtual ~Observable() = default;
+        virtual ~Observable() {
+            for (auto* listener : listeners_) {
+                listener->onDelete_ = nullptr;
+            }
+        }
 
         virtual void AddListener(Handler<T>* listener) {
             listeners_.push_back(listener);
+            listener->onDelete_ = [this](Handler<T>* l) {
+                RemoveListener(l);
+            };
         }
 
         virtual void RemoveListener(Handler<T>* listener) {
             for (auto itr = listeners_.begin(); itr < listeners_.end(); ++itr) {
                 if (listener == *itr) {
                     listeners_.erase(itr);
+                    listener->onDelete_ = nullptr;
                     return;
                 }
             }
