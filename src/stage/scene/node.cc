@@ -14,16 +14,18 @@
 
 namespace soil::stage::scene {
 Node::Node(const Type type)
-    : parent_(nullptr),
-      type_(type),
+    : type_(type),
+      parent_(nullptr),
       state_(State::Normal),
       updateType_(UpdateType::Passive) {}
 
 Node::~Node() {
   for (auto* child : children_) {
+    Observable::fire(event::Node::MakeChildRemovedEvent(this, child));
     child->SetParent(nullptr);
     delete child;
   }
+  children_.clear();
   for (const auto& comps : components_ | std::views::values) {
     for (auto* comp : comps) {
       comp->SetParent(nullptr);
@@ -33,9 +35,11 @@ Node::~Node() {
       delete comp;
     }
   }
+  components_.clear();
   if (auto* parent = GetParent(); parent != nullptr) {
     parent->RemoveChild(this);
   }
+  Observable::fire(event::Node::MakeNodeDeletedEvent(this));
 }
 
 void Node::SetParent(Node* parent) { parent_ = parent; }
@@ -54,19 +58,16 @@ void Node::addChild(Node* node) {
 
 void Node::RemoveChild(Node* node) {
   for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
-    if (*itr == node) {
-      if (!isScene()) {
-        fire(event::Node::MakeChildRemovedEvent(this, node));
-      }
-      node->SetParent(nullptr);
-      children_.erase(itr);
-      break;
+    if (*itr != node) {
+      continue;
     }
+    fire(event::Node::MakeChildRemovedEvent(this, node));
+    node->SetParent(nullptr);
+    children_.erase(itr);
+    break;
   }
   SetDirty(DirtyImpact::Self);
 }
-
-bool Node::isScene() const { return GetType() == Type::Scene; }
 
 void Node::SetUpdateType(const UpdateType type) {
   if (type == updateType_) {
@@ -132,7 +133,7 @@ void Node::Update() {
 
 void Node::UpdateDirty() {
   if (IsDirtyImpact(DirtyImpact::Transform)) {
-    if (!isScene() && GetParent() != nullptr) {
+    if (GetParent() != nullptr) {
       ComputeWorldTransform(GetParent()->GetWorldTransform());
     }
     ForEachComponent([this](component::Component* component) {

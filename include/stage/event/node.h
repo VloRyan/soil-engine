@@ -12,7 +12,7 @@ namespace soil::stage::event {
 class Node final : soil::event::Event {
  public:
   enum class ChangeType : std::uint8_t {
-    Deleted,  // TODO implement
+    Deleted,
     State,
     ChildAdded,
     ChildRemoved,
@@ -43,7 +43,7 @@ class Node final : soil::event::Event {
   friend bool operator!=(const Node& lhs, const Node& rhs) {
     return !(lhs == rhs);
   }
-
+  static Node MakeNodeDeletedEvent(scene::Node* origin);
   static Node MakeChildAddedEvent(scene::Node* origin, scene::Node* added);
 
   static Node MakeChildRemovedEvent(scene::Node* origin, scene::Node* removed);

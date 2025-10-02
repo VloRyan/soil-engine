@@ -4,7 +4,6 @@
 #include <bitset>
 #include <cstdint>
 #include <functional>
-#include <string>
 #include <vector>
 
 #include "component/component.h"
@@ -149,8 +148,6 @@ class Node : public world::entity::Object3d,
   virtual void SetUpdateType(UpdateType type);
 
   virtual void addChild(Node* node);
-
-  [[nodiscard]] bool isScene() const;
 
   void addComponent(component::Component* comp);
 

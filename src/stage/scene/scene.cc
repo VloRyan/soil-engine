@@ -116,10 +116,15 @@ void Scene::OnNodeStateChanged(Node* node) {
 
 void Scene::OnNodeAdded(Node* node) {
   node->AddListener(this);
-  dirtyNodesPtr_->push_back(node);
 
   if (node->GetUpdateType() == UpdateType::Active) {
     dirtyActiveUpdateNodes_.push_back(node);
+  } else {
+    if (node->IsDirty()) {
+      dirtyNodesPtr_->push_back(node);
+    } else {
+      node->SetDirty(DirtyImpact::Self);
+    }
   }
   for (auto i = 1; i < static_cast<int>(ReceiverType::COUNT); ++i) {
     const auto type = static_cast<ReceiverType>(i);
@@ -129,10 +134,7 @@ void Scene::OnNodeAdded(Node* node) {
   }
   if (!componentEventHandler_.empty()) {
     node->ForEachComponent([this](component::Component* component) {
-      for (auto* listener : componentEventHandler_) {
-        listener->Handle(
-            event::Component(component, event::Component::ChangeType::Added));
-      }
+      Handle(event::Component(component, event::Component::ChangeType::Added));
     });
   }
 }
@@ -145,6 +147,13 @@ void Scene::RemoveChild(Node* node) {
 
 void Scene::OnNodeRemoved(Node* node) {
   if (node->GetUpdateType() == UpdateType::Active) {
+    for (auto itr = dirtyActiveUpdateNodes_.begin();
+         itr != dirtyActiveUpdateNodes_.end(); ++itr) {
+      if (*itr == node) {
+        dirtyActiveUpdateNodes_.erase(itr);
+        break;
+      }
+    }
     for (auto itr = activeUpdateNodes_.begin(); itr != activeUpdateNodes_.end();
          ++itr) {
       if (*itr == node) {
@@ -175,6 +184,14 @@ void Scene::OnNodeRemoved(Node* node) {
     }
   }
   node->RemoveListener(this);
+  if (!componentEventHandler_.empty()) {
+    node->ForEachComponent([this](component::Component* component) {
+      for (auto* listener : componentEventHandler_) {
+        listener->Handle(
+            event::Component(component, event::Component::ChangeType::Removed));
+      }
+    });
+  }
 }
 
 void Scene::addChild(Node* node) {

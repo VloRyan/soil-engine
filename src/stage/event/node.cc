@@ -20,6 +20,10 @@ scene::Node* Node::GetChangedNode() const { return changedNode_; }
 
 const Component& Node::GetComponentEvent() const { return componentEvent_; }
 
+Node Node::MakeNodeDeletedEvent(scene::Node* origin) {
+  return {origin, ChangeType::Deleted};
+}
+
 Node Node::MakeChildAddedEvent(scene::Node* origin, scene::Node* added) {
   auto evnt = Node(origin, ChangeType::ChildAdded);
   evnt.changedNode_ = added;

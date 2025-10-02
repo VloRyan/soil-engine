@@ -62,13 +62,11 @@ void Base::addChild(Node* node, const bool asItem) {
 }
 
 void Base::RemoveChild(Node* node) {
-  if (const auto* item = dynamic_cast<Rectangle*>(node); item != nullptr) {
-    for (auto it = items_.begin(); it != items_.end(); ++it) {
-      if (*it == node) {
-        (*it)->RemoveListener(this);
-        items_.erase(it);
-        break;
-      }
+  for (auto it = items_.begin(); it != items_.end(); ++it) {
+    if (*it == node) {
+      (*it)->RemoveListener(this);
+      items_.erase(it);
+      break;
     }
   }
   Rectangle::RemoveChild(node);
