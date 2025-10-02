@@ -69,14 +69,18 @@ class Container {
       const glm::vec3& point, float radius,
       std::vector<const Volume*>& vector) const = 0;
 
-  virtual void GetVolumes(int index,
-                          std::vector<const Volume*>& volumes) const = 0;
+  virtual void GetNodeVolumes(int index,
+                              std::vector<const Volume*>& volumes) const = 0;
+
+  virtual void WalkVolumes(std::function<void(const Volume*)> fun) const = 0;
 
   [[nodiscard]] virtual const Node* GetNode(int index) const = 0;
 
   [[nodiscard]] virtual size_t GetNodeCount() const = 0;
 
   [[nodiscard]] virtual size_t GetChildrenPerNode() const = 0;
+
+  void Clear();
 
  protected:
   Container() = default;

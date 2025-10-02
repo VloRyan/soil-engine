@@ -6,9 +6,11 @@
 #include "stage/scene/component/bounding_volume.h"
 
 namespace soil::world::volume {
+
 class QuadTree : public Container {
  public:
   explicit QuadTree(float size, byte maxLevel = 4, float minChildSize = 6.0F);
+  ~QuadTree() override = default;
 
   void Insert(const Volume* volume) override;
 
@@ -33,8 +35,10 @@ class QuadTree : public Container {
 
   const Node* GetNode(int index) const override;
 
-  void GetVolumes(int index,
-                  std::vector<const Volume*>& volumes) const override;
+  void GetNodeVolumes(int index,
+                      std::vector<const Volume*>& volumes) const override;
+
+  void WalkVolumes(std::function<void(const Volume*)> fun) const override;
 
   size_t GetVolumeCount() const;
 
@@ -45,6 +49,10 @@ class QuadTree : public Container {
   byte DetermineLevel(std::uint16_t index) const;
 
  private:
+  struct state {
+    uint Index;
+    byte Level;
+  };
   bool insert(const Volume* volume, int index, byte level);
 
   void split(std::uint16_t index);

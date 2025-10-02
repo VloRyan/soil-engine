@@ -18,6 +18,8 @@ class Container : public hook::UpdateHook {
 
   void OnUpdate() override;
 
+  void SetContainer(world::volume::Container* container);
+
   virtual void QueryVolumesAt(
       const glm::vec3& point,
       std::vector<const component::BoundingVolume*>& volumes) const;
@@ -43,7 +45,7 @@ class Container : public hook::UpdateHook {
  protected:
   void OnComponentAdded(component::Component* component) const;
 
-  void OnComponentRemoved(component::Component* component);
+  void OnComponentRemoved(component::Component* component) const;
 
  private:
   world::volume::Container* container_;

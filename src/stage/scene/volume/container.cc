@@ -8,7 +8,16 @@ namespace soil::stage::scene::volume {
 Container::Container(world::volume::Container* container)
     : UpdateHook(HandlerType::Component), container_(container) {}
 
-Container::~Container() { delete container_; }
+Container::~Container() {
+  if (container_ != nullptr) {
+    container_->WalkVolumes([](const world::volume::Volume* volume) {
+      auto* bc = const_cast<component::BoundingVolume*>(
+          dynamic_cast<const component::BoundingVolume*>(volume));
+      bc->SetContainer(nullptr);
+    });
+    delete container_;
+  }
+}
 
 void Container::Handle(const event::Component& event) {
   switch (event.GetChangeType()) {
@@ -38,7 +47,7 @@ void Container::OnComponentAdded(component::Component* component) const {
   volume->SetContainer(container_);
 }
 
-void Container::OnComponentRemoved(component::Component* component) {
+void Container::OnComponentRemoved(component::Component* component) const {
   if (component->GetType() != component::Component::Type::BoundingVolume) {
     return;
   }
@@ -47,6 +56,7 @@ void Container::OnComponentRemoved(component::Component* component) {
     return;
   }
   volume->SetContainer(nullptr);
+  container_->Remove(volume);
 }
 
 void Container::OnUpdate() {
@@ -55,6 +65,18 @@ void Container::OnUpdate() {
     throw std::runtime_error("container shall not be nullptr");
   }
 #endif
+}
+void Container::SetContainer(world::volume::Container* container) {
+  if (container_ != nullptr) {
+    container_->WalkVolumes([](const world::volume::Volume* volume) {
+      auto* bc = const_cast<component::BoundingVolume*>(
+          dynamic_cast<const component::BoundingVolume*>(volume));
+      bc->SetContainer(nullptr);
+    });
+    delete container_;
+  }
+  container_ = container;
+  // TODO: move volumes to new container?
 }
 
 void Container::QueryVolumesAt(

@@ -22,7 +22,7 @@ class QuadTreeTest : public testing::Test {
   static std::vector<const Volume*> VolumesAt(const QuadTree& quadTree,
                                               const std::int16_t index) {
     std::vector<const Volume*> vol;
-    quadTree.GetVolumes(index, vol);
+    quadTree.GetNodeVolumes(index, vol);
     return vol;
   }
 
@@ -50,7 +50,7 @@ TEST_F(QuadTreeTest, InsertOneItem) {
 
   EXPECT_EQ(quadTree.GetNodeCount(), 1);
   std::vector<const Volume*> vol;
-  quadTree.GetVolumes(0, vol);
+  quadTree.GetNodeVolumes(0, vol);
   EXPECT_THAT(vol, testing::ElementsAre(volume));
 }
 

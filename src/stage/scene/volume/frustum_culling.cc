@@ -66,7 +66,7 @@ void FrustumCulling::updateVisibilityOnTreeNode(
   }
   if (nodesVisibility_[index] != isVisible) {
     std::vector<const world::volume::Volume*> volumes;
-    container_->GetVolumes(index, volumes);
+    container_->GetNodeVolumes(index, volumes);
     for (const auto* c : volumes) {
       const auto* volume = dynamic_cast<const component::BoundingVolume*>(c);
       const auto* node = volume->GetParent();

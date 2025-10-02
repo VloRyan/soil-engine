@@ -7,6 +7,7 @@
 #include <stack>
 
 namespace soil::world::volume {
+
 QuadTree::QuadTree(const float size, const byte maxLevel,
                    const float minChildSize)
     : maxLevel_(maxLevel), minChildSize_(minChildSize) {
@@ -14,11 +15,6 @@ QuadTree::QuadTree(const float size, const byte maxLevel,
   nodes_.emplace_back(Node{.Min = glm::vec2(-radius, -radius),
                            .Max = glm::vec2(radius, radius)});
 }
-
-struct state {
-  uint Index;
-  byte Level;
-};
 
 void QuadTree::Insert(const Volume* volume) {
   if (!volume->IsInside(nodes_[0].Min, nodes_[0].Max)) {
@@ -345,13 +341,23 @@ const Container::Node* QuadTree::GetNode(const int index) const {
   return &nodes_[index];
 }
 
-void QuadTree::GetVolumes(const int index,
-                          std::vector<const Volume*>& volumes) const {
+void QuadTree::GetNodeVolumes(const int index,
+                              std::vector<const Volume*>& volumes) const {
   if (nodes_[index].VolumesIndex == Node::UNSET) {
     return;
   }
   const auto& nv = nodeVolumes_[nodes_[index].VolumesIndex];
   volumes.insert(volumes.end(), nv.begin(), nv.end());
+}
+void QuadTree::WalkVolumes(const std::function<void(const Volume*)> fun) const {
+  for (const auto& node : nodes_) {
+    if (node.VolumesIndex == Node::UNSET) {
+      continue;
+    }
+    for (const auto* volume : nodeVolumes_[node.VolumesIndex]) {
+      fun(volume);
+    }
+  }
 }
 
 size_t QuadTree::GetNodeCount() const { return nodes_.size(); }
