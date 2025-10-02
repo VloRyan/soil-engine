@@ -236,6 +236,28 @@ TEST_F(SceneTest, Remove_listener_on_node_remove) {
   EXPECT_EQ(activeNode.UpdateCalledCount, 2);
 }
 
+TEST_F(SceneTest, Remove_active_node_on_node_remove) {
+  auto scene = Scene();
+  auto* node = scene.AddChild(new NodeMock(Node::Type::Game));
+  const auto activeNode = node->AddChild(new NodeMock(Node::Type::Game));
+  activeNode->SetUpdateType(Node::UpdateType::Active);
+  const auto normalNode = node->AddChild(new NodeMock(Node::Type::Game));
+
+  scene.Update();
+
+  EXPECT_EQ(activeNode->UpdateCalledCount, 1);
+  EXPECT_EQ(normalNode->UpdateDirtyCalledCount, 1);
+
+  scene.Update();
+
+  EXPECT_EQ(activeNode->UpdateCalledCount, 2);
+  EXPECT_EQ(normalNode->UpdateCalledCount, 0);
+
+  delete node;
+
+  scene.Update();
+}
+
 TEST_F(SceneTest, Change_updateType) {
   auto scene = Scene();
   auto node = NodeMock(Node::Type::Game);

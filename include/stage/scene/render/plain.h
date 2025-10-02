@@ -24,7 +24,6 @@ class Plain : public hook::RenderHook {
 
   video::render::Container* renderContainer_;
   std::vector<component::VisualComponent*> added_;
-  std::vector<component::VisualComponent*> removed_;
   std::vector<component::VisualComponent*> changed_;
 };
 }  // namespace soil::stage::scene::render

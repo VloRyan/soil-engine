@@ -27,6 +27,7 @@ void Plain::Handle(const event::Component& event) {
     case event::Component::ChangeType::State:
       OnStateChanged(vComp);
       break;
+    default:;
   }
 }
 
@@ -38,7 +39,13 @@ void Plain::OnAdded(component::VisualComponent* component) {
 }
 
 void Plain::OnRemoved(component::VisualComponent* component) {
-  removed_.push_back(component);
+  if (component->IsOpaque()) {
+    renderContainer_->Remove(component->GetRenderable(),
+                             video::render::Container::OPAQUE);
+  } else {
+    renderContainer_->Remove(component->GetRenderable(),
+                             video::render::Container::NON_OPAQUE);
+  }
 }
 
 void Plain::OnStateChanged(component::VisualComponent* component) {
@@ -46,7 +53,13 @@ void Plain::OnStateChanged(component::VisualComponent* component) {
     return;
   }
   if (!component->IsVisible() || component->IsCulled()) {
-    removed_.push_back(component);
+    if (component->IsOpaque()) {
+      renderContainer_->Remove(component->GetRenderable(),
+                               video::render::Container::OPAQUE);
+    } else {
+      renderContainer_->Remove(component->GetRenderable(),
+                               video::render::Container::NON_OPAQUE);
+    }
     return;
   }
   if (component->GetRenderable()->GetContainerStateIndex() == -1) {
@@ -73,16 +86,6 @@ void Plain::OnRender(video::render::State& state) {
   }
   added_.clear();
 
-  for (auto* comp : removed_) {
-    if (comp->IsOpaque()) {
-      renderContainer_->Remove(comp->GetRenderable(),
-                               video::render::Container::OPAQUE);
-    } else {
-      renderContainer_->Remove(comp->GetRenderable(),
-                               video::render::Container::NON_OPAQUE);
-    }
-  }
-  removed_.clear();
   std::vector<video::render::RenderableObject*> renderables;
   for (auto* comp : changed_) {
     auto* renderable = comp->GetRenderable();
