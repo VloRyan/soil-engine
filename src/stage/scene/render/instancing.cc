@@ -36,6 +36,7 @@ void Instancing::Handle(const event::Component& event) {
     case event::Component::ChangeType::State:
       OnStateChanged(data);
       break;
+    default:;
   }
 }
 

@@ -37,7 +37,7 @@ void Buffer::Update(const glm::vec3& viewerPos) {
   auto* cursor = perInstanceBuffer->GetCursor();
 
   for (auto* instance : dirtyInstances_) {
-    if (instance->GetIndex() == -1) {
+    if (instance->GetIndex() == UnsetId) {
       if (maxInstancesPerDraw == instances_.size()) {
         throw std::runtime_error("Buffer is too small");
       }
@@ -54,25 +54,30 @@ void Buffer::Update(const glm::vec3& viewerPos) {
 
 std::vector<Instance*>& Buffer::GetInstances() { return instances_; }
 
+bool Buffer::isDirty(const Instance* instance) {
+  for (auto itr = dirtyInstances_.begin(); itr != dirtyInstances_.end();
+       ++itr) {
+    if (*itr == instance) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void Buffer::AddChangedInstance(Instance* instance) {
-  if (instance->GetIndex() == -1) {
-    // unknown
+  if (instance->GetIndex() == UnsetId) {
     return;
   }
-  for (const auto* dirtyInstance : dirtyInstances_) {
-    if (dirtyInstance == instance) {
-      return;
-    }
+  if (isDirty(instance)) {
+    return;
   }
   dirtyInstances_.push_back(instance);
   dirty_ = true;
 }
 
 void Buffer::PrepareInstance(Instance* instance) {
-  for (const auto& dirtyInstance : dirtyInstances_) {
-    if (dirtyInstance == instance) {
-      return;
-    }
+  if (isDirty(instance)) {
+    return;
   }
   dirtyInstances_.push_back(instance);
   dirty_ = true;
@@ -87,17 +92,18 @@ bool Buffer::RemoveInstance(Instance* instance) {
     }
   }
   for (auto i = 0; i < instances_.size(); ++i) {
-    if (instances_[i] == instance) {
-      if (instances_[i] != instances_.back()) {
-        instances_[i] = instances_.back();
-        instances_[i]->SetIndex(i);
-        dirtyInstances_.push_back(instances_[i]);
-      }
-      instance->SetIndex(-1);
-      instances_.pop_back();
-      dirty_ = true;
-      return true;
+    if (instances_[i] != instance) {
+      continue;
     }
+    if (instances_[i] != instances_.back()) {
+      instances_[i] = instances_.back();
+      instances_[i]->SetIndex(i);
+      PrepareInstance(instances_[i]);
+    }
+    instance->SetIndex(UnsetId);
+    instances_.pop_back();
+    dirty_ = true;
+    return true;
   }
   return false;
 }

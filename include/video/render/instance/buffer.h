@@ -39,6 +39,8 @@ class Buffer {
   [[nodiscard]] virtual std::vector<Instance*>& GetInstances();
 
  protected:
+  static constexpr auto UnsetId = -1;
+  bool isDirty(const Instance* instance);
   std::vector<Instance*> dirtyInstances_;
   std::vector<Instance*> instances_;
 
