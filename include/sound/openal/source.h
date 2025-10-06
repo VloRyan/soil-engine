@@ -1,47 +1,53 @@
 #ifndef SOIL_SOUND_OPENAL_SOURCE_H
 #define SOIL_SOUND_OPENAL_SOURCE_H
+#include "sound/buffer.h"
+#include "sound/file.h"
 #include "sound/source.h"
 
 namespace soil::sound::openal {
-class Source final : public sound::Source {
+static inline auto MAX_BUFFERS = 4;
+static inline auto BUFFER_SIZE = 65536;
+class Source : public sound::Source {
  public:
-  explicit Source(sound::Buffer* buffer);
+  explicit Source(File* file, bool loop = false);
 
   ~Source() override;
 
+  void Update() override;
+
   [[nodiscard]] glm::vec3 GetPosition() const override;
 
-  void SetPosition(glm::vec3 position) const override;
+  void SetPosition(glm::vec3 position) override;
 
   [[nodiscard]] float GetPitch() const override;
 
-  void SetPitch(float) const override;
+  void SetPitch(float) override;
 
   [[nodiscard]] float GetGain() const override;
 
-  void SetGain(float) const override;
+  void SetGain(float) override;
 
   [[nodiscard]] bool IsPlaying() const override;
 
-  void SetLooping(bool doLoop) const override;
+  void SetLooping(bool doLoop) override;
 
   [[nodiscard]] bool GetLooping() const override;
 
-  void SetSourceRelative(bool relative) const override;
+  void SetSourceRelative(bool relative) override;
 
   [[nodiscard]] bool GetSourceRelative() const override;
 
   [[nodiscard]] float GetMaxDistance() const override;
 
-  void SetMaxDistance(float distance) const override;
+  void SetMaxDistance(float distance) override;
 
   [[nodiscard]] float GetRolloffFactor() const override;
 
-  void SetRolloffFactor(float factor) const override;
+  void SetRolloffFactor(float factor) override;
 
   [[nodiscard]] float GetReferenceDistance() const override;
 
-  void SetReferenceDistance(float distance) const override;
+  void SetReferenceDistance(float distance) override;
 
   void Play() override;
 
@@ -51,20 +57,18 @@ class Source final : public sound::Source {
 
   void Stop() override;
 
-  void SetBuffer(sound::Buffer* Buffer) override;
-
-  [[nodiscard]] sound::Buffer* GetBuffer() const override;
-
   PlayStateType GetPlayState() const override;
 
-  void UpdatePlayState();
-
- private:
+ protected:
+  void SetPlayState(PlayStateType playState);
   [[nodiscard]] uint GetId() const;
 
   uint id_;
-  Buffer* buffer_;
+  std::vector<Buffer*> buffers_;
   PlayStateType playState_;
+  File* file_;
+  File::Cursor* cursor_;
+  bool loop_;
 };
 }  // namespace soil::sound::openal
 #endif

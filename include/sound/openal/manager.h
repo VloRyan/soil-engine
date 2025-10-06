@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "base.h"
+#include "sound/file.h"
 #include "sound/manager.h"
 #include "source.h"
 
@@ -19,9 +20,7 @@ class Manager final : public sound::Manager, public event::EventHandler {
 
   void Init() override;
 
-  sound::Source* GetSource(const std::string& fileName) override;
-
-  Buffer* GetBuffer(const std::string& fileName) override;
+  sound::Source* GetSource(const std::string& fileName, bool loop) override;
 
   [[nodiscard]] Listener* GetListener() const override;
 
@@ -30,14 +29,14 @@ class Manager final : public sound::Manager, public event::EventHandler {
   void Update() override;
 
  private:
-  static Buffer* loadAudioFile(const std::string& filename);
+  File* GetAudioFile(const std::string& fileName);
 
   static void logErrors();
 
   ALCdevice* device_;
   ALCcontext* context_;
   Listener* listener_;
-  HashMap<std::string, Buffer*> bufferCache_;
+  HashMap<std::string, File*> fileCache_;
   std::vector<openal::Source*> sources_;
   std::vector<openal::Source*> playingSources_;
 };

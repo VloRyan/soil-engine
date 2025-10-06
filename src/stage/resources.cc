@@ -19,12 +19,9 @@ video::shader::Shader* Resources::GetShader(const std::string& name) const {
   return videoManager_->GetShader(name);
 }
 
-sound::Source* Resources::GetSource(const std::string& name) const {
-  return soundManager_->GetSource(name);
-}
-
-sound::Buffer* Resources::GetSoundBuffer(const std::string& name) const {
-  return soundManager_->GetBuffer(name);
+sound::Source* Resources::GetSource(const std::string& name,
+                                    const bool loop) const {
+  return soundManager_->GetSource(name, loop);
 }
 
 sound::Listener* Resources::GetListener() const {

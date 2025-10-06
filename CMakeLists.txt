@@ -16,6 +16,8 @@ find_package(DevIL REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(glm REQUIRED)
 find_package(plog REQUIRED)
+find_package(Ogg REQUIRED)
+find_package(Vorbis REQUIRED)
 
 include_directories(include)
 
@@ -129,6 +131,7 @@ add_library(${PROJECT_NAME}
         src/world/volume/quad_tree.cc
         src/stage/event/stage_event.cc
         src/stage/event/game_event.cc
+        src/sound/ogg.cc
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -202,6 +205,7 @@ target_sources(
         include/stage/scene/volume/container.h
         include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
+        include/sound/ogg.h
         include/util/deque.hpp
         include/util/files.h
         include/util/pointer_cache.hpp
@@ -265,7 +269,7 @@ target_sources(
         include/world/volume/volume.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog)
+target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog Ogg::ogg vorbis::vorbis)
 
 if (NOT BUILD_TESTING STREQUAL OFF)
     add_subdirectory(test)

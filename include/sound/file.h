@@ -3,20 +3,40 @@
 #include <string>
 
 namespace soil::sound {
-struct File final {
-  explicit File(std::string name, int format, int dataSize, int frequency,
-                fpos_t dataOffset, unsigned char* Data);
 
-  explicit File(std::string name);
+class File {
+ public:
+  class Cursor {
+   public:
+    virtual ~Cursor() = default;
+    virtual long Read(char* buffer, long bufferSize) = 0;
+    virtual void Rewind() = 0;
+    virtual void SetLoop(bool loop) = 0;
 
-  ~File();
+   protected:
+    Cursor() = default;
+  };
+  enum class BufferFormatType {
+    Mono8 = 0,
+    Mono16,
+    Stereo8,
+    Stereo16,
+  };
+  struct InfoType final {
+    BufferFormatType Format{0};
+    int Samplerate{0};
+    long DataSize{0L};
+  };
+  virtual ~File() = default;
+  [[nodiscard]] const std::string& Name() const;
+  [[nodiscard]] const InfoType& Info() const;
+  virtual Cursor* NewCursor() = 0;
 
-  std::string Name;
-  int Format;
-  int Frequency;
-  int DataSize;
-  fpos_t DataOffset;
-  unsigned char* Data;
+ protected:
+  File() = default;
+  File(std::string name, const InfoType& info);
+  InfoType info_;
+  std::string name_;
 };
 }  // namespace soil::sound
 #endif

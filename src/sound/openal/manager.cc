@@ -3,12 +3,13 @@
 
 #include <plog/Log.h>
 
+#include <filesystem>
 #include <stdexcept>
 
 #include "AL/al.h"
 #include "AL/alc.h"
 #include "sound/file.h"
-#include "sound/openal/buffer.h"
+#include "sound/ogg.h"
 #include "sound/openal/listener.h"
 #include "sound/openal/source.h"
 #include "sound/wave.h"
@@ -47,53 +48,31 @@ void Manager::Init() {
              << "EAX 2.0: " << util::Strings::to_string(eax2Enabled);
 }
 
-sound::Source* Manager::GetSource(const std::string& fileName) {
-  auto* const buffer = GetBuffer(fileName);
-
-  // Create source
-  const auto source = new openal::Source(buffer);
-
-  if (ALenum error = 0; (error = alGetError()) != AL_NO_ERROR) {
-    throw std::runtime_error("Failed to get AudioSource from " + fileName +
-                             ": " + std::to_string(error));
-  }
+sound::Source* Manager::GetSource(const std::string& fileName,
+                                  const bool loop) {
+  auto* file = GetAudioFile(fileName);
+  auto* source = new Source(file, loop);
   source->AddListener(this);
   return source;
 }
 
-sound::Buffer* Manager::GetBuffer(const std::string& fileName) {
+File* Manager::GetAudioFile(const std::string& fileName) {
   std::string cacheKey = fileName;
-
-  // Is source already loaded
-  if (const auto itr = bufferCache_.find(cacheKey); itr != bufferCache_.end()) {
-    PLOG_DEBUG << "Cached buffer(" << itr->second->getId()
-               << ") is used for file " << fileName;
+  if (const auto itr = fileCache_.find(cacheKey); itr != fileCache_.end()) {
     return itr->second;
   }
-
-  auto newBuffer = loadAudioFile(fileName);
-  PLOG_INFO << "New buffer(" << newBuffer->getId() << ") created for file "
-            << newBuffer->getName();
-  PLOG_DEBUG << "Cache model with key " << cacheKey;
-  bufferCache_.insert(std::pair(cacheKey, newBuffer));
-  return newBuffer;
-}
-
-sound::Buffer* Manager::loadAudioFile(const std::string& filename) {
-  const File* file = Wave::LoadFile(filename);
-  if (file == nullptr) {
-    throw std::runtime_error("Error loading audio file " + filename);
+  File* file = nullptr;
+  const auto ext = std::filesystem::path(fileName).extension();
+  if (ext == ".ogg") {
+    file = OggFile::Load(fileName);
+  } else if (ext == ".wav") {
+    file = WaveFile::Load(fileName);
+  } else {
+    throw std::runtime_error("FileType unsupported");
   }
-  auto* newBuffer = new Buffer(filename);
-
-  newBuffer->setData(file->Data, file->DataSize, file->Format, file->Frequency);
-
-  delete file;
-  if (ALenum error; (error = alGetError()) != AL_NO_ERROR) {
-    throw std::runtime_error("Failed to get AudioSource from " + filename +
-                             ": " + std::to_string(error));
-  }
-  return newBuffer;
+  PLOG_DEBUG << "Cache sound file with key " << cacheKey;
+  fileCache_.insert(std::pair(cacheKey, file));
+  return file;
 }
 
 void Manager::logErrors() {
@@ -175,7 +154,8 @@ void Manager::Handle(const event::Event& event) {
 void Manager::Update() {
   std::vector playingSources(playingSources_);
   for (auto* source : playingSources) {
-    source->UpdatePlayState();
+    source->Update();
   }
 }
+
 }  // namespace soil::sound::openal

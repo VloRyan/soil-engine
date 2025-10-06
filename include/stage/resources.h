@@ -29,9 +29,8 @@ class Resources {
 
   [[nodiscard]] video::shader::Shader* GetShader(const std::string& name) const;
 
-  [[nodiscard]] sound::Source* GetSource(const std::string& name) const;
-
-  [[nodiscard]] sound::Buffer* GetSoundBuffer(const std::string& name) const;
+  [[nodiscard]] sound::Source* GetSource(const std::string& name,
+                                         bool loop = false) const;
 
   [[nodiscard]] sound::Listener* GetListener() const;
 

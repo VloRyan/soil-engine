@@ -6,8 +6,7 @@
 #include <utility>
 
 namespace soil::sound::openal {
-Buffer::Buffer(std::string name)
-    : sound::Buffer(), id_(0), name_(std::move(name)), dataSize_(0) {
+Buffer::Buffer() : sound::Buffer(), id_(0), dataSize_(0) {
   // create our openAL buffer and check for success
   alGenBuffers(1, &id_);
 }
@@ -18,15 +17,13 @@ Buffer::~Buffer() {
   }
 }
 
-std::string Buffer::getName() const { return name_; }
+ALuint Buffer::Id() const { return id_; }
 
-uint Buffer::getId() const { return id_; }
+ALsizei Buffer::DataSize() const { return dataSize_; }
 
-uint Buffer::getDataSize() const { return dataSize_; }
-
-void Buffer::setData(const ALvoid *data, const ALsizei dataSize,
-                     const ALenum format, const ALsizei frequency) {
-  dataSize_ = static_cast<uint>(dataSize);
-  alBufferData(id_, format, data, dataSize, frequency);
+void Buffer::SetData(const ALvoid *data, const ALsizei dataSize,
+                     const ALenum format, const ALsizei samplerate) {
+  dataSize_ = dataSize;
+  alBufferData(id_, format, data, dataSize, samplerate);
 }
 }  // namespace soil::sound::openal

@@ -27,9 +27,8 @@ class Manager {
 
   virtual void Update() = 0;
 
-  [[nodiscard]] virtual Source* GetSource(const std::string& fileName) = 0;
-
-  [[nodiscard]] virtual Buffer* GetBuffer(const std::string& fileName) = 0;
+  [[nodiscard]] virtual Source* GetSource(const std::string& fileName,
+                                          bool loop) = 0;
 
   [[nodiscard]] virtual Listener* GetListener() const = 0;
 };

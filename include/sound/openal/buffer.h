@@ -1,5 +1,7 @@
 #ifndef SOIL_SOUND_OPENAL_BUFFER_H
 #define SOIL_SOUND_OPENAL_BUFFER_H
+#include <al.h>
+
 #include <string>
 
 #include "sound/buffer.h"
@@ -7,24 +9,20 @@
 namespace soil::sound::openal {
 class Buffer final : public sound::Buffer {
  public:
-  explicit Buffer(std::string name);
+  explicit Buffer();
 
   ~Buffer() override;
 
-  [[nodiscard]] std::string getName() const override;
+  [[nodiscard]] ALuint Id() const override;
 
-  [[nodiscard]] uint getId() const override;
+  [[nodiscard]] ALsizei DataSize() const override;
 
-  [[nodiscard]] uint getDataSize() const override;
-
-  void setData(const void* data, int dataSize, int format,
-               int frequency) override;
+  void SetData(const ALvoid *data, ALsizei dataSize, ALenum format,
+               ALsizei samplerate) override;
 
  private:
-  uint id_;
-  std::string name_;
-
-  uint dataSize_;
+  ALuint id_;
+  ALsizei dataSize_;
 };
 }  // namespace soil::sound::openal
 #endif

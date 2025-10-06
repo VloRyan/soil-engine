@@ -2,50 +2,52 @@
 
 #include <al.h>
 
+#include <fstream>
 #include <stdexcept>
 
-namespace soil::sound {
-File *Wave::LoadFile(const std::string &filename) {
-  // Local Declarations
-  FILE *file = nullptr;
-  try {
-    file = fopen(filename.c_str(), "rb");
-    if (file == nullptr) {
-      throw std::runtime_error("Failed to open file: " + filename);
-    }
-    file = fopen(filename.c_str(), "rb");
-    if (file == nullptr) {
-      throw std::runtime_error(filename);
-    }
-    auto *audioFile = new File(filename);
+#include "base.h"
 
-    // Load header
-    loadHeader(file, *audioFile);
-    // Load whole data
-    auto *buffer = new ALubyte[static_cast<size_t>(audioFile->DataSize)];
-    loadData(file, buffer, audioFile->DataOffset, audioFile->DataSize);
-    audioFile->Data = buffer;
-    fclose(file);
-    return audioFile;
+namespace soil::sound {
+
+WaveFile::WaveFile(const std::string &name, const InfoType &info,
+                   const long dataOffset)
+    : File(name, info), dataOffset_(dataOffset) {}
+
+WaveFile *WaveFile::Load(const std::string &file) {
+  FILE *f = nullptr;
+  InfoType info;
+  long bytesRead;
+  try {
+    f = fopen(file.c_str(), "rb");
+    if (f == nullptr) {
+      throw std::runtime_error("Failed to open file: " + file);
+    }
+    f = fopen(file.c_str(), "rb");
+    if (f == nullptr) {
+      throw std::runtime_error(file);
+    }
+    loadHeader(f, info);
+    bytesRead = ftell(f);
+    fclose(f);
   } catch ([[maybe_unused]] std::runtime_error &ex) {
     // clean up memory if wave loading fails
-    if (file != nullptr) {
-      fclose(file);
+    if (f != nullptr) {
+      fclose(f);
     }
     throw;
   }
-}
 
-void Wave::loadHeader(FILE *wavFile, File &audioFile) {
-  // Local Declarations
+  return new WaveFile(file, info, bytesRead);
+}
+WaveFile::Cursor *WaveFile::NewCursor() { return new Cursor(this); }
+
+void WaveFile::loadHeader(FILE *wavFile, InfoType &info) {
   WAVE_Format wave_format{};
   RIFF_Header riff_header{};
   WAVE_Data wave_data{};
-  fpos_t dataOffset;
 
-  ALenum format = AL_FORMAT_MONO8;
   ALsizei size = 0;
-  ALsizei frequency = 0;
+  ALsizei samplerate = 0;
 
   if (wavFile == nullptr) {
     throw std::runtime_error("Invalid FILE handle");
@@ -83,48 +85,75 @@ void Wave::loadHeader(FILE *wavFile, File &audioFile) {
     throw std::runtime_error("Invalid data header");
   }
 
-  // Get position before data
-  fgetpos(wavFile, &dataOffset);
-
   // Now we set the variables that we passed in with the
   // data from the structs
   size = static_cast<int>(wave_data.subChunk2Size);
-  frequency = static_cast<int>(wave_format.dwSamplesPerSec);
+  samplerate = static_cast<int>(wave_format.dwSamplesPerSec);
   // The format is worked out by looking at the number of
   // channels and the bits per sample.
+  auto format = BufferFormatType::Mono8;
   if (wave_format.wChannels == 1) {
     if (wave_format.wBitsPerSample == 8) {
-      format = AL_FORMAT_MONO8;
+      format = BufferFormatType::Mono8;
     } else if (wave_format.wBitsPerSample == 16) {
-      format = AL_FORMAT_MONO16;
+      format = BufferFormatType::Mono16;
     }
   } else if (wave_format.wChannels == 2) {
     if (wave_format.wBitsPerSample == 8) {
-      format = AL_FORMAT_STEREO8;
+      format = BufferFormatType::Stereo8;
     } else if (wave_format.wBitsPerSample == 16) {
-      format = AL_FORMAT_STEREO16;
+      format = BufferFormatType::Stereo16;
     }
   }
-  audioFile.Format = format;
-  audioFile.Frequency = frequency;
-  audioFile.DataSize = size;
-  audioFile.DataOffset = dataOffset;
+  info.Format = format;
+  info.Samplerate = samplerate;
+  info.DataSize = size;
 }
 
-long Wave::loadData(FILE *file, ALubyte *buffer, const fpos_t offset,
-                    const ALsizei size) {
-  fsetpos(file, &offset);
+WaveFile::Cursor::Cursor(const WaveFile *file) : File(file) {}
 
-  // Read in the sound data into the soundData variable
-  if (fread(buffer, static_cast<size_t>(size), 1, file) == 0U) {
-    if (feof(file) != 0) {
-      return EOF;
+long WaveFile::Cursor::Read(char *buffer, const long bufferSize) {
+  std::ifstream file;
+  try {
+    file.open(File->Name().c_str(), std::ios::binary);
+    if (!file.is_open()) {
+      throw std::runtime_error("Failed to open file: " + File->Name());
     }
-    throw std::runtime_error("error loading WAVE data into struct!");
+    if (!file.seekg(File->dataOffset_ + Offset)) {
+      throw std::runtime_error("Failed to load data of wav file: " +
+                               File->Name());
+    }
+    auto sizeRead = 0L;
+    while (sizeRead != bufferSize) {
+      const auto toRead = bufferSize - sizeRead;
+      file.read(&buffer[sizeRead], toRead);
+      sizeRead += file.gcount();
+      if (!file) {
+        if (file.eof()) {
+          file.clear();
+          if (!Loop) {
+            break;
+          }
+          Rewind();
+          if (!file.seekg(File->dataOffset_)) {
+            throw std::runtime_error("Failed to load data of wav file: " +
+                                     File->Name());
+          }
+        } else {
+          file.close();
+          throw std::runtime_error("Failed to read file: " + File->Name());
+        }
+      }
+    }
+    Offset = file.tellg() - File->dataOffset_;
+    file.close();
+    return sizeRead;
+  } catch ([[maybe_unused]] std::runtime_error &ex) {
+    file.close();
+    throw;
   }
-  if (feof(file) != 0) {
-    return EOF;
-  }
-  return ftell(file);
 }
+
+void WaveFile::Cursor::Rewind() { Offset = 0; }
+void WaveFile::Cursor::SetLoop(const bool loop) { Loop = loop; }
 }  // namespace soil::sound

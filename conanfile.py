@@ -37,6 +37,8 @@ class SoilEngineRecipe(ConanFile):
         self.requires("plog/1.1.10")
         self.requires("openal-soft/1.24.3")
         self.requires("gl3w/1.0")
+        self.requires("ogg/1.3.5")
+        self.requires("vorbis/1.3.7")
 
         self.test_requires("gtest/1.17.0")
 

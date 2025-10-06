@@ -9,14 +9,12 @@ class Buffer {
 
   virtual ~Buffer() = default;
 
-  [[nodiscard]] virtual std::string getName() const = 0;
+  [[nodiscard]] virtual uint Id() const = 0;
 
-  [[nodiscard]] virtual uint getId() const = 0;
+  [[nodiscard]] virtual int DataSize() const = 0;
 
-  [[nodiscard]] virtual uint getDataSize() const = 0;
-
-  virtual void setData(const void* data, int dataSize, int format,
-                       int frequency) = 0;
+  virtual void SetData(const void* data, int dataSize, int format,
+                       int samplerate) = 0;
 };
 }  // namespace soil::sound
 #endif

@@ -34,31 +34,26 @@ struct WAVE_Data {
   char subChunkID[4];           // should contain the word data
   std::uint32_t subChunk2Size;  // Stores the size of the data block
 };
-
-class Wave {
+class WaveFile : public File {
  public:
-  static File* LoadFile(const std::string& filename);
+  struct Cursor : File::Cursor {
+    explicit Cursor(const WaveFile* file);
+    long Read(char* buffer, long bufferSize) override;
+    void Rewind() override;
+    void SetLoop(bool loop) override;
+    long Offset{0};
+    bool Loop{false};
+    const WaveFile* File;
+  };
+
+  ~WaveFile() override = default;
+  static WaveFile* Load(const std::string& file);
+  Cursor* NewCursor() override;
 
  private:
-  /**
-   * Loads data from Wave-File. The data of size is red from offset to
-   * offset+size and stored in buffer.
-   * @param file to read from
-   * @param buffer to store in. Must be of size.
-   * @param offset of file to be red from
-   * @param size of data to be read.
-   * @return the positive newOffset(should be offset + size) or EOF on file end.
-   * A lesser value than EOF indicates error.
-   */
-  static long loadData(FILE* file, unsigned char* buffer, fpos_t offset,
-                       int size);
-
-  /**
-   * Reads in the header of wavFile and store the information in audioFile.
-   * @param wavFile
-   * @param audioFile
-   */
-  static void loadHeader(FILE* wavFile, File& audioFile);
+  WaveFile(const std::string& name, const InfoType& info, long dataOffset);
+  static void loadHeader(FILE* wavFile, InfoType& info);
+  long dataOffset_;
 };
 }  // namespace soil::sound
 #endif
