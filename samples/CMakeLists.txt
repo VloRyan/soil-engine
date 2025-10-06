@@ -64,6 +64,9 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/line/stage.h
         src/common/stage.cc
         src/common/stage.h
+
+        src/sound/stage.cc
+        src/sound/stage.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)

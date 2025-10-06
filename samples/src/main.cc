@@ -9,6 +9,7 @@
 #include "instancing/stage.h"
 #include "line/shader.h"
 #include "line/stage.h"
+#include "sound/stage.h"
 #include "text/stage.h"
 #include "volume/stage.h"
 
@@ -78,6 +79,11 @@ int main(const int argc, const char* argv[]) {
           .Id = "line",
           .Name = "Line",
           .NewStage = [] { return new soil_samples::line::Stage(); },
+      },
+      {
+          .Id = "sound",
+          .Name = "Sound",
+          .NewStage = [] { return new soil_samples::sound::Stage(); },
       },
   };
 
