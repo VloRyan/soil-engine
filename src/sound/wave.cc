@@ -39,7 +39,7 @@ WaveFile *WaveFile::Load(const std::string &file) {
 
   return new WaveFile(file, info, bytesRead);
 }
-WaveFile::Cursor *WaveFile::NewCursor() { return new Cursor(this); }
+WaveFile::Cursor *WaveFile::NewCursor() const { return new Cursor(this); }
 
 void WaveFile::loadHeader(FILE *wavFile, InfoType &info) {
   WAVE_Format wave_format{};

@@ -8,7 +8,7 @@
 #include "sound/openal/buffer.h"
 
 namespace soil::sound::openal {
-Source::Source(File* file, const bool loop)
+Source::Source(const File* file, const bool loop)
     : id_(0),
       playState_(PlayStateType::Stopped),
       file_(file),
@@ -184,6 +184,8 @@ void Source::Stop() {
 }
 
 Source::PlayStateType Source::GetPlayState() const { return playState_; }
+
+const File* Source::GetFile() const { return file_; }
 
 float Source::GetMaxDistance() const {
   float distance = NAN;

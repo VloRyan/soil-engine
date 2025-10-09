@@ -2,6 +2,7 @@
 #define SOIL_SOUND_SOURCE_H
 #include "event/observable.hpp"
 #include "event/source_event.h"
+#include "file.h"
 #include "glm/vec3.hpp"
 
 namespace soil::sound {
@@ -59,6 +60,7 @@ class Source : public soil::event::Observable<event::Event> {
   virtual void Stop() = 0;
 
   virtual PlayStateType GetPlayState() const = 0;
+  virtual const File* GetFile() const = 0;
 
  protected:
   explicit Source() = default;

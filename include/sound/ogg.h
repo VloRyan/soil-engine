@@ -12,7 +12,7 @@ namespace soil::sound {
 class OggFile : public File {
  public:
   struct Cursor : File::Cursor {
-    OggFile* File;
+    const OggFile* File;
     long Consumed{0};
     OggVorbis_File OggVorbisFile;
     int OggCurrentSection{0};
@@ -21,10 +21,10 @@ class OggFile : public File {
     void Rewind() override;
     void SetLoop(bool loop) override;
     [[nodiscard]] long FileSize() const;
-    explicit Cursor(OggFile* file);
+    explicit Cursor(const OggFile* file);
   };
   ~OggFile() override = default;
-  Cursor* NewCursor() override;
+  [[nodiscard]] Cursor* NewCursor() const override;
   static OggFile* Load(const std::string& fileName);
 
  protected:

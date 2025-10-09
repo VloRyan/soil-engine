@@ -30,7 +30,7 @@ class File {
   virtual ~File() = default;
   [[nodiscard]] const std::string& Name() const;
   [[nodiscard]] const InfoType& Info() const;
-  virtual Cursor* NewCursor() = 0;
+  [[nodiscard]] virtual Cursor* NewCursor() const = 0;
 
  protected:
   File() = default;

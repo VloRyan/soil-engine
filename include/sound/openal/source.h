@@ -9,7 +9,7 @@ static inline auto MAX_BUFFERS = 4;
 static inline auto BUFFER_SIZE = 65536;
 class Source : public sound::Source {
  public:
-  explicit Source(File* file, bool loop = false);
+  explicit Source(const File* file, bool loop = false);
 
   ~Source() override;
 
@@ -59,6 +59,8 @@ class Source : public sound::Source {
 
   PlayStateType GetPlayState() const override;
 
+  const File* GetFile() const override;
+
  protected:
   void SetPlayState(PlayStateType playState);
   [[nodiscard]] uint GetId() const;
@@ -66,7 +68,7 @@ class Source : public sound::Source {
   uint id_;
   std::vector<Buffer*> buffers_;
   PlayStateType playState_;
-  File* file_;
+  const File* file_;
   File::Cursor* cursor_;
   bool loop_;
 };

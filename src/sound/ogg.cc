@@ -81,9 +81,9 @@ void OggFile::Cursor::Rewind() {
   }
 }
 long OggFile::Cursor::FileSize() const { return File->Size; }
-OggFile::Cursor::Cursor(OggFile* file) : File(file), OggVorbisFile() {}
+OggFile::Cursor::Cursor(const OggFile* file) : File(file), OggVorbisFile() {}
 void OggFile::Cursor::SetLoop(const bool loop) { Loop = loop; }
-OggFile::Cursor* OggFile::NewCursor() {
+OggFile::Cursor* OggFile::NewCursor() const {
   auto* cursor = new Cursor(this);
 
   ov_callbacks oggCallbacks;

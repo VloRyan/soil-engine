@@ -48,8 +48,8 @@ class WaveFile : public File {
 
   ~WaveFile() override = default;
   static WaveFile* Load(const std::string& file);
-  Cursor* NewCursor() override;
-
+  Cursor* NewCursor() const override;
+    
  private:
   WaveFile(const std::string& name, const InfoType& info, long dataOffset);
   static void loadHeader(FILE* wavFile, InfoType& info);
