@@ -16,7 +16,17 @@
 namespace soil {
 class Engine {
  public:
-  explicit Engine(const WindowParameter& params);
+  struct Config_t {
+    int TicksPerSecond{25};
+    int MaxFrameSkip{5};
+  };
+
+  struct Args_t {
+    Config_t Config{};
+    WindowParameter Window{};
+  };
+
+  explicit Engine(const Args_t& args);
 
   ~Engine() = default;
 
@@ -39,6 +49,7 @@ class Engine {
   void operator=(Engine const&) = delete;
 
   static void Quit();
+  static const Config_t& Config();
 
  private:
   Window* window_;
@@ -47,6 +58,7 @@ class Engine {
   video::Manager* videoManager_;
   sound::Manager* soundManager_;
   stage::Manager* stageManager_;
+  Config_t config_;
   static Engine* INSTANCE_;
 };
 }  // namespace soil

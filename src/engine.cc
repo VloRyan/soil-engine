@@ -10,13 +10,14 @@
 namespace soil {
 Engine* Engine::INSTANCE_ = nullptr;
 
-Engine::Engine(const WindowParameter& params)
-    : window_(new Window(params)),
+Engine::Engine(const Args_t& args)
+    : window_(new Window(args.Window)),
       resources_(nullptr),
       inputManager_(new input::Manager),
       videoManager_(new video::Manager),
       soundManager_(new sound::openal::Manager),
-      stageManager_(nullptr) {
+      stageManager_(nullptr),
+      config_(args.Config) {
   if (INSTANCE_ != nullptr) {
     throw std::runtime_error("instance of engine already exits");
   }
@@ -42,8 +43,7 @@ Engine::Engine(const WindowParameter& params)
 
 void Engine::Run() const {
   PLOG_DEBUG << "Run";
-  constexpr int ticksPerSecond = 25.0F;
-  constexpr float skipTicks = 1.0F / ticksPerSecond;
+  const float skipTicks = 1.0F / static_cast<float>(config_.TicksPerSecond);
 
   auto nextGameTick = 0.0;
   auto loops = 0;
@@ -62,10 +62,9 @@ void Engine::Run() const {
   auto endRenderTime = 0L;
 
   while (!window_->IsClosed()) {
-    constexpr int maxFrameSkip = 5;
     loops = 0;
     startLoopTime = glfwGetTime();
-    while (startLoopTime > nextGameTick && loops < maxFrameSkip) {
+    while (startLoopTime > nextGameTick && loops < config_.MaxFrameSkip) {
       glfwPollEvents();
       inputManager_->Update();
       updateInputTime += std::chrono::duration_cast<std::chrono::microseconds>(
@@ -175,4 +174,5 @@ sound::Manager* Engine::GetSoundManager() const { return soundManager_; }
 Window* Engine::GetWindow() const { return window_; }
 
 void Engine::Quit() { INSTANCE_->window_->Close(); }
+const Engine::Config_t& Engine::Config() { return INSTANCE_->config_; }
 }  // namespace soil
