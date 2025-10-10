@@ -40,13 +40,16 @@ add_library(${PROJECT_NAME}
         src/input/mouse/picker.cc
         src/sound/event/source_event.cc
         src/sound/file.cc
+        src/sound/ogg.cc
         src/sound/openal/buffer.cc
         src/sound/openal/listener.cc
         src/sound/openal/manager.cc
         src/sound/openal/source.cc
         src/sound/wave.cc
         src/stage/event/component.cc
+        src/stage/event/game_event.cc
         src/stage/event/node.cc
+        src/stage/event/stage_event.cc
         src/stage/manager.cc
         src/stage/resources.cc
         src/stage/scene/component/bounding_volume.cc
@@ -116,6 +119,7 @@ add_library(${PROJECT_NAME}
         src/video/shader/definition.cc
         src/video/shader/shader.cc
         src/video/shader/stage.cc
+        src/video/texture/animation.cc
         src/video/texture/data.cc
         src/video/texture/manager.cc
         src/video/texture/texture.cc
@@ -129,9 +133,6 @@ add_library(${PROJECT_NAME}
         src/world/volume/aabb.cc
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
-        src/stage/event/stage_event.cc
-        src/stage/event/game_event.cc
-        src/sound/ogg.cc
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -148,8 +149,6 @@ target_sources(
         include/event/event.h
         include/event/handler.hpp
         include/event/observable.hpp
-        include/stage/interfaces.h
-        include/stage/event/game_event.h
         include/file/font.h
         include/file/sequence.hpp
         include/file/sprite_sheet.h
@@ -165,14 +164,16 @@ target_sources(
         include/sound/file.h
         include/sound/listener.h
         include/sound/manager.h
+        include/sound/ogg.h
         include/sound/source.h
         include/sound/wave.h
-        include/stage/interfaces.h
         include/stage/event/component.h
+        include/stage/event/game_event.h
         include/stage/event/node.h
+        include/stage/event/stage_event.h
+        include/stage/interfaces.h
         include/stage/manager.h
         include/stage/resources.h
-        include/stage/event/stage_event.h
         include/stage/scene/component/bounding_volume.h
         include/stage/scene/component/component.h
         include/stage/scene/component/instance_data.h
@@ -205,7 +206,6 @@ target_sources(
         include/stage/scene/volume/container.h
         include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
-        include/sound/ogg.h
         include/util/deque.hpp
         include/util/files.h
         include/util/pointer_cache.hpp
@@ -248,6 +248,7 @@ target_sources(
         include/video/shader/instance_shader.h
         include/video/shader/shader.h
         include/video/shader/stage.h
+        include/video/texture/animation.h
         include/video/texture/data.h
         include/video/texture/manager.h
         include/video/texture/parameter.h

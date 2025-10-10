@@ -10,13 +10,25 @@ TEST_F(SpriteSheetTest, SaveLoad) {
       std::filesystem::temp_directory_path() / std::tmpnam(nullptr);
   auto expected = SpriteSheet{
       .TextureFileName = "texture/texture.png",
-      .TilesPerDim = 2,
-      .Tiles = {{"one", 1}, {"two", 2}, {"three", 3}, {"four", 4}},
-      .Sequences = {
-          {"all", {.FrameIndices = {1, 2, 3, 4}, .TicksPerFrame = 8}}}};
+      .FramesPerDim = 2,
+      .Frames =
+          {
+              {"one", 1},
+              {"two", 2},
+              {"three", 3},
+              {"four", 4},
+          },
+      .Sequences =
+          {
+              {
+                  "all",
+                  {.From = 0, .To = 3, .FrameDuration = 8},
+              },
+          },
+  };
 
   expected.Save(tempFilePath);
-  auto actual = SpriteSheet::Load(tempFilePath);
+  const auto actual = SpriteSheet::Load(tempFilePath);
 
   EXPECT_EQ(actual, expected);
 

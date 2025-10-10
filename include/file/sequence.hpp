@@ -1,32 +1,35 @@
 #ifndef SOIL_FILE_SEQUENCE_H
 #define SOIL_FILE_SEQUENCE_H
+
 #include <nlohmann/json.hpp>
-#include <vector>
+
 using json = nlohmann::json;
 
 namespace soil::file {
 struct Sequence {
-  std::vector<int> FrameIndices{};
-  int TicksPerFrame{0};
+  int From{0};
+  int To{0};
+  int FrameDuration{0};
 
   friend bool operator==(const Sequence& lhs, const Sequence& rhs) {
-    return lhs.FrameIndices == rhs.FrameIndices &&
-           lhs.TicksPerFrame == rhs.TicksPerFrame;
+    return lhs.From == rhs.From && lhs.To == rhs.To &&
+           lhs.FrameDuration == rhs.FrameDuration;
   }
-
   friend bool operator!=(const Sequence& lhs, const Sequence& rhs) {
     return !(lhs == rhs);
   }
 };
 
 static void to_json(json& j, const Sequence& p) {
-  j = json{{"frameIndices", p.FrameIndices},  //
-           {"ticksPerFrame", json(p.TicksPerFrame)}};
+  j = json{{"from", p.From},  //
+           {"to", p.To},      //
+           {"frameDuration", p.FrameDuration}};
 }
 
 static void from_json(const json& j, Sequence& p) {
-  j.at("frameIndices").get_to(p.FrameIndices);
-  j.at("ticksPerFrame").get_to(p.TicksPerFrame);
+  j.at("from").get_to(p.From);
+  j.at("to").get_to(p.To);
+  j.at("frameDuration").get_to(p.FrameDuration);
 }
 }  // namespace soil::file
 

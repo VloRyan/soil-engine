@@ -28,7 +28,7 @@ Menu::Menu(const Definition& definition)
   bgPlane_ = AddChild(new Plane());
   bgPlane_->SetPosition(glm::vec3(0.F));  // no z-offset
   bgPlane_->Background().SetTileIndex(
-      definition_.SpriteSheet->TileIndex(definition.BackgroundTileName));
+      definition_.SpriteSheet->FrameByName(definition.BackgroundTileName));
   bgPlane_->SetStyle(definition.Style);
   bgPlane_->SetScissorFrom(this);
   if (definition.Scrollbar.Enabled) {

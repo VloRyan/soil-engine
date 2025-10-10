@@ -9,10 +9,10 @@ Scrollbar::Scrollbar(const Definition& definition)
       increment_(0.F),
       onValueChange_(nullptr) {
   Background().SetTileIndex(
-      definition.SpriteSheet->TileIndex(definition.BackgroundTileName));
+      definition.SpriteSheet->FrameByName(definition.BackgroundTileName));
   scroller_ = AddChild(new Plane());
   scroller_->Background().SetTileIndex(
-      definition.SpriteSheet->TileIndex(definition.Scroller.TileName));
+      definition.SpriteSheet->FrameByName(definition.Scroller.TileName));
   scroller_->SetRelativeSize(glm::vec2(0.80F, 0.05F));
   scroller_->SetStyle(definition.Scroller.Style);
   scroller_->SetScissorFrom(Plane::GetScissorFrom());

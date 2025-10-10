@@ -2,8 +2,8 @@
   "type": "spritesheet",
   "version": "1.0.0",
   "textureFileName": "Gui.png",
-  "tilesPerDim": 8,
-  "tiles": {
+  "framesPerDim": 8,
+  "frames": {
     "darkBg": 0,
     "selection": 1,
     "bg": 2,

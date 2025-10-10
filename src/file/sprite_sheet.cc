@@ -6,14 +6,17 @@
 
 namespace soil::file {
 
-int SpriteSheet::TileIndex(const std::string& name) const {
+int SpriteSheet::FrameByName(const std::string& name) const {
   if (name.empty()) {
     return -1;
   }
-  return Tiles.at(name);
+  if (name.starts_with("@")) {
+    return std::stoi(name.substr(1));
+  }
+  return Frames.at(name);
 }
 
-const Sequence& SpriteSheet::GetSequence(const std::string& name) const {
+const Sequence& SpriteSheet::SequenceByName(const std::string& name) const {
   return Sequences.at(name);
 }
 
@@ -41,7 +44,7 @@ void SpriteSheet::Save(const std::string& file) {
   f.close();
 }
 
-std::string SpriteSheet::GetTextureFile() {
+std::string SpriteSheet::GetTextureFile() const {
   if (util::Files::IsAbsolute(TextureFileName)) {
     return TextureFileName;
   }

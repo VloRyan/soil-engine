@@ -42,7 +42,7 @@ void Stage::OnLoad() {
   spriteSheet_ =
       soil::file::SpriteSheet::Load(asset::GetPath("Textures/Tiles/Gui.json"));
   auto* guiTexture = GetResources().Textures().GetTextureArray2D(
-      spriteSheet_.GetTextureFile(), spriteSheet_.TilesPerDim);
+      spriteSheet_.GetTextureFile(), spriteSheet_.FramesPerDim);
   textures_ = {fontTexture, guiTexture};
 
   auto& state = GetResources().GetRenderState();
@@ -128,7 +128,7 @@ void Stage::initGui() {
   backgroundPlane->SetRelativeSize(glm::vec2(1.F));
   auto* bgIcons = backgroundPlane->AddChild(new Plane());
   bgIcons->SetRelativeSize(glm::vec2(0.8F));
-  bgIcons->Background().SetTileIndex(spriteSheet_.TileIndex("bg"));
+  bgIcons->Background().SetTileIndex(spriteSheet_.FrameByName("bg"));
   bgIcons->Background().SetTileScale(glm::vec2(10.F));
   bgIcons->SetRelativeSize(glm::vec2(1.0F));
 
@@ -153,7 +153,7 @@ void Stage::initGui() {
 menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
   auto* item = new menu::Item(def.Value);
   item->Background().SetTileIndex(
-      spriteSheet_.TileIndex(def.BackgroundTileName));
+      spriteSheet_.FrameByName(def.BackgroundTileName));
   item->SetStyle(def.BackgroundStyle);
   item->SetRelativeSize(glm::vec2(0.95F, 0.0F));
   item->SetAspectRatio(glm::vec2(0.F, 4.F / 1.F));
@@ -167,7 +167,8 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
   auto* itemIcon = container->AddChild(new Plane());
   itemIcon->SetRelativeSize(glm::vec2(0.F, 0.85F));
   itemIcon->SetAspectRatio(glm::vec2(1.F, 0.F));
-  itemIcon->Background().SetTileIndex(spriteSheet_.TileIndex(def.IconTileName));
+  itemIcon->Background().SetTileIndex(
+      spriteSheet_.FrameByName(def.IconTileName));
 
   const auto* label = container->AddChild(new Label(def.Caption));
   label->Text().SetCharacterSize(def.LetterSize);
