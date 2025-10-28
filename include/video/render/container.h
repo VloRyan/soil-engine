@@ -20,13 +20,17 @@ struct RenderDef {
 
 class Container {
  public:
+  struct RenderableWithState {
+    RenderableObject* Ptr{nullptr};
+    RenderDef State{};
+  };
   Container() = default;
 
   ~Container() = default;
 
-  void Add(RenderableObject* renderable, const RenderDef& state);
+  virtual void Add(RenderableObject* renderable, const RenderDef& state);
 
-  bool Remove(RenderableObject* renderable, const RenderDef& state);
+  virtual bool Remove(RenderableObject* renderable, const RenderDef& state);
 
   void GetPerDef(std::vector<RenderableObject*>& v, const RenderDef& state);
 
@@ -36,11 +40,6 @@ class Container {
   inline static auto NON_OPAQUE = RenderDef{.Blending = true};
 
  private:
-  struct RenderableWithState {
-    RenderableObject* Ptr;
-    RenderDef State;
-  };
-
   std::vector<RenderableWithState> renderables_;
 };
 }  // namespace soil::video::render

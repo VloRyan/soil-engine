@@ -32,7 +32,7 @@ class SortedBuffer final : public Buffer {
 
   SortedBuffer(buffer::Object* buffer, size_t instanceSize, SortType sortType);
 
-  void Update(const glm::vec3& viewerPos) override;
+  void Update() override;
 
   [[nodiscard]] glm::vec3 GetRefPos() const;
 

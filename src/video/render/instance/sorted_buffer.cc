@@ -9,7 +9,7 @@ SortedBuffer::SortedBuffer(buffer::Object *buffer, const size_t instanceSize,
                            const SortType sortType)
     : Buffer(buffer, instanceSize), sortType_(sortType), refPos(0.F) {}
 
-void SortedBuffer::Update(const glm::vec3 &viewerPos) {
+void SortedBuffer::Update() {
   if (dirtyInstances_.empty()) {
     return;
   }

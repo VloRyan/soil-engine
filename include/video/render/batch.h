@@ -4,12 +4,13 @@
 #include "instance/buffer.h"
 #include "renderable.h"
 #include "state.h"
+#include "vertex_array.h"
 #include "video/mesh/data.h"
 #include "video/vertex/vao.h"
 
 namespace soil::video::render {
 struct BatchDescriptor {
-  vertex::Vao* Vao{nullptr};
+  video::mesh::Data* MeshData{nullptr};
   shader::Shader* Shader{nullptr};
   int InstanceSize{0};
   int PreserveInstances{100};
@@ -30,21 +31,22 @@ class Batch : public Renderable {
 
   bool RemoveInstance(instance::Instance* instance) const;
 
-  void Update(const glm::vec3& viewerPos) const;
+  void Update() const;
 
   void Render(State& state) override;
-
-  [[nodiscard]] virtual vertex::Vao* GetVao() const;
 
   [[nodiscard]] virtual shader::DrawMode GetDrawMode() const;
 
   [[nodiscard]] virtual shader::Shader* GetShader() const;
 
+ protected:
+  explicit Batch();  // unit testing
+
  private:
   buffer::Object* instanceVbo_;
   instance::Buffer* instanceBuffer_;
   shader::Shader* shader_;
-  vertex::Vao* vao_;
+  VertexArray* va_;
   shader::DrawMode drawMode_;
   StateDef stateDef_;
 };

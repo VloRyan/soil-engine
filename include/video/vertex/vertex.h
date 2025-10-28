@@ -13,9 +13,9 @@ enum class IndexType : std::int16_t {
 static size_t IndexSize(const IndexType type) {
   switch (type) {
     case IndexType::TYPE_USHORT:
-      return 2;  // 16 bit
+      return 2;  // 2 byte = 16 bit
     case IndexType::TYPE_UINT:
-      return 4;  // 32 bit
+      return 4;  // 4 byte = 32 bit
   }
   return -1;
 }

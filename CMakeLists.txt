@@ -37,7 +37,6 @@ add_library(${PROJECT_NAME}
         src/input/event.cc
         src/input/event_map.cc
         src/input/manager.cc
-        src/input/mouse/picker.cc
         src/sound/event/source_event.cc
         src/sound/file.cc
         src/sound/ogg.cc
@@ -52,7 +51,7 @@ add_library(${PROJECT_NAME}
         src/stage/event/stage_event.cc
         src/stage/manager.cc
         src/stage/resources.cc
-        src/stage/scene/component/bounding_volume.cc
+        src/stage/scene/component/collision_object_component.cc
         src/stage/scene/component/component.cc
         src/stage/scene/component/instance_data.cc
         src/stage/scene/component/listener_component.cc
@@ -68,8 +67,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/rectangle.cc
         src/stage/scene/gui/root.cc
         src/stage/scene/hook/hook.cc
-        src/stage/scene/hook/render_hook.cc
-        src/stage/scene/hook/update_hook.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
         src/stage/scene/render/instancing.cc
@@ -80,7 +77,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/viewer/node.cc
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
-        src/stage/scene/volume/container.cc
         src/stage/scene/volume/frustum_culling.cc
         src/stage/stage.cc
         src/util/files.cc
@@ -133,6 +129,12 @@ add_library(${PROJECT_NAME}
         src/world/volume/aabb.cc
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
+        src/world/ray.cc
+        src/world/world.cc
+        src/world/entity/collision_object.cc
+        src/world/entity/transform_3d.cc
+        src/stage/scene/component/transform_component.cc
+        src/stage/scene/world/world_node.cc
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -156,8 +158,6 @@ target_sources(
         include/input/event.h
         include/input/event_map.h
         include/input/manager.h
-        include/input/mouse
-        include/input/mouse/picker.h
         include/sound/buffer.h
         include/sound/event/event.hpp
         include/sound/event/source_event.h
@@ -174,7 +174,7 @@ target_sources(
         include/stage/interfaces.h
         include/stage/manager.h
         include/stage/resources.h
-        include/stage/scene/component/bounding_volume.h
+        include/stage/scene/component/collision_object_component.h
         include/stage/scene/component/component.h
         include/stage/scene/component/instance_data.h
         include/stage/scene/component/listener_component.h
@@ -190,8 +190,6 @@ target_sources(
         include/stage/scene/gui/rectangle.h
         include/stage/scene/gui/root.h
         include/stage/scene/hook/hook.h
-        include/stage/scene/hook/render_hook.h
-        include/stage/scene/hook/update_hook.h
         include/stage/scene/input.h
         include/stage/scene/node.h
         include/stage/scene/render/instancing.h
@@ -203,7 +201,6 @@ target_sources(
         include/stage/scene/viewer/node.h
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
-        include/stage/scene/volume/container.h
         include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
         include/util/deque.hpp
@@ -268,6 +265,12 @@ target_sources(
         include/world/volume/quad_tree.h
         include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
+        include/world/ray.h
+        include/world/world.h
+        include/world/entity/collision_object.h
+        include/world/entity/transform_3d.h
+        include/stage/scene/component/transform_component.h
+        include/stage/scene/world/world_node.h
 )
 
 target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog Ogg::ogg vorbis::vorbis)

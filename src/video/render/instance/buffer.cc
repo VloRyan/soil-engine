@@ -19,7 +19,7 @@ size_t Buffer::GetInstancesCount() const { return instances_.size(); }
 
 size_t Buffer::GetDirtyInstancesCount() const { return dirtyInstances_.size(); }
 
-void Buffer::Update(const glm::vec3& viewerPos) {
+void Buffer::Update() {
   if (!dirty_) {
     return;
   }

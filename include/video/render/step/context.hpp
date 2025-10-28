@@ -16,4 +16,4 @@ struct Context {
 };
 }  // namespace soil::video::render::step
 
-#endif  // SOIL_VIDEO_RENDER_STEP_CONTEXT_H_
+#endif

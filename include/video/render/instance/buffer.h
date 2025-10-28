@@ -34,7 +34,7 @@ class Buffer {
 
   [[nodiscard]] size_t GetDirtyInstancesCount() const;
 
-  virtual void Update(const glm::vec3& viewerPos);
+  virtual void Update();
 
   [[nodiscard]] virtual std::vector<Instance*>& GetInstances();
 

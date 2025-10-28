@@ -62,7 +62,7 @@ TEST_F(BufferTest, Update_no_dirty) {
   auto bo = TestBufferObject(12);
   auto buffer = Buffer(&bo, instanceSize);
 
-  buffer.Update({0.F, 0.F, 0.F});
+  buffer.Update();
 
   EXPECT_EQ(buffer.GetInstancesCount(), 0);
   EXPECT_EQ(buffer.GetDirtyInstancesCount(), 0);
@@ -76,7 +76,7 @@ TEST_F(BufferTest, Update_with_dirty) {
   buffer.PrepareInstance(&instance);
   ASSERT_EQ(instance.GetIndex(), -1);
 
-  buffer.Update({0.F, 0.F, 0.F});
+  buffer.Update();
 
   EXPECT_EQ(buffer.GetInstancesCount(), 1);
   EXPECT_EQ(buffer.GetDirtyInstancesCount(), 0);
