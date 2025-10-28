@@ -181,4 +181,4 @@ template <typename T>
 using UIntegerCache = PointerCache<uint, T>;
 }  // namespace soil::util
 
-#endif  // ENGINE_ENGINE_UTIL_POINTER_CACHE_HPP_
+#endif

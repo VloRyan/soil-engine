@@ -89,4 +89,4 @@ enum class MouseButton : uint8_t {
 
 enum class MouseWheelDirection : uint8_t { Up = 0, Down };
 }  // namespace soil::input
-#endif  // INPUT_CONSTANTS_HPP
+#endif

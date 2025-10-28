@@ -54,4 +54,4 @@ class Deque {
 };
 }  // namespace soil::util
 
-#endif  // SOIL_UTIL_DEQUE_H
+#endif
