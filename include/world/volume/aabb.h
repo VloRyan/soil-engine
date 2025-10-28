@@ -20,7 +20,7 @@ class AABB final : public Volume {
     BOTTOM_FRONT_RIGHT
   };
 
-  explicit AABB(glm::vec3 dimension);
+  explicit AABB(glm::vec3 size);
 
   ~AABB() override;
 
@@ -32,58 +32,41 @@ class AABB final : public Volume {
 
   AABB& operator=(AABB&& other) noexcept = delete;
 
-  void GetTopPlane(std::array<glm::vec4, 4> points) const;
+  void SetSize(glm::vec3 size);
 
-  void GetBottomPlane(std::array<glm::vec4, 4> points) const;
-
-  void GetAllPoints(std::array<glm::vec4, 8> points) const;
-
-  void SetDimension(glm::vec3 dimension);
-
-  void SetPosition(const glm::vec3& position) override;
-
-  [[nodiscard]] glm::vec3 GetPosition() const override;
-
-  [[nodiscard]] glm::vec3 GetPoint(Point point) const;
-
-  [[nodiscard]] bool IsInside(const glm::vec3& min,
+  [[nodiscard]] bool IsInside(const glm::vec3& at, const glm::vec3& min,
                               const glm::vec3& max) const override;
 
-  [[nodiscard]] bool IsInsideXZ(const glm::vec3& min,
+  [[nodiscard]] bool IsInsideXZ(const glm::vec3& at, const glm::vec3& min,
                                 const glm::vec3& max) const override;
 
-  [[nodiscard]] bool IsInside(const glm::vec2& min,
+  [[nodiscard]] bool IsInside(const glm::vec3& at, const glm::vec2& min,
                               const glm::vec2& max) const override;
 
-  [[nodiscard]] bool Contains(const glm::vec3& point) const override;
+  [[nodiscard]] bool Contains(const glm::vec3& at,
+                              const glm::vec3& point) const override;
 
-  [[nodiscard]] bool ContainsXZ(const glm::vec3& point) const override;
+  [[nodiscard]] bool ContainsXZ(const glm::vec3& at,
+                                const glm::vec3& point) const override;
 
   [[nodiscard]] IntersectionResult IntersectsRay(
-      const glm::vec3& start, const glm::vec3& dir) const override;
+      const glm::vec3& at, const glm::vec3& start,
+      const glm::vec3& dir) const override;
 
   [[nodiscard]] IntersectionResult IntersectsRayXZ(
-      const glm::vec3& start, const glm::vec3& dir) const override;
+      const glm::vec3& at, const glm::vec3& start,
+      const glm::vec3& dir) const override;
 
-  [[nodiscard]] bool IntersectsCircle(const glm::vec2& circleCenter,
+  [[nodiscard]] bool IntersectsCircle(const glm::vec3& at,
+                                      const glm::vec2& circleCenter,
                                       float radius) const override;
 
-  [[nodiscard]] std::vector<Line> GenerateLines() const override;
+  [[nodiscard]] std::vector<Line> GenerateLines(
+      const glm::vec3& at) const override;
+  void GetAABB(glm::vec3& min, glm::vec3& max) const override;
 
  private:
-  void UpdateWorldPoints(const glm::vec3& position);
-
-  std::array<glm::vec3, 8> points_;
-  std::array<glm::vec4, 8> worldPoints_;
-  glm::vec3 minPoint_;
-
- public:
-  [[nodiscard]] const glm::vec3& GetMinPoint() const;
-
-  [[nodiscard]] const glm::vec3& GetMaxPoint() const;
-
- private:
-  glm::vec3 maxPoint_;
+  glm::vec3 size_;
 };
 }  // namespace soil::world::volume
 

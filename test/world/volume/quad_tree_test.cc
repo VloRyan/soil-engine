@@ -1,65 +1,62 @@
 #include "world/volume/quad_tree.h"
 
-#include <cstdarg>
-
 #include "glm/glm.hpp"
 #include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
-#include "stage/scene/node.h"
-#include "stage/scene/scene.h"
 #include "world/volume/aabb.h"
 
 namespace soil::world::volume {
 class QuadTreeTest : public testing::Test {
  protected:
-  [[nodiscard]] static Volume* NewBoundingVolumeAt(const glm::vec2 pos,
-                                                   const glm::vec2 dim) {
+  [[nodiscard]] static entity::CollisionObject* NewObjectAt(
+      const glm::vec2 pos, const glm::vec2 dim) {
     auto* volume = new AABB({dim.x, 0.F, dim.y});
-    volume->SetPosition({pos.x, 0.F, pos.y});
-    return volume;
+    auto* obj = new entity::CollisionObject(
+        volume, entity::CollisionObject::ContactType::StaticObject);
+    obj->SetPosition({pos.x, 0.F, pos.y});
+    return obj;
   }
 
-  static std::vector<const Volume*> VolumesAt(const QuadTree& quadTree,
-                                              const std::int16_t index) {
-    std::vector<const Volume*> vol;
-    quadTree.GetNodeVolumes(index, vol);
-    return vol;
+  static std::vector<const entity::CollisionObject*> ObjectsAt(
+      const QuadTree& quadTree, const std::int16_t index) {
+    std::vector<const entity::CollisionObject*> obj;
+    quadTree.GetNodeObjects(index, obj);
+    return obj;
   }
 
-  static std::vector<const Volume*> VolumesAt(const QuadTree& quadTree,
-                                              const glm::vec3 point) {
-    std::vector<const Volume*> vol;
-    quadTree.QueryVolumesAt(point, vol);
-    return vol;
+  static std::vector<const entity::CollisionObject*> ObjectsAt(
+      const QuadTree& quadTree, const glm::vec3 point) {
+    std::vector<const entity::CollisionObject*> obj;
+    quadTree.QueryObjectsAt(point, obj);
+    return obj;
   }
 
-  static std::vector<const Volume*> VolumesInRangeAt(const QuadTree& quadTree,
-                                                     const glm::vec3 point,
-                                                     const float radius) {
-    std::vector<const Volume*> vol;
-    quadTree.QueryVolumesInRange(point, radius, vol);
+  static std::vector<const entity::CollisionObject*> ObjectsInRangeAt(
+      const QuadTree& quadTree, const glm::vec3 point, const float radius) {
+    std::vector<const entity::CollisionObject*> vol;
+    quadTree.QueryObjectsInRange(point, radius, vol);
     return vol;
   }
 };
 
 TEST_F(QuadTreeTest, InsertOneItem) {
   auto quadTree = QuadTree(20, 10, 5.F);
-  auto* volume = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
+  auto* volume = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
 
   quadTree.Insert(volume);
 
   EXPECT_EQ(quadTree.GetNodeCount(), 1);
-  std::vector<const Volume*> vol;
-  quadTree.GetNodeVolumes(0, vol);
+  std::vector<const entity::CollisionObject*> vol;
+  quadTree.GetNodeObjects(0, vol);
   EXPECT_THAT(vol, testing::ElementsAre(volume));
 }
 
 TEST_F(QuadTreeTest, InsertFourItems) {
   auto quadTree = QuadTree(20, 10, 5.F);
-  const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
-  const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
-  const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
-  const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
+  const auto* topLeft = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+  const auto* topRight = NewObjectAt({5.F, -5.F}, glm::vec3(5.F));
+  const auto* bottomRight = NewObjectAt({5.F, 5.F}, glm::vec3(5.F));
+  const auto* bottomLeft = NewObjectAt({-5.F, 5.F}, glm::vec3(5.F));
 
   quadTree.Insert(topLeft);
   quadTree.Insert(topRight);
@@ -67,17 +64,17 @@ TEST_F(QuadTreeTest, InsertFourItems) {
   quadTree.Insert(bottomLeft);
 
   EXPECT_EQ(quadTree.GetNodeCount(), 1);
-  EXPECT_THAT(VolumesAt(quadTree, 0),
+  EXPECT_THAT(ObjectsAt(quadTree, 0),
               testing::ElementsAre(topLeft, topRight, bottomRight, bottomLeft));
 }
 
 TEST_F(QuadTreeTest, InsertFiveItems) {
   auto quadTree = QuadTree(20, 10, 5.F);
-  const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
-  const auto* topLeft2 = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
-  const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
-  const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
-  const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
+  const auto* topLeft = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+  const auto* topLeft2 = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+  const auto* topRight = NewObjectAt({5.F, -5.F}, glm::vec3(5.F));
+  const auto* bottomRight = NewObjectAt({5.F, 5.F}, glm::vec3(5.F));
+  const auto* bottomLeft = NewObjectAt({-5.F, 5.F}, glm::vec3(5.F));
 
   quadTree.Insert(topLeft);
   quadTree.Insert(topLeft2);
@@ -86,20 +83,20 @@ TEST_F(QuadTreeTest, InsertFiveItems) {
   quadTree.Insert(bottomLeft);
 
   EXPECT_EQ(quadTree.GetNodeCount(), 5);
-  EXPECT_TRUE(VolumesAt(quadTree, 0).empty());
-  EXPECT_THAT(VolumesAt(quadTree, 1), testing::ElementsAre(topLeft, topLeft2));
-  EXPECT_THAT(VolumesAt(quadTree, 2), testing::ElementsAre(topRight));
-  EXPECT_THAT(VolumesAt(quadTree, 3), testing::ElementsAre(bottomLeft));
-  EXPECT_THAT(VolumesAt(quadTree, 4), testing::ElementsAre(bottomRight));
+  EXPECT_TRUE(ObjectsAt(quadTree, 0).empty());
+  EXPECT_THAT(ObjectsAt(quadTree, 1), testing::ElementsAre(topLeft, topLeft2));
+  EXPECT_THAT(ObjectsAt(quadTree, 2), testing::ElementsAre(topRight));
+  EXPECT_THAT(ObjectsAt(quadTree, 3), testing::ElementsAre(bottomLeft));
+  EXPECT_THAT(ObjectsAt(quadTree, 4), testing::ElementsAre(bottomRight));
 }
 
 TEST_F(QuadTreeTest, InsertOnEdges) {
   auto quadTree = QuadTree(64, 2, 4.F);
-  const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
-  const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
-  const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
-  const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
-  const auto* e = NewBoundingVolumeAt({0, -8.F}, glm::vec3(1.F));
+  const auto* a = NewObjectAt({-8.F, -8.F}, glm::vec3(1.F));
+  const auto* b = NewObjectAt({0.F, 8.F}, glm::vec3(1.F));
+  const auto* c = NewObjectAt({-8.F, 0.F}, glm::vec3(1.F));
+  const auto* d = NewObjectAt({8.F, 0.F}, glm::vec3(1.F));
+  const auto* e = NewObjectAt({0, -8.F}, glm::vec3(1.F));
 
   quadTree.Insert(a);
   quadTree.Insert(b);
@@ -108,20 +105,54 @@ TEST_F(QuadTreeTest, InsertOnEdges) {
   quadTree.Insert(e);
 
   EXPECT_EQ(quadTree.GetNodeCount(), 5);
-  EXPECT_TRUE(VolumesAt(quadTree, 0).empty());
-  EXPECT_THAT(VolumesAt(quadTree, 1), testing::ElementsAre(a, c, e));
-  EXPECT_THAT(VolumesAt(quadTree, 2), testing::ElementsAre(d, e));
-  EXPECT_THAT(VolumesAt(quadTree, 3), testing::ElementsAre(b, c));
-  EXPECT_THAT(VolumesAt(quadTree, 4), testing::ElementsAre(b, d));
+  EXPECT_TRUE(ObjectsAt(quadTree, 0).empty());
+  EXPECT_THAT(ObjectsAt(quadTree, 1), testing::ElementsAre(a, c, e));
+  EXPECT_THAT(ObjectsAt(quadTree, 2), testing::ElementsAre(d, e));
+  EXPECT_THAT(ObjectsAt(quadTree, 3), testing::ElementsAre(b, c));
+  EXPECT_THAT(ObjectsAt(quadTree, 4), testing::ElementsAre(b, d));
+}
+
+TEST_F(QuadTreeTest, ReserveSizeAfterInsert) {
+  auto quadTree = QuadTree(10, 10, 1.F);
+  auto* volume = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+
+  quadTree.Insert(volume);
+
+  EXPECT_EQ(quadTree.GetNodeCount(), 1);
+  EXPECT_EQ(quadTree.GetSize(), glm::vec3(10.F, 0.F, 10.F));
+  std::vector<const entity::CollisionObject*> vol;
+  quadTree.GetNodeObjects(0, vol);
+  EXPECT_THAT(vol, testing::ElementsAre(volume));
+
+  quadTree.ReserveSize(20.F);
+
+  EXPECT_EQ(quadTree.GetNodeCount(), 1);
+  EXPECT_EQ(quadTree.GetSize(), glm::vec3(20.F, 0.F, 20.F));
+  vol.clear();
+  quadTree.GetNodeObjects(0, vol);
+  EXPECT_THAT(vol, testing::ElementsAre(volume));
+}
+
+TEST_F(QuadTreeTest, ResizeOnInsert) {
+  auto quadTree = QuadTree(3.F, 10, 1.F);
+  auto* volume = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+
+  quadTree.Insert(volume);
+
+  EXPECT_EQ(quadTree.GetNodeCount(), 1);
+  EXPECT_EQ(quadTree.GetSize(), glm::vec3(16.F, 0.F, 16.F));
+  std::vector<const entity::CollisionObject*> vol;
+  quadTree.GetNodeObjects(0, vol);
+  EXPECT_THAT(vol, testing::ElementsAre(volume));
 }
 
 TEST_F(QuadTreeTest, QueryVolumesAt) {
   auto quadTree = QuadTree(64, 2, 4.F);
-  const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
-  const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
-  const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
-  const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
-  const auto* e = NewBoundingVolumeAt({8.4F, 0.4F}, glm::vec3(1.F));
+  const auto* a = NewObjectAt({-8.F, -8.F}, glm::vec3(1.F));
+  const auto* b = NewObjectAt({0.F, 8.F}, glm::vec3(1.F));
+  const auto* c = NewObjectAt({-8.F, 0.F}, glm::vec3(1.F));
+  const auto* d = NewObjectAt({8.F, 0.F}, glm::vec3(1.F));
+  const auto* e = NewObjectAt({8.4F, 0.4F}, glm::vec3(1.F));
 
   quadTree.Insert(a);
   quadTree.Insert(b);
@@ -130,9 +161,9 @@ TEST_F(QuadTreeTest, QueryVolumesAt) {
   quadTree.Insert(e);
 
   ASSERT_THAT(quadTree.GetNodeCount(), 5);
-  EXPECT_THAT(VolumesAt(quadTree, glm::vec3(0.F, 0.F, 8.F)),
+  EXPECT_THAT(ObjectsAt(quadTree, glm::vec3(0.F, 0.F, 8.F)),
               testing::ElementsAre(b));
-  EXPECT_THAT(VolumesAt(quadTree, glm::vec3(8.2F, 0.F, 0.2F)),
+  EXPECT_THAT(ObjectsAt(quadTree, glm::vec3(8.2F, 0.F, 0.2F)),
               testing::ElementsAre(d, e));
 }
 
@@ -148,11 +179,11 @@ TEST_F(QuadTreeTest, DetermineLevel) {
 
 TEST_F(QuadTreeTest, Remove) {
   auto quadTree = QuadTree(512, 4, 1.F);
-  const auto* topLeft = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
-  const auto* topLeft2 = NewBoundingVolumeAt({-5.F, -5.F}, glm::vec3(5.F));
-  const auto* topRight = NewBoundingVolumeAt({5.F, -5.F}, glm::vec3(5.F));
-  const auto* bottomRight = NewBoundingVolumeAt({5.F, 5.F}, glm::vec3(5.F));
-  const auto* bottomLeft = NewBoundingVolumeAt({-5.F, 5.F}, glm::vec3(5.F));
+  const auto* topLeft = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+  const auto* topLeft2 = NewObjectAt({-5.F, -5.F}, glm::vec3(5.F));
+  const auto* topRight = NewObjectAt({5.F, -5.F}, glm::vec3(5.F));
+  const auto* bottomRight = NewObjectAt({5.F, 5.F}, glm::vec3(5.F));
+  const auto* bottomLeft = NewObjectAt({-5.F, 5.F}, glm::vec3(5.F));
 
   quadTree.Insert(topLeft);
   quadTree.Insert(topLeft2);
@@ -160,27 +191,28 @@ TEST_F(QuadTreeTest, Remove) {
   quadTree.Insert(bottomRight);
   quadTree.Insert(bottomLeft);
 
-  ASSERT_THAT(VolumesAt(quadTree, 3), testing::ElementsAre(bottomLeft));
+  ASSERT_THAT(ObjectsAt(quadTree, 3), testing::ElementsAre(bottomLeft));
 
   auto ret = quadTree.Remove(bottomLeft);
   EXPECT_TRUE(ret);
-  EXPECT_TRUE(VolumesAt(quadTree, 3).empty());
+  EXPECT_TRUE(ObjectsAt(quadTree, 3).empty());
 
-  ASSERT_THAT(VolumesAt(quadTree, 1), testing::ElementsAre(topLeft, topLeft2));
+  ASSERT_THAT(ObjectsAt(quadTree, 1), testing::ElementsAre(topLeft, topLeft2));
 
   ret = quadTree.Remove(topLeft);
   EXPECT_TRUE(ret);
-  EXPECT_THAT(VolumesAt(quadTree, 1), testing::ElementsAre(topLeft2));
+  EXPECT_THAT(ObjectsAt(quadTree, 1), testing::ElementsAre(topLeft2));
 }
 
 // TODO testing::UnorderedElementsAre is producing an undefined reference.
-static bool UnorderedElementsAre(const std::vector<const Volume*>& actual,
-                                 const std::vector<const Volume*>& expected) {
+static bool UnorderedElementsAre(
+    const std::vector<const entity::CollisionObject*>& actual,
+    const std::vector<const entity::CollisionObject*>& expected) {
   if (expected.size() != actual.size()) {
     return false;
   }
   auto exCopy = std::vector(actual);
-  std::vector<const Volume*> missingElements;
+  std::vector<const entity::CollisionObject*> missingElements;
   for (auto vol : expected) {
     bool found = false;
     for (auto itr = exCopy.begin(); itr != exCopy.end(); ++itr) {
@@ -199,11 +231,11 @@ static bool UnorderedElementsAre(const std::vector<const Volume*>& actual,
 
 TEST_F(QuadTreeTest, QueryVolumesInRange) {
   auto quadTree = QuadTree(64, 2, 4.F);
-  const auto* a = NewBoundingVolumeAt({-8.F, -8.F}, glm::vec3(1.F));
-  const auto* b = NewBoundingVolumeAt({0.F, 8.F}, glm::vec3(1.F));
-  const auto* c = NewBoundingVolumeAt({-8.F, 0.F}, glm::vec3(1.F));
-  const auto* d = NewBoundingVolumeAt({8.F, 0.F}, glm::vec3(1.F));
-  const auto* e = NewBoundingVolumeAt({0, -8.F}, glm::vec3(1.F));
+  const auto* a = NewObjectAt({-8.F, -8.F}, glm::vec3(1.F));
+  const auto* b = NewObjectAt({0.F, 8.F}, glm::vec3(1.F));
+  const auto* c = NewObjectAt({-8.F, 0.F}, glm::vec3(1.F));
+  const auto* d = NewObjectAt({8.F, 0.F}, glm::vec3(1.F));
+  const auto* e = NewObjectAt({0, -8.F}, glm::vec3(1.F));
 
   quadTree.Insert(a);
   quadTree.Insert(b);
@@ -220,14 +252,14 @@ TEST_F(QuadTreeTest, QueryVolumesInRange) {
   EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(0.F, 0.F, 0.F), 10.F),
               testing:: UnorderedElementsAre(a, b, c, d, e));*/
   EXPECT_TRUE(UnorderedElementsAre(
-      VolumesInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 1.F), {a}));
+      ObjectsInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 1.F), {a}));
   EXPECT_TRUE(UnorderedElementsAre(
-      VolumesInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 7.F), {a, c, e}));
+      ObjectsInRangeAt(quadTree, glm::vec3(-7.F, 0.F, -7.F), 7.F), {a, c, e}));
   EXPECT_TRUE(UnorderedElementsAre(
-      VolumesInRangeAt(quadTree, glm::vec3(0.F, 0.F, 0.F), 10.F),
+      ObjectsInRangeAt(quadTree, glm::vec3(0.F, 0.F, 0.F), 10.F),
       {a, b, c, d, e}));
 
-  EXPECT_THAT(VolumesInRangeAt(quadTree, glm::vec3(-33.F, 0.F, -33.F), 0.9F),
+  EXPECT_THAT(ObjectsInRangeAt(quadTree, glm::vec3(-33.F, 0.F, -33.F), 0.9F),
               testing::ElementsAre());
 }
 }  // namespace soil::world::volume

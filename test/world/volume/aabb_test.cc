@@ -9,25 +9,27 @@ namespace soil::world::volume {
 class AABBTest : public testing::Test {};
 
 TEST_F(AABBTest, IsInside) {
+  const auto at = glm::vec3(0.F);
   const auto aabb = AABB({5.F, 5.F, 5.F});  // -2.5, -2.5, -2.5 -> 2.5, 2.5, 2.5
 
-  ASSERT_TRUE(
-      aabb.IsInside({-5.F, -5.F, -5.F}, {5.F, 5.F, 5.F}));  // completely inside
-  ASSERT_FALSE(aabb.IsInside({-10.F, -10.F, -10.F},
+  ASSERT_TRUE(aabb.IsInside(at, {-5.F, -5.F, -5.F},
+                            {5.F, 5.F, 5.F}));  // completely inside
+  ASSERT_FALSE(aabb.IsInside(at, {-10.F, -10.F, -10.F},
                              {-5.F, -5.F, -5.F}));  // completely outside
   ASSERT_TRUE(
-      aabb.IsInside({0.F, 0.F, 0.F}, {2.4F, 2.4F, 2.4F}));  // partly inside
+      aabb.IsInside(at, {0.F, 0.F, 0.F}, {2.4F, 2.4F, 2.4F}));  // partly inside
 }
 
 TEST_F(AABBTest, IsInsideXZ) {
+  const auto at = glm::vec3(0.F);
   const auto aabb = AABB({1.F, 1.F, 1.F});  // -2.5, -2.5, -2.5 -> 2.5, 2.5, 2.5
 
-  ASSERT_TRUE(aabb.IsInsideXZ({-5.F, 0.F, -5.F},
+  ASSERT_TRUE(aabb.IsInsideXZ(at, {-5.F, 0.F, -5.F},
                               {5.F, 0.F, 5.F}));  // completely inside
-  ASSERT_FALSE(aabb.IsInsideXZ({-10.F, 0.F, -10.F},
+  ASSERT_FALSE(aabb.IsInsideXZ(at, {-10.F, 0.F, -10.F},
                                {-5.F, 0.F, -5.F}));  // completely outside
-  ASSERT_TRUE(
-      aabb.IsInsideXZ({0.F, 0.F, 0.F}, {2.4F, 0.F, 2.4F}));  // partly inside
+  ASSERT_TRUE(aabb.IsInsideXZ(at, {0.F, 0.F, 0.F},
+                              {2.4F, 0.F, 2.4F}));  // partly inside
 }
 
 TEST_F(AABBTest, GenerateMesh) {
@@ -84,14 +86,23 @@ TEST_F(AABBTest, GenerateMesh) {
       },
   };
   auto aabb = AABB({1.F, 1.F, 1.F});
-  aabb.SetPosition(glm::vec3(0.F));
 
-  const auto got = aabb.GenerateLines();
+  const auto got = aabb.GenerateLines(glm::vec3(0.F));
   ASSERT_EQ(got.size(), 12);
 
   for (auto i = 0; i < 12; i++) {
     EXPECT_EQ(got[i].Start, expectedData[i].Start) << "i: " + std::to_string(i);
     EXPECT_EQ(got[i].End, expectedData[i].End) << "i: " + std::to_string(i);
   }
+}
+
+TEST_F(AABBTest, GetAABB) {
+  glm::vec3 min;
+  glm::vec3 max;
+  const auto aabb = AABB({1.F, 1.F, 1.F});
+
+  aabb.GetAABB(min, max);
+  EXPECT_EQ(min, glm::vec3(-0.5F));
+  EXPECT_EQ(max, glm::vec3(0.5F));
 }
 }  // namespace soil::world::volume

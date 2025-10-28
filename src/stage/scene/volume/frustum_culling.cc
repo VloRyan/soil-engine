@@ -6,14 +6,14 @@
 
 namespace soil::stage::scene::volume {
 FrustumCulling::FrustumCulling(viewer::Node* viewer,
-                               const world::volume::Container* container)
-    : UpdateHook(HandlerType::Component),
-      container_(container),
+                               const world::WorldNode* world)
+    : Hook({Hook::Trigger_t::AfterUpdateScene}, HandlerType::Component),
+      world_(world),
       viewer_(viewer) {}
 
 void FrustumCulling::Handle(const event::Component& event) {
-  if (event.GetChangeType() == event::Component::ChangeType::Added) {
-    OnComponentAdded(event.GetOrigin());
+  if (event.Trigger() == event::Component::TriggerType::Added) {
+    OnComponentAdded(event.Origin());
   }
 }
 
@@ -25,10 +25,10 @@ void FrustumCulling::OnComponentAdded(component::Component* component) {
   addedVisualComponents_.push_back(vComp);
 }
 
-void FrustumCulling::OnUpdate() {
-  if (nodesVisibility_.size() < container_->GetNodeCount()) {
+void FrustumCulling::Perform(hook::Hook::Trigger_t trigger) {
+  if (nodesVisibility_.size() < world_->Container()->GetNodeCount()) {
     // TODO make it more efficient
-    nodesVisibility_.resize(container_->GetNodeCount(), false);
+    nodesVisibility_.resize(world_->Container()->GetNodeCount(), false);
   }
   if (viewer_ == nullptr) {
     return;
@@ -36,13 +36,15 @@ void FrustumCulling::OnUpdate() {
   updateVisibilityOnTreeNode(0, viewer_->GetFrustum());
   for (auto* vComp : addedVisualComponents_) {
     const auto* parent = vComp->GetParent();
-    if (!parent->HasComponent(component::Component::Type::BoundingVolume)) {
+    if (!parent->HasComponent(component::Component::Type::WorldEntity)) {
       continue;
     }
-    const auto* volume = dynamic_cast<const component::BoundingVolume*>(
-        parent->GetFirstComponent(component::Component::Type::BoundingVolume));
+    const auto* objectComponent =
+        dynamic_cast<const component::CollisionObjectComponent*>(
+            parent->GetFirstComponent(component::Component::Type::WorldEntity));
     std::vector<int> indices;
-    container_->QueryNodeIndicesFor(volume, indices);
+    world_->Container()->QueryNodeIndicesFor(objectComponent->Object(),
+                                             indices);
     auto visible = false;
     for (const auto index : indices) {
       if (nodesVisibility_[index]) {
@@ -56,8 +58,8 @@ void FrustumCulling::OnUpdate() {
 }
 
 void FrustumCulling::updateVisibilityOnTreeNode(
-    const int index, const world::volume::Frustum* frustum) {
-  const auto* treeNode = container_->GetNode(index);
+    const int index, const soil::world::volume::Frustum* frustum) {
+  const auto* treeNode = world_->Container()->GetNode(index);
   const auto isVisible =
       frustum->IntersectBox({treeNode->Min.x, 0, treeNode->Min.y},
                             {treeNode->Max.x, 0, treeNode->Max.y});
@@ -65,11 +67,11 @@ void FrustumCulling::updateVisibilityOnTreeNode(
     return;
   }
   if (nodesVisibility_[index] != isVisible) {
-    std::vector<const world::volume::Volume*> volumes;
-    container_->GetNodeVolumes(index, volumes);
-    for (const auto* c : volumes) {
-      const auto* volume = dynamic_cast<const component::BoundingVolume*>(c);
-      const auto* node = volume->GetParent();
+    std::vector<const soil::world::entity::CollisionObject*> objects;
+    world_->Container()->GetNodeObjects(index, objects);
+    for (const auto* object : objects) {
+      auto* objectComponent = world_->ResolveCollisionObjectComponent(object);
+      const auto* node = objectComponent->GetParent();
       node->ForEachComponent(
           [isVisible](component::Component* comp) {
             auto* vComp = dynamic_cast<component::VisualComponent*>(comp);
@@ -80,10 +82,10 @@ void FrustumCulling::updateVisibilityOnTreeNode(
     nodesVisibility_[index] = isVisible;
     if (!nodesVisibility_[index]) {
       const int childrenStartIndex = treeNode->ChildrenStartIndex;
-      if (childrenStartIndex == world::volume::Container::NO_CHILDREN) {
+      if (childrenStartIndex == soil::world::volume::Container::NO_CHILDREN) {
         return;
       }
-      for (int j = 0; j < container_->GetChildrenPerNode(); ++j) {
+      for (int j = 0; j < world_->Container()->GetChildrenPerNode(); ++j) {
         if (nodesVisibility_[childrenStartIndex + j] != isVisible) {
           setVisibility(childrenStartIndex + j, false);
         }
@@ -93,10 +95,10 @@ void FrustumCulling::updateVisibilityOnTreeNode(
   }
   if (nodesVisibility_[index]) {
     const int childrenStartIndex = treeNode->ChildrenStartIndex;
-    if (childrenStartIndex == world::volume::Container::NO_CHILDREN) {
+    if (childrenStartIndex == soil::world::volume::Container::NO_CHILDREN) {
       return;
     }
-    for (int j = 0; j < container_->GetChildrenPerNode(); ++j) {
+    for (int j = 0; j < world_->Container()->GetChildrenPerNode(); ++j) {
       updateVisibilityOnTreeNode(childrenStartIndex + j, frustum);
     }
   }
@@ -106,12 +108,12 @@ void FrustumCulling::setVisibility(const int index, const bool visible) {
   if (nodesVisibility_[index] == visible) {
     return;
   }
-  const auto* treeNode = container_->GetNode(index);
+  const auto* treeNode = world_->Container()->GetNode(index);
   const int childrenStartIndex = treeNode->ChildrenStartIndex;
-  if (childrenStartIndex == world::volume::Container::NO_CHILDREN) {
+  if (childrenStartIndex == soil::world::volume::Container::NO_CHILDREN) {
     return;
   }
-  for (int j = 0; j < container_->GetChildrenPerNode(); ++j) {
+  for (int j = 0; j < world_->Container()->GetChildrenPerNode(); ++j) {
     setVisibility(childrenStartIndex + j, visible);
   }
 }

@@ -12,8 +12,9 @@ add_executable(${PROJECT_NAME}
         file/font_test.cc
         file/sprite_sheet_test.cc
         stage/manager_test.cc
-        stage/scene/component/bounding_volume_test.cc
+        stage/scene/component/collision_object_component_test.cc
         stage/scene/component/component_test.cc
+        stage/scene/component/transform_component_test.cc
         stage/scene/gui/container/h_box_test.cc
         stage/scene/gui/container/v_box_test.cc
         stage/scene/gui/rectangle_test.cc
@@ -34,6 +35,13 @@ add_executable(${PROJECT_NAME}
         world/volume/frustum_test.cc
         world/volume/quad_tree_perf_test.cc
         world/volume/quad_tree_test.cc
+        world/ray_test.cc
+        stage/scene/render/instancing_test.cc
+        stage/scene/render/plain_test.cc
+        stage/scene/render/mocks.hpp
+        world/world_test.cc
+        world/volume/mocks.hpp
+
 )
 
 target_link_libraries(${PROJECT_NAME} soil_engine GTest::gtest GTest::gtest_main)

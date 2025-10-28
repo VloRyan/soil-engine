@@ -3,7 +3,7 @@
 
 #include "base.h"
 #include "container.h"
-#include "stage/scene/component/bounding_volume.h"
+#include "stage/scene/component/collision_object_component.h"
 
 namespace soil::world::volume {
 
@@ -12,33 +12,41 @@ class QuadTree : public Container {
   explicit QuadTree(float size, byte maxLevel = 4, float minChildSize = 6.0F);
   ~QuadTree() override = default;
 
-  void Insert(const Volume* volume) override;
+  void ReserveSize(float size);
 
-  void Insert2(const Volume* volume);
+  void Insert(const entity::CollisionObject* object) override;
 
-  bool Remove(const Volume* volume) override;
+  void Insert2(const entity::CollisionObject* object);
 
-  void QueryVolumesAt(const glm::vec3& point,
-                      std::vector<const Volume*>& volumes) const override;
+  bool Remove(const entity::CollisionObject* object) override;
 
-  void QueryVolumesAt(const glm::vec2& point,
-                      std::vector<const Volume*>& volumes) const;
+  void QueryObjectsAt(
+      const glm::vec3& point,
+      std::vector<const entity::CollisionObject*>& objects) const override;
 
-  void QueryVolumesInRange(const glm::vec3& point, float radius,
-                           std::vector<const Volume*>& volumes) const override;
+  void QueryObjectsAt(
+      const glm::vec2& point,
+      std::vector<const entity::CollisionObject*>& objects) const;
 
-  void QueryVolumesInRange(const glm::vec2& point, float radius,
-                           std::vector<const Volume*>& volumes) const;
+  void QueryObjectsInRange(
+      const glm::vec3& point, float radius,
+      std::vector<const entity::CollisionObject*>& objects) const override;
 
-  void QueryNodeIndicesFor(const Volume*,
+  void QueryObjectsInRange(
+      const glm::vec2& point, float radius,
+      std::vector<const entity::CollisionObject*>& objects) const;
+
+  void QueryNodeIndicesFor(const entity::CollisionObject*,
                            std::vector<int>& indices) const override;
 
   const Node* GetNode(int index) const override;
 
-  void GetNodeVolumes(int index,
-                      std::vector<const Volume*>& volumes) const override;
+  void GetNodeObjects(
+      int index,
+      std::vector<const entity::CollisionObject*>& objects) const override;
 
-  void WalkVolumes(std::function<void(const Volume*)> fun) const override;
+  void WalkObjects(
+      std::function<void(const entity::CollisionObject*)> fun) const override;
 
   size_t GetVolumeCount() const;
 
@@ -48,12 +56,18 @@ class QuadTree : public Container {
 
   byte DetermineLevel(std::uint16_t index) const;
 
+  glm::vec3 GetSize() const override;
+
+  void Clear() override;
+
  private:
+  void resize(float size);
+
   struct state {
     uint Index;
     byte Level;
   };
-  bool insert(const Volume* volume, int index, byte level);
+  bool insert(const entity::CollisionObject* object, int index, byte level);
 
   void split(std::uint16_t index);
 
@@ -62,11 +76,11 @@ class QuadTree : public Container {
   static bool isInsideCircle(const glm::vec2& point,
                              const glm::vec2& circleCenter, float radius);
 
-  std::uint16_t freeNodeVolumesIndex();
+  std::uint16_t freeNodeObjectsIndex();
 
   std::vector<Node> nodes_;
-  std::vector<std::vector<const Volume*>> nodeVolumes_;
-  std::vector<std::uint16_t> freeNodeVolumes_;
+  std::vector<std::vector<const entity::CollisionObject*>> nodeObjects_;
+  std::vector<std::uint16_t> freeNodeObjects_;
 
   byte maxLevel_;
   float minChildSize_;

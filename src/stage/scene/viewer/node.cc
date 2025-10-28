@@ -12,7 +12,7 @@ Node::Node()
       nearZ_(0.1F),
       farZ_(100.0F),
       windowSize_(0),
-      frustum_(new world::volume::Frustum(glm::mat4(1.0F))) {}
+      frustum_(new soil::world::volume::Frustum(glm::mat4(1.0F))) {}
 
 Node::~Node() { delete frustum_; }
 
@@ -30,14 +30,14 @@ void Node::SetFarZ(const float farZ) {
   UpdateProjection(windowSize_);
 }
 
-world::volume::Frustum* Node::GetFrustum() { return frustum_; }
-
+soil::world::volume::Frustum* Node::GetFrustum() { return frustum_; }
+/*
 glm::vec3 Node::GetDirection() const { return direction_; }
 
 glm::vec3 Node::GetRight() const { return right_; }
 
 glm::vec3 Node::GetUp() const { return up_; }
-
+*/
 void Node::Handle(const WindowEvent& event) {
   if (event.GetCause() == WindowEvent::SizeChanged) {
     windowSize_ = event.GetWindow()->GetSize();

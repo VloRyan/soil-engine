@@ -1,16 +1,17 @@
 #ifndef SOIL_STAGE_SCENE_VOLUME_FRUSTUM_CULLING_H
 #define SOIL_STAGE_SCENE_VOLUME_FRUSTUM_CULLING_H
 #include "stage/scene/component/visual_component.h"
+#include "stage/scene/hook/hook.h"
 #include "stage/scene/viewer/node.h"
-#include "world/volume/quad_tree.h"
+#include "stage/scene/world/world_node.h"
+#include "world/volume/container.h"
 
 namespace soil::stage::scene::volume {
-class FrustumCulling : public hook::UpdateHook {
+class FrustumCulling : public hook::Hook {
  public:
-  explicit FrustumCulling(viewer::Node* viewer,
-                          const world::volume::Container* container);
+  explicit FrustumCulling(viewer::Node* viewer, const world::WorldNode* world);
 
-  void OnUpdate() override;
+  void Perform(hook::Hook::Trigger_t trigger) override;
 
   void Handle(const event::Component& event) override;
 
@@ -19,11 +20,11 @@ class FrustumCulling : public hook::UpdateHook {
 
  private:
   void updateVisibilityOnTreeNode(int index,
-                                  const world::volume::Frustum* frustum);
+                                  const soil::world::volume::Frustum* frustum);
 
   void setVisibility(int index, bool visible);
 
-  const world::volume::Container* container_;
+  const world::WorldNode* world_;
   viewer::Node* viewer_;
   std::vector<bool> nodesVisibility_;
   std::vector<component::VisualComponent*> addedVisualComponents_;

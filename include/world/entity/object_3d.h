@@ -18,9 +18,6 @@ class Object3d {
 
   virtual void SetPosition(const glm::vec3& pos);
 
-  // TODO: GetPos always world pos- GetWorldPos -> GetPos; GetPos -> GetLocalPos
-  [[nodiscard]] virtual glm::vec3 GetWorldPosition() const;
-
   [[nodiscard]] virtual glm::vec3 GetDirection() const;
 
   virtual void SetDirection(const glm::vec3& direction);
@@ -32,18 +29,11 @@ class Object3d {
   [[nodiscard]] virtual glm::vec3 GetRight() const;
 
   virtual void SetRight(const glm::vec3& right);
-
-  virtual void SetLocalTransform(const glm::mat4& Transform);
-
-  [[nodiscard]] virtual const glm::mat4& GetLocalTransform() const;
-
-  virtual void ComputeWorldTransform(const glm::mat4& parentWorldTransform);
-
-  [[nodiscard]] const glm::mat4& GetWorldTransform() const;
+  virtual void SetTransform(const glm::mat4& transform);
+  [[nodiscard]] virtual const glm::mat4& GetTransform() const;
 
  private:
-  glm::mat4 localTransform_;
-  glm::mat4 worldTransform_;
+  glm::mat4 transform_;
 };
 }  // namespace soil::world::entity
 
