@@ -26,7 +26,7 @@ TEST_F(SceneTest, Update) {
 
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
@@ -34,7 +34,7 @@ TEST_F(SceneTest, Update) {
   childOfChild->SetDirty(Node::DirtyImpact::Self);
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 2);
@@ -42,7 +42,7 @@ TEST_F(SceneTest, Update) {
   child->SetDirty(Node::DirtyImpact::Dependents);
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 3);
@@ -52,7 +52,7 @@ TEST_F(SceneTest, Update) {
   childOfChild->SetDirty(Node::DirtyImpact::Self);  // ... will be skipped
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 2);
+  EXPECT_EQ(node->UpdateCalledCount, 1);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 3);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 4);
@@ -62,7 +62,7 @@ TEST_F(SceneTest, Update) {
       Node::DirtyImpact::Dependents);  // do not update childOfChild again
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 2);
+  EXPECT_EQ(node->UpdateCalledCount, 1);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 4);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 5);
@@ -83,10 +83,10 @@ TEST_F(SceneTest, AddChild_with_tree_and_destructor) {
   scene->AddChild(node);
   scene->Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
+  EXPECT_EQ(child->UpdateDirtyCalledCount, 2);
+  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(comp1->UpdateCalledCount, 1);
   EXPECT_EQ(comp2->UpdateCalledCount, 1);
   EXPECT_EQ(comp3->UpdateCalledCount, 1);
@@ -94,10 +94,10 @@ TEST_F(SceneTest, AddChild_with_tree_and_destructor) {
   childOfChild->SetDirty(Node::DirtyImpact::Dependents);
   scene->Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 2);
+  EXPECT_EQ(child->UpdateDirtyCalledCount, 2);
+  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 3);
   EXPECT_EQ(comp1->UpdateCalledCount, 1);
   EXPECT_EQ(comp2->UpdateCalledCount, 1);
   EXPECT_EQ(comp3->UpdateCalledCount, 2);
@@ -112,7 +112,7 @@ TEST_F(SceneTest, Update_Dirty_in_update) {
 
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 1);
+  EXPECT_EQ(node->UpdateCalledCount, 0);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 1);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
 
@@ -120,52 +120,60 @@ TEST_F(SceneTest, Update_Dirty_in_update) {
   node->UpdateFunc = [child] { child->SetDirty(Node::DirtyImpact::Self); };
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 2);
+  EXPECT_EQ(node->UpdateCalledCount, 1);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
 
   scene.Update();
 
-  EXPECT_EQ(node->UpdateCalledCount, 2);
+  EXPECT_EQ(node->UpdateCalledCount, 1);
   EXPECT_EQ(node->UpdateDirtyCalledCount, 2);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 2);
 }
 
 TEST_F(SceneTest, Perform_feature) {
   auto scene = Scene();
-  const auto* afterUpdateFeature = scene.AddHook(new hook::UpdateHookMock());
-  const auto* renderFeature = scene.AddHook(new hook::RenderHookMock());
+  auto* afterUpdateFeature = scene.AddHook(
+      new hook::HookMock({hook::Hook::Trigger_t::AfterUpdateScene}));
+  auto* renderFeature =
+      scene.AddHook(new hook::HookMock({hook::Hook::Trigger_t::Render}));
   auto state = video::render::State();
   scene.Update();
 
-  EXPECT_EQ(afterUpdateFeature->OnUpdateCalledCount, 1);
-  EXPECT_EQ(renderFeature->OnRenderCalledCount, 0);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 0);
   scene.Render(state);
 
-  EXPECT_EQ(afterUpdateFeature->OnUpdateCalledCount, 1);
-  EXPECT_EQ(renderFeature->OnRenderCalledCount, 1);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 1);
 }
 
 TEST_F(SceneTest, Remove_hook) {
   auto scene = Scene();
-  auto* afterUpdateFeature = scene.AddHook(new hook::UpdateHookMock());
-  auto* renderFeature = scene.AddHook(new hook::RenderHookMock());
+  auto* afterUpdateFeature = scene.AddHook(
+      new hook::HookMock({hook::Hook::Trigger_t::AfterUpdateScene}));
+  auto* renderFeature =
+      scene.AddHook(new hook::HookMock({hook::Hook::Trigger_t::Render}));
   auto state = video::render::State();
 
   scene.Update();
-  EXPECT_EQ(afterUpdateFeature->OnUpdateCalledCount, 1);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 0);
 
   scene.Render(state);
-  EXPECT_EQ(renderFeature->OnRenderCalledCount, 1);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 1);
 
   scene.RemoveHook(afterUpdateFeature);
 
   scene.Update();
-  EXPECT_EQ(afterUpdateFeature->OnUpdateCalledCount, 1);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 1);
 
   scene.RemoveHook(renderFeature);
   scene.Render(state);
-  EXPECT_EQ(renderFeature->OnRenderCalledCount, 1);
+  EXPECT_EQ(afterUpdateFeature->Calls.Perform, 1);
+  EXPECT_EQ(renderFeature->Calls.Perform, 1);
 }
 
 TEST_F(SceneTest, Update_active_node) {
@@ -177,12 +185,12 @@ TEST_F(SceneTest, Update_active_node) {
   scene.Update();
 
   EXPECT_EQ(activeNode->UpdateCalledCount, 1);
-  EXPECT_EQ(normalNode->UpdateCalledCount, 1);
+  EXPECT_EQ(normalNode->UpdateCalledCount, 0);
 
   scene.Update();
 
   EXPECT_EQ(activeNode->UpdateCalledCount, 2);
-  EXPECT_EQ(normalNode->UpdateCalledCount, 1);
+  EXPECT_EQ(normalNode->UpdateCalledCount, 0);
 }
 
 TEST_F(SceneTest, Remove_listener_on_node_remove) {
@@ -265,19 +273,19 @@ TEST_F(SceneTest, Change_updateType) {
   scene.AddChild(&node);
 
   scene.Update();
-  EXPECT_EQ(node.UpdateCalledCount, 1);
+  EXPECT_EQ(node.UpdateCalledCount, 0);
 
   scene.Update();
-  EXPECT_EQ(node.UpdateCalledCount, 1);
+  EXPECT_EQ(node.UpdateCalledCount, 0);
 
   node.SetUpdateType(Node::UpdateType::Active);
 
   scene.Update();
-  EXPECT_EQ(node.UpdateCalledCount, 2);
+  EXPECT_EQ(node.UpdateCalledCount, 1);
 
   node.SetUpdateType(Node::UpdateType::Passive);
 
   scene.Update();
-  EXPECT_EQ(node.UpdateCalledCount, 2);
+  EXPECT_EQ(node.UpdateCalledCount, 1);
 }
 }  // namespace soil::stage::scene

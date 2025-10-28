@@ -5,38 +5,27 @@
 
 namespace soil::stage::scene::hook {
 
-class RenderHookMock : public RenderHook {
+class HookMock : public Hook {
  public:
-  explicit RenderHookMock(const HandlerType type = HandlerType::Component)
-      : RenderHook(type) {}
+  explicit HookMock(const std::vector<Trigger_t>& triggers,
+                    HandlerType handlerType = HandlerType::Component)
+      : Hook(triggers, handlerType), Calls() {}
 
   std::vector<event::Component> EventsReceived;
-  int OnRenderCalledCount = 0;
+  struct {
+    int Perform = 0;
+  } Calls;
 
-  void ResetMocks() { EventsReceived.clear(); }
+  void Reset() {
+    EventsReceived.clear();
+    Calls.Perform = 0;
+  }
 
   void Handle(const event::Component& event) override {
     EventsReceived.push_back(event);
   }
 
-  void OnRender(video::render::State& state) override { OnRenderCalledCount++; }
-};
-
-class UpdateHookMock : public UpdateHook {
- public:
-  explicit UpdateHookMock(const HandlerType type = HandlerType::Component)
-      : UpdateHook(type) {}
-
-  std::vector<event::Component> EventsReceived;
-  int OnUpdateCalledCount = 0;
-
-  void ResetMocks() { EventsReceived.clear(); }
-
-  void Handle(const event::Component& event) override {
-    EventsReceived.push_back(event);
-  }
-
-  void OnUpdate() override { OnUpdateCalledCount++; }
+  void Perform(Trigger_t trigger) override { Calls.Perform++; }
 };
 }  // namespace soil::stage::scene::hook
 #endif

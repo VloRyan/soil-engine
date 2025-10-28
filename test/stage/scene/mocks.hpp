@@ -11,7 +11,6 @@ class NodeMock : public Node {
   explicit NodeMock(const Type type = Type::Transform) : Node(type) {}
 
   ~NodeMock() override = default;
-  int ComputeWorldTransformCalledCount = 0;
   int UpdateCalledCount = 0;
   int UpdateDirtyCalledCount = 0;
   int HandleComponentEventCalledCount = 0;
@@ -23,7 +22,6 @@ class NodeMock : public Node {
   std::function<void()> UpdateFunc = nullptr;
 
   void ResetMocks() {
-    ComputeWorldTransformCalledCount = 0;
     UpdateCalledCount = 0;
     UpdateDirtyCalledCount = 0;
     HandleComponentEventCalledCount = 0;
@@ -42,11 +40,6 @@ class NodeMock : public Node {
     UpdateDirtyImpacts = GetDirtyImpacts();
     UpdateDirtyCalledCount++;
     Node::UpdateDirty();
-  }
-
-  void ComputeWorldTransform(const glm::mat4& parentWorldTransform) override {
-    ComputeWorldTransformCalledCount++;
-    Node::ComputeWorldTransform(parentWorldTransform);
   }
 
   void addChild(Node* node) override {

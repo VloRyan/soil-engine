@@ -13,31 +13,13 @@ class ComponentMock : public Component {
   ~ComponentMock() override = default;
 
   int UpdateCalledCount = 0;
-  int UpdateMatrixCalledCount = 0;
-  std::vector<glm::mat4> UpdateMatrixParam;
 
   void Update() override {
     UpdateCalledCount++;
     Component::Update();
   }
 
-  void UpdateTransform(const glm::mat4& matrix) override {
-    UpdateMatrixCalledCount++;
-    UpdateMatrixParam.push_back(matrix);
-    Component::UpdateTransform(matrix);
-  }
-
-  void ResetMocks() {
-    UpdateCalledCount = 0;
-    UpdateMatrixCalledCount = 0;
-    UpdateMatrixParam.clear();
-  }
-
-  void SetDirty() override { Component::SetDirty(); }
-
-  void SetUpdateType(const UpdateType updateType) override {
-    Component::SetUpdateType(updateType);
-  }
+  void ResetMocks() { UpdateCalledCount = 0; }
 };
 }  // namespace soil::stage::scene::component
 #endif

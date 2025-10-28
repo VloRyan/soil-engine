@@ -12,7 +12,6 @@ TEST_F(ComponentTest, Contruct) {
 
   EXPECT_EQ(component.GetParent(), nullptr);
   EXPECT_EQ(component.GetType(), Component::Type::Metadata);
-  EXPECT_EQ(component.GetState(), Component::State::Normal);
 }
 
 TEST_F(ComponentTest, AddToNode) {
@@ -23,25 +22,27 @@ TEST_F(ComponentTest, AddToNode) {
   node.AddComponent(&component);
   EXPECT_EQ(component.GetParent(), nullptr);
 
-  node.Update();  // apply adding
+  node.Update();  // apply add
   EXPECT_EQ(component.GetParent(), &node);
   ASSERT_EQ(node.GetFirstComponent(), &component);
 
   node2.AddComponent(&component);
-  node2.Update();  // apply adding
+  node2.Update();  // apply add
   EXPECT_EQ(component.GetParent(), &node2);
   EXPECT_EQ(node.GetFirstComponent(), nullptr);
 
   node2.RemoveComponent(&component);
 }
 
-TEST_F(ComponentTest, FireChangedEvent) {
+TEST_F(ComponentTest, SetUpdateType) {
   auto node = NodeMock(Node::Type::Game);
   auto* component =
       node.AddComponent(new ComponentMock(Component::Type::Metadata));
-  node.Update();  // apply adding
+  node.Update();  // apply add
 
-  component->SetDirty();
+  ASSERT_EQ(node.HandleComponentEventCalledCount, 0);
+
+  component->SetUpdateType(Component::UpdateType::Always);
 
   EXPECT_EQ(node.HandleComponentEventCalledCount, 1);
 }

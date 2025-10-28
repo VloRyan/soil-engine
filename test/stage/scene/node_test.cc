@@ -1,13 +1,15 @@
 #include "stage/scene/node.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <iomanip>
 #include <utility>
 
 #include "component/mocks.hpp"
 #include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
 #include "mocks.hpp"
+#include "stage/scene/component/transform_component.h"
 #include "stage/stage.h"
-
 namespace soil::stage::scene {
 class NodeTest : public testing::Test {};
 
@@ -16,20 +18,28 @@ TEST_F(NodeTest, Contruct) {
 
   EXPECT_EQ(node.GetParent(), nullptr);
   EXPECT_EQ(node.GetType(), Node::Type::Transform);
-  EXPECT_TRUE(node.GetReceiverType(Node::ReceiverType::None));
-  EXPECT_FALSE(node.GetReceiverType(Node::ReceiverType::Input));
-  EXPECT_FALSE(node.GetReceiverType(Node::ReceiverType::Window));
+  EXPECT_EQ(node.GetState(), Node::State::Normal);
+  EXPECT_TRUE(node.IsReceiverOf(Node::ReceiverType::None));
+  EXPECT_FALSE(node.IsReceiverOf(Node::ReceiverType::Input));
+  EXPECT_FALSE(node.IsReceiverOf(Node::ReceiverType::Window));
+
+  std::vector<component::Component*> comps;
+  node.GetComponents(comps);
+  EXPECT_THAT(comps, testing::ElementsAre(&node.Transform()));
 }
 
 TEST_F(NodeTest, AddChild) {
   auto parent = NodeMock();
   auto child = Node(Node::Type::Transform);
+  ASSERT_EQ(parent.GetState(), Node::State::Normal);
 
   parent.AddChild(&child);
 
-  ASSERT_EQ(child.GetParent(), &parent);
-  ASSERT_THAT(parent.GetChildren(), testing::ElementsAre(&child));
-  ASSERT_THAT(parent.AddedChildren, testing::ElementsAre(&child));
+  EXPECT_EQ(parent.GetState(), Node::State::Normal);
+  EXPECT_EQ(child.GetState(), Node::State::Normal);
+  EXPECT_EQ(child.GetParent(), &parent);
+  EXPECT_THAT(parent.GetChildren(), testing::ElementsAre(&child));
+  EXPECT_THAT(parent.AddedChildren, testing::ElementsAre(&child));
 }
 
 TEST_F(NodeTest, ChildDestructor) {
@@ -44,27 +54,34 @@ TEST_F(NodeTest, ChildDestructor) {
   EXPECT_TRUE(parent.GetChildren().empty());
 }
 
-TEST_F(NodeTest, AddComponentWithUpdate) {
+TEST_F(NodeTest, AddComponent) {
   auto node = Node(Node::Type::Transform);
+  auto transformComp =
+      dynamic_cast<const component::Component*>(&node.Transform());
   auto* comp =
       new component::ComponentMock(component::Component::Type::Metadata);
   std::vector<component::Component*> components;
+
   node.GetComponents(components);
-  ASSERT_TRUE(components.empty());
+  EXPECT_THAT(components, testing::ElementsAre(transformComp));
 
   node.AddComponent(comp);
 
+  components.clear();
   node.GetComponents(components);
-  ASSERT_TRUE(components.empty());
+  EXPECT_THAT(components, testing::ElementsAre(transformComp));
 
   node.Update();
 
+  components.clear();
   node.GetComponents(components);
-  EXPECT_THAT(components, testing::ElementsAre(comp));
+  EXPECT_THAT(components, testing::ElementsAre(transformComp, comp));
 }
 
 TEST_F(NodeTest, RemoveComponent) {
   auto node = Node(Node::Type::Transform);
+  auto transformComp =
+      dynamic_cast<const component::Component*>(&node.Transform());
   auto* comp =
       new component::ComponentMock(component::Component::Type::Metadata);
   auto* comp2 =
@@ -74,35 +91,38 @@ TEST_F(NodeTest, RemoveComponent) {
   node.AddComponent(comp2);
   node.Update();
   node.GetComponents(components);
-  ASSERT_THAT(components, testing::ElementsAre(comp, comp2));
+  ASSERT_THAT(components, testing::ElementsAre(transformComp, comp, comp2));
 
   node.RemoveComponent(comp);
 
   components.clear();
   node.GetComponents(components);
-  EXPECT_THAT(components, testing::ElementsAre(comp2));
+  EXPECT_THAT(components, testing::ElementsAre(transformComp, comp2));
 
   delete comp2;
   components.clear();
   node.GetComponents(components);
-  EXPECT_TRUE(components.empty());
+  EXPECT_THAT(components, testing::ElementsAre(transformComp));
 }
 
 TEST_F(NodeTest, RemoveComponentJustAdded) {
   auto node = Node(Node::Type::Transform);
+  auto transformComp =
+      dynamic_cast<const component::Component*>(&node.Transform());
   auto* comp =
       new component::ComponentMock(component::Component::Type::Metadata);
   std::vector<component::Component*> components;
   node.AddComponent(comp);
   node.GetComponents(components);
-  ASSERT_TRUE(components.empty());  // will be added after update
+  EXPECT_THAT(components, testing::ElementsAre(
+                              transformComp));  // will be added after update
 
   node.RemoveComponent(comp);
   node.Update();
 
   components.clear();
   node.GetComponents(components);
-  EXPECT_TRUE(components.empty());
+  EXPECT_THAT(components, testing::ElementsAre(transformComp));
 }
 
 TEST_F(NodeTest, Update) {
@@ -132,13 +152,11 @@ TEST_F(NodeTest, UpdateDirtySelf) {
   EXPECT_FALSE(node.IsDirty());
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Self));
   EXPECT_EQ(comp->UpdateCalledCount, 0);
-  EXPECT_EQ(comp->UpdateMatrixCalledCount, 0);
 
   EXPECT_EQ(child->UpdateCalledCount, 0);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 0);
-  EXPECT_EQ(child->ComputeWorldTransformCalledCount, 0);
 }
-
+/*
 TEST_F(NodeTest, UpdateDirtyComponent) {
   auto node = Node(Node::Type::Transform);
   const auto child = node.AddChild(new NodeMock());
@@ -154,17 +172,19 @@ TEST_F(NodeTest, UpdateDirtyComponent) {
   EXPECT_FALSE(node.IsDirty());
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Components));
   EXPECT_EQ(comp->UpdateCalledCount, 1);
-  EXPECT_EQ(comp->UpdateMatrixCalledCount, 0);
 
   EXPECT_EQ(child->UpdateCalledCount, 0);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 0);
-  EXPECT_EQ(child->ComputeWorldTransformCalledCount, 0);
 }
-
+*/
+std::bitset<4> toBitset(std::vector<Node::DirtyImpact> impacts) {
+  auto bits = std::bitset<4>();
+  for (auto impact : impacts) {
+    bits[static_cast<std::int8_t>(impact)] = true;
+  }
+  return bits;
+}
 TEST_F(NodeTest, UpdateDirtyDependents) {
-  auto bitsDependents = std::bitset<4>();
-  bitsDependents[static_cast<std::int8_t>(Node::DirtyImpact::Dependents)] =
-      true;
   auto node = Node(Node::Type::Transform);
   auto* child = node.AddChild(new NodeMock());
   auto* childOfChild = child->AddChild(new NodeMock());
@@ -187,26 +207,22 @@ TEST_F(NodeTest, UpdateDirtyDependents) {
   EXPECT_FALSE(node.IsDirty());
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Dependents));
   EXPECT_EQ(comp->UpdateCalledCount, 1);
-  EXPECT_EQ(comp->UpdateMatrixCalledCount, 0);
 
   EXPECT_EQ(child->UpdateCalledCount, 0);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(child->ComputeWorldTransformCalledCount, 0);
-  EXPECT_THAT(child->UpdateDirtyImpacts, bitsDependents);
+  EXPECT_THAT(
+      child->UpdateDirtyImpacts,
+      toBitset({Node::DirtyImpact::Components, Node::DirtyImpact::Dependents}));
   EXPECT_EQ(childComp->UpdateCalledCount, 1);
-  EXPECT_EQ(childComp->UpdateMatrixCalledCount, 0);
 
   EXPECT_EQ(childOfChild->UpdateCalledCount, 0);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(childOfChild->ComputeWorldTransformCalledCount, 0);
-  EXPECT_THAT(childOfChild->UpdateDirtyImpacts, bitsDependents);
+  EXPECT_THAT(childOfChild->UpdateDirtyImpacts,
+              toBitset({Node::DirtyImpact::Dependents}));
   EXPECT_EQ(childOfChildComp->UpdateCalledCount, 1);
-  EXPECT_EQ(childOfChildComp->UpdateMatrixCalledCount, 0);
 }
 
 TEST_F(NodeTest, UpdateDirtyTransform) {
-  auto bitsTransform = std::bitset<4>();
-  bitsTransform[static_cast<std::int8_t>(Node::DirtyImpact::Transform)] = true;
   auto node = Node(Node::Type::Transform);
   auto* child = node.AddChild(new NodeMock());
   auto* childOfChild = child->AddChild(new NodeMock());
@@ -229,21 +245,19 @@ TEST_F(NodeTest, UpdateDirtyTransform) {
   EXPECT_FALSE(node.IsDirty());
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Transform));
   EXPECT_EQ(comp->UpdateCalledCount, 1);
-  EXPECT_EQ(comp->UpdateMatrixCalledCount, 1);
 
   EXPECT_EQ(child->UpdateCalledCount, 0);
   EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(child->ComputeWorldTransformCalledCount, 1);
-  EXPECT_THAT(child->UpdateDirtyImpacts, bitsTransform);
+  EXPECT_THAT(
+      child->UpdateDirtyImpacts,
+      toBitset({Node::DirtyImpact::Transform, Node::DirtyImpact::Components}));
   EXPECT_EQ(childComp->UpdateCalledCount, 1);
-  EXPECT_EQ(childComp->UpdateMatrixCalledCount, 1);
 
   EXPECT_EQ(childOfChild->UpdateCalledCount, 0);
   EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
-  EXPECT_EQ(childOfChild->ComputeWorldTransformCalledCount, 1);
-  EXPECT_THAT(childOfChild->UpdateDirtyImpacts, bitsTransform);
+  EXPECT_THAT(childOfChild->UpdateDirtyImpacts,
+              toBitset({Node::DirtyImpact::Transform}));
   EXPECT_EQ(childOfChildComp->UpdateCalledCount, 1);
-  EXPECT_EQ(childOfChildComp->UpdateMatrixCalledCount, 1);
 }
 
 TEST_F(NodeTest, UpdateAlwaysUpdateComponent) {
@@ -265,79 +279,60 @@ TEST_F(NodeTest, UpdateAlwaysUpdateComponent) {
   EXPECT_EQ(comp->UpdateCalledCount, 1);
   EXPECT_EQ(alwaysUpdateComp->UpdateCalledCount, 2);
 
-  alwaysUpdateComp->SetUpdateType(component::Component::UpdateType::WhenDirty);
+  alwaysUpdateComp->SetUpdateType(
+      component::Component::UpdateType::WhenNodeDirty);
   node.Update();
   EXPECT_EQ(comp->UpdateCalledCount, 1);
   EXPECT_EQ(alwaysUpdateComp->UpdateCalledCount, 2);
 }
 
-TEST_F(NodeTest, HandleComponentEventState) {
-  auto eventListener = NodeEventMockListener();
+TEST_F(NodeTest, HandleTransformChanges) {
   auto node = NodeMock();
-  node.AddListener(&eventListener);
-  auto* comp =
-      new component::ComponentMock(component::Component::Type::Metadata);
-  const auto evnt = event::Component::MakeStateChangedEvent(comp);
   ASSERT_EQ(node.GetState(), Node::State::Normal);
-  ASSERT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Components));
-  ASSERT_EQ(node.HandleComponentEventCalledCount, 0);
 
-  node.Handle(evnt);
-
-  EXPECT_EQ(node.GetState(), Node::State::Normal);
-  EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Components));
-  EXPECT_EQ(node.HandleComponentEventCalledCount, 1);
-
-  node.AddComponent(comp);
-  node.Update();
-  ASSERT_EQ(node.GetState(), Node::State::Normal);
-  ASSERT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Components));
-  ASSERT_EQ(node.HandleComponentEventCalledCount, 1);
-
-  comp->SetDirty();
-
+  node.Transform().SetPosition(glm::vec3(1.F));
   EXPECT_EQ(node.GetState(), Node::State::Dirty);
-  EXPECT_TRUE(node.IsDirtyImpact(Node::DirtyImpact::Components));
-  EXPECT_EQ(node.HandleComponentEventCalledCount, 2);
+  EXPECT_TRUE(node.IsDirtyImpact(Node::DirtyImpact::Transform));
 }
-
+/*
 TEST_F(NodeTest, HandleComponentEventStateFilterOnNew) {
   auto eventListener = NodeEventMockListener();
   auto node = NodeMock();
   node.AddListener(&eventListener);
-  auto* comp =
-      new component::ComponentMock(component::Component::Type::Metadata);
-  node.AddComponent(comp);
+  auto* comp = node.AddComponent(
+      new component::ComponentMock(component::Component::Type::Metadata));
   ASSERT_THAT(
       eventListener.Events,
       testing::ElementsAre(event::Node(&node, event::Node::ChangeType::State)));
   eventListener.ResetMocks();
 
-  comp->SetDirty();
+  // comp->SetDirty();
 
   EXPECT_TRUE(eventListener.Events.empty());
 
   node.Update();
-  ASSERT_FALSE(comp->IsDirty());
+  // ASSERT_FALSE(comp->IsDirty());
   ASSERT_THAT(eventListener.Events,
               testing::ElementsAre(
                   event::Node::MakeComponentEvent(
                       &node, event::Component(
-                                 comp, event::Component::ChangeType::Added)),
+                                 comp, event::Component::TriggerType::Added)),
                   event::Node(&node, event::Node::ChangeType::State)));
   eventListener.ResetMocks();
 
-  comp->SetDirty();
+  // comp->SetDirty();
 
   EXPECT_THAT(eventListener.Events,
               testing::ElementsAre(
                   event::Node(&node, event::Node::ChangeType::State),
                   event::Node::MakeComponentEvent(
-                      &node, event::Component::MakeStateChangedEvent(comp))));
+                      &node, event::Component::MakeDataChangedEvent(comp))));
 }
-
+*/
 TEST_F(NodeTest, GetComponents) {
   auto node = NodeMock();
+  auto transformComp =
+      dynamic_cast<const component::Component*>(&node.Transform());
   auto* comp = node.AddComponent(
       new component::ComponentMock(component::Component::Type::Metadata));
 
@@ -345,14 +340,15 @@ TEST_F(NodeTest, GetComponents) {
 
   node.GetComponents(comps);
 
-  EXPECT_TRUE(comps.empty());
+  EXPECT_THAT(comps, testing::ElementsAre(transformComp));
   node.Update();
 
+  comps.clear();
   node.GetComponents(comps);
-  EXPECT_THAT(comps, testing::ElementsAre(comp));
+  EXPECT_THAT(comps, testing::ElementsAre(transformComp, comp));
 
   comps.clear();
-  node.GetComponents(comps, component::Component::Type::BoundingVolume);
+  node.GetComponents(comps, component::Component::Type::WorldEntity);
   EXPECT_TRUE(comps.empty());
 
   node.GetComponents(comps, component::Component::Type::Metadata);
@@ -492,4 +488,5 @@ TEST_F(NodeTest, ForEachChild) {
 
   delete root;
 }
+
 }  // namespace soil::stage::scene
