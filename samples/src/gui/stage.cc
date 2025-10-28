@@ -54,7 +54,7 @@ void Stage::OnLoad() {
   viewer->Look(glm::vec3(0.F), glm::vec3(0.F, 0.F, -1.F));
 
   scene->AddHook(new soil::stage::scene::render::UpdateMatricesUbo(
-      viewer, UBO_TARGET_MATRICES));
+      viewer, UBO_TARGET_MATRICES, &state));
 
   auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
 
@@ -193,7 +193,6 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
     });
     item->SetOnMouseOutFunc([toolTip] { toolTip->SetVisible(false); });
   }
-
   return item;
 }
 

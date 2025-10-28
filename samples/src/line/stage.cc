@@ -44,37 +44,14 @@ void Stage::OnLoad() {
   initLines(scene);
 }
 
-void Stage::Update() {
-  /* if (lines_[0] != nullptr) {
-       auto inner = 90.0F;
-       auto outer = 180.0F;
-       offset_++;
-       for (auto i = 0; i < MAX_LINES; ++i) {
-           lines_[i]->SetStartPoint(glm::vec3(inner * cos(static_cast<float>(i +
-   offset_)), inner * sin(static_cast<float>(i + offset_)), -0.1));
-           lines_[i]->SetEndPoint(glm::vec3(outer * cos(static_cast<float>(i +
-   offset_)), outer * sin(static_cast<float>(i + offset_)), -0.1));
-       }
-       if (offset_ >= 360) {
-           offset_ = 0;
-       }
-   }*/
-  soil::stage::Stage::Update();
-}
+void Stage::Update() { soil::stage::Stage::Update(); }
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
   if (event.GetCause() == soil::WindowEvent::StatisticsChanged) {
     if (lines_[0] != nullptr) {
-      auto inner = 90.0F;
-      auto outer = 180.0F;
       offset_++;
       for (auto i = 0; i < MAX_LINES; ++i) {
-        /*  lines_[i]->SetStartPoint(glm::vec3(inner * cos(static_cast<float>(i
-          - offset_)), inner * sin(static_cast<float>(i - offset_)), -0.1));
-          lines_[i]->SetEndPoint(glm::vec3(outer * cos(static_cast<float>(i -
-          offset_)), outer * sin(static_cast<float>(i - offset_)), -0.1));*/
-
         lines_[i]->SetVisible(i <= offset_);
       }
       if (offset_ >= MAX_LINES) {

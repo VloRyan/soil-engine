@@ -16,7 +16,7 @@ class ShapeInstance : public soil::stage::scene::component::InstanceData {
     uint TextureIndex{0};
   };
 
-  explicit ShapeInstance(bool isOpaque);
+  explicit ShapeInstance(bool isOpaque = true);
 
   ~ShapeInstance() override = default;
 
@@ -28,8 +28,8 @@ class ShapeInstance : public soil::stage::scene::component::InstanceData {
   virtual void SetColor(const glm::vec4& color);
 
   static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;
-  static inline std::string BATCH_NAME = "Shape";
-  void UpdateTransform(const glm::mat4& matrix) override;
+  static inline std::string BATCH_NAME = "Object";
+  void Update() override;
 
  protected:
   void WriteData(soil::video::buffer::Cursor* cursor) const override;

@@ -30,7 +30,6 @@ class ShapeTile : public soil::stage::scene::component::MeshComponent {
   [[nodiscard]] virtual glm::vec2 GetTileScale() const;
   virtual void SetTileScale(glm::vec2 scale);
 
-  void UpdateTransform(const glm::mat4& transform) override;
   void PrepareRender(soil::video::render::State& state) override;
 
   float DistanceTo(const glm::vec3& point) override;
@@ -38,7 +37,6 @@ class ShapeTile : public soil::stage::scene::component::MeshComponent {
  private:
   static std::unordered_map<std::string, PrefabData> PREFABS;
   PrefabData* data_;
-  glm::mat4 transform_;
   glm::vec2 size_;
   glm::vec4 color_;
   int tileIndex_;

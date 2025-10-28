@@ -1,5 +1,6 @@
 #include "shape_instance.h"
 
+#include "stage/scene/node.h"
 #include "video/vertex/vertex.h"
 
 namespace soil_samples::instancing {
@@ -38,7 +39,7 @@ void ShapeInstance::SetTextureIndex(const uint index) {
     return;
   }
   data_.TextureIndex = index;
-  SetDirty();
+  SignalChanged();
 }
 
 glm::vec2 ShapeInstance::GetSize() const { return data_.Size; }
@@ -48,7 +49,7 @@ void ShapeInstance::SetSize(const glm::vec2& size) {
     return;
   }
   data_.Size = size;
-  SetDirty();
+  SignalChanged();
 }
 
 glm::vec4 ShapeInstance::GetColor() const { return data_.Color; }
@@ -58,12 +59,15 @@ void ShapeInstance::SetColor(const glm::vec4& color) {
     return;
   }
   data_.Color = color;
-  SetDirty();
+  SignalChanged();
 }
 
-void ShapeInstance::UpdateTransform(const glm::mat4& matrix) {
-  InstanceData::UpdateTransform(matrix);
-  data_.Matrix = matrix;
+void ShapeInstance::Update() {
+  if (data_.Matrix == GetParent()->Transform().GetMatrix()) {
+    return;
+  }
+  data_.Matrix = GetParent()->Transform().GetMatrix();
+  SignalChanged();
 }
 
 void ShapeInstance::WriteData(soil::video::buffer::Cursor* cursor) const {

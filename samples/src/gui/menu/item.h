@@ -11,8 +11,10 @@ class Item : public Plane {
   ~Item() override = default;
   [[nodiscard]] virtual std::string GetValue() const;
   void SetOnClick(const std::function<void(Item& item)>& onClick);
+  void Update() override;
 
  protected:
+  void UpdateDirty() override;
   void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
                      soil::input::Event::State state) override;
 

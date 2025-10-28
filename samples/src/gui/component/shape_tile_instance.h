@@ -27,7 +27,7 @@ class ShapeTileInstance : public soil::stage::scene::component::InstanceData {
 
   static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;
   static inline std::string BATCH_NAME = "ShapeTile";
-  void UpdateTransform(const glm::mat4& transform) override;
+  void Update() override;
 
  protected:
   void WriteData(soil::video::buffer::Cursor* cursor) const override;

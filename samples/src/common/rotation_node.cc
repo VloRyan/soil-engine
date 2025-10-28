@@ -2,19 +2,20 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "stage/scene/component/transform_component.h"
 namespace soil_samples::common {
 RotationNode::RotationNode(const float initialRotation, const float velocity)
     : Node(Type::Transform), velocity_(velocity), ticks(0) {
-  auto transform = Object3d::GetLocalTransform();
+  auto transform = transform_->GetLocalMatrix();
   transform = glm::rotate(transform, initialRotation, glm::vec3(0.F, 0.F, 1.F));
-  Node::SetLocalTransform(transform);
+  transform_->SetLocalMatrix(transform);
   Node::SetUpdateType(UpdateType::Active);
 }
 
 void RotationNode::Update() {
-  auto transform = Object3d::GetLocalTransform();
+  auto transform = transform_->GetLocalMatrix();
   transform = glm::rotate(transform, velocity_, glm::vec3(0.F, 0.F, 1.F));
-  Node::SetLocalTransform(transform);
+  transform_->SetLocalMatrix(transform);
   Node::Update();
 }
 }  // namespace soil_samples::common

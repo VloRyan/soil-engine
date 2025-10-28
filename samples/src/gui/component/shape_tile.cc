@@ -10,7 +10,6 @@ ShapeTile::ShapeTile(const std::string& prefab, const bool isOpaque)
     : MeshComponent(*PREFABS[prefab].MeshData, PREFABS[prefab].Shader,
                     isOpaque),
       data_(&PREFABS[prefab]),
-      transform_(1.F),
       size_(0.F),
       color_(1.F),
       tileIndex_(-1),
@@ -30,8 +29,10 @@ void ShapeTile::PrepareRender(soil::video::render::State& state) {
   } else {
     state.SetScissorTest(false);
   }
+  auto transform = GetParent()->Transform().GetMatrix();
+  transform[3] += glm::vec4(positionOffset_, 0.0F);
   GetShader()->Use();
-  GetShader()->SetUniform("uTransform", transform_);
+  GetShader()->SetUniform("uTransform", transform);
   GetShader()->SetUniform("uSize", size_);
   GetShader()->SetUniform("uTileScale", tileScale_);
   GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
@@ -40,13 +41,8 @@ void ShapeTile::PrepareRender(soil::video::render::State& state) {
 }
 
 float ShapeTile::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetWorldPosition().z + positionOffset_.z,
+  return glm::distance(GetParent()->GetPosition().z + positionOffset_.z,
                        point.z);
-}
-
-void ShapeTile::UpdateTransform(const glm::mat4& transform) {
-  transform_ = transform;
-  transform_[3] += glm::vec4(positionOffset_, 0.0F);
 }
 
 int ShapeTile::GetTileIndex() const { return tileIndex_; }
@@ -56,7 +52,8 @@ void ShapeTile::SetTileIndex(const int index) {
     return;
   }
   tileIndex_ = index;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 void ShapeTile::SetTileScale(const glm::vec2 scale) {
@@ -64,7 +61,7 @@ void ShapeTile::SetTileScale(const glm::vec2 scale) {
     return;
   }
   tileScale_ = scale;
-  SetDirty();
+  SignalChanged();
 }
 
 glm::vec2 ShapeTile::GetTileScale() const { return tileScale_; }
@@ -76,7 +73,7 @@ void ShapeTile::SetSize(const glm::vec2& size) {
     return;
   }
   size_ = size;
-  SetDirty();
+  SignalChanged();
 }
 
 glm::vec4 ShapeTile::GetColor() const { return color_; }
@@ -87,7 +84,7 @@ void ShapeTile::SetColor(const glm::vec4& color) {
   }
   color_ = color;
   SetOpaque(color.a == 1.0F);
-  SetDirty();
+  SignalChanged();
 }
 
 void ShapeTile::SetPositionOffset(glm::vec3 offset) {
@@ -95,7 +92,8 @@ void ShapeTile::SetPositionOffset(glm::vec3 offset) {
     return;
   }
   positionOffset_ = offset;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 glm::vec3 ShapeTile::GetPositionOffset() const { return positionOffset_; }

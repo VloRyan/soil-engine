@@ -6,7 +6,7 @@
 #include "shape_instance.h"
 
 namespace soil_samples::instancing {
-constexpr int SHAPES_PER_DIM = 6;
+constexpr int SHAPES_PER_DIM = 8;
 
 class Stage final : public common::Stage {
  public:
@@ -19,7 +19,6 @@ class Stage final : public common::Stage {
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;
 
  private:
-  void initInput(soil::stage::scene::Scene* scene);
   static void initBackground(soil::stage::scene::Scene* scene,
                              int textureIndex);
   void initCarrots(soil::stage::scene::Scene* scene, int textureIndex);

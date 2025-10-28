@@ -38,12 +38,12 @@ Shape* Shape::New(const soil::stage::Resources& resources, const bool isOpaque,
 }
 
 float Shape::DistanceTo(const glm::vec3& point) {
-  return glm::distance(point.z, GetParent()->GetWorldPosition().z);
+  return glm::distance(point.z, GetParent()->GetPosition().z);
 }
 
 void Shape::PrepareRender(soil::video::render::State& state) {
   GetShader()->Use();
-  GetShader()->SetUniform("Transform", GetParent()->GetWorldTransform());
+  GetShader()->SetUniform("Transform", GetParent()->Transform().GetMatrix());
   GetShader()->SetUniform("Size", GetSize());
   GetShader()->SetUniform("Color", GetColor());
   GetShader()->SetUniform("Texture", GetTextureUnit());

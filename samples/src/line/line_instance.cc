@@ -32,8 +32,8 @@ void LineInstance::WriteData(soil::video::buffer::Cursor* cursor) const {
 }
 
 void LineInstance::Update() {
-  data_.Start = localStartPoint_ + GetParent()->GetWorldPosition();
-  data_.End = localEndPoint_ + GetParent()->GetWorldPosition();
+  data_.Start = localStartPoint_ + GetParent()->GetPosition();
+  data_.End = localEndPoint_ + GetParent()->GetPosition();
   InstanceData::Update();
 }
 
@@ -41,7 +41,8 @@ glm::vec4 LineInstance::GetColor() const { return data_.Color; }
 
 void LineInstance::SetColor(const glm::vec4 color) {
   data_.Color = color;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 float LineInstance::GetLength() const {
@@ -53,7 +54,8 @@ void LineInstance::SetStartPoint(const glm::vec3 StartPoint) {
     return;
   }
   localStartPoint_ = StartPoint;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {
@@ -61,7 +63,8 @@ void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {
     return;
   }
   localEndPoint_ = EndPoint;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 glm::vec3 LineInstance::GetEndPoint() const { return localEndPoint_; }

@@ -26,7 +26,7 @@ Menu::Menu(const Definition& definition)
   container_->SetPosition(glm::vec3(Menu::GetCenter(), LAYER_Z_INCREMENT));
 
   bgPlane_ = AddChild(new Plane());
-  bgPlane_->SetPosition(glm::vec3(0.F));  // no z-offset
+  bgPlane_->SetLocalPosition(glm::vec3(0.F));  // no z-offset
   bgPlane_->Background().SetTileIndex(
       definition_.SpriteSheet->FrameByName(definition.BackgroundTileName));
   bgPlane_->SetStyle(definition.Style);
@@ -121,7 +121,7 @@ void Menu::BeforeNodeUpdate() {
       verticalScrollbar_->SetVisible(false);
     }
   }
-  container_->SetPosition(glm::vec3(Menu::GetCenter(), LAYER_Z_INCREMENT));
+  container_->SetLocalPosition(glm::vec3(Menu::GetCenter(), LAYER_Z_INCREMENT));
   Rectangle::BeforeNodeUpdate();
 }
 

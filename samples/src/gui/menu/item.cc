@@ -23,4 +23,6 @@ void Item::OnMouseButton(const glm::ivec2& pos,
   }
   Plane::OnMouseButton(pos, button, state);
 }
+void Item::Update() { Node::Update(); }
+void Item::UpdateDirty() { Rectangle::UpdateDirty(); }
 }  // namespace soil_samples::gui::menu

@@ -3,7 +3,6 @@
 #include <bits/fs_fwd.h>
 
 #include "stage/scene/gui/rectangle.h"
-#include "stage/scene/scene.h"
 #include "stage/scene/text/parser.h"
 
 namespace soil_samples::gui::component {
@@ -50,7 +49,7 @@ void Text::Render(soil::video::render::State& state) {
         const auto localPosition =
             cursorPosition + centerPosition + glm::vec2(GetPositionOffset());
 
-        const auto parentPos = GetParent()->GetWorldPosition();
+        const auto parentPos = GetParent()->GetPosition();
         shader->SetUniform("uPositionWorldspace",
                            glm::vec3(localPosition.x + parentPos.x,
                                      localPosition.y + parentPos.y,
@@ -85,8 +84,8 @@ void Text::Render(soil::video::render::State& state) {
 }
 
 float Text::DistanceTo(const glm::vec3& point) {
-  return glm::distance(
-      GetParent()->GetWorldPosition().z + GetPositionOffset().z, point.z);
+  return glm::distance(GetParent()->GetPosition().z + GetPositionOffset().z,
+                       point.z);
 }
 
 }  // namespace soil_samples::gui::component

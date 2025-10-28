@@ -15,7 +15,6 @@ void Shader::Prepare(soil::video::render::State& state) {
   SetUniform("ProjectionViewMatrix",
              viewer_->GetProjectionMatrix() * viewer_->GetViewMatrix());
   for (auto i = 0; i < textures_.size(); i++) {
-    // state.SetTexture(i, *textures_[i]);
     SetUniform("Textures[" + std::to_string(i) + "]", textures_[i]->GetSlot());
   }
 }

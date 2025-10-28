@@ -12,7 +12,10 @@ class Item;
 
 class Menu : public soil::stage::scene::gui::Rectangle {
  public:
-  enum class Orientation : std::uint8_t { Vertical = 0, Horizontal };
+  enum class Orientation : std::uint8_t {
+    Vertical = 0,
+    Horizontal,
+  };
 
   struct ScrollBarDefinition {
     bool Enabled{true};

@@ -25,7 +25,7 @@ void Scrollbar::OnMouseButton(const glm::ivec2& pos,
   Plane::OnMouseButton(pos, button, state);
   if (!scroller_->Contains(pos)) {
     auto direction = Direction::Down;
-    if (pos.y > scroller_->GetWorldPosition().y) {
+    if (pos.y > scroller_->GetPosition().y) {
       direction = Direction::Up;
     }
     Scroll(direction);

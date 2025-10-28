@@ -126,14 +126,14 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                      soil::input::Event::State::Press,
                      [this](const soil::input::Event&) {
                        text_->Text().SetCharacterSize(
-                           text_->Text().GetCharacterSize() + 1.F);
+                           text_->Text().GetCharacterSize() + 0.1F);
                      })
       .AddKeyMapping(soil::input::Keys::Key_Minus,
                      soil::input::Event::State::Press,
                      [this](const soil::input::Event&) {
-                       if (text_->Text().GetCharacterSize() > 1.F) {
+                       if (text_->Text().GetCharacterSize() > 0.1F) {
                          text_->Text().SetCharacterSize(
-                             text_->Text().GetCharacterSize() - 1.F);
+                             text_->Text().GetCharacterSize() - 0.1F);
                        };
                      })
       .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
@@ -144,7 +144,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                        }
                      })
       .AddKeyMapping(
-          soil::input::Keys::L, soil::input::Event::State::Release,
+          soil::input::Keys::T, soil::input::Event::State::Release,
           [this](const soil::input::Event&) {
             if (text_->Text().GetText().starts_with("Lorem")) {
               text_->Text().SetText("Hallo world!");

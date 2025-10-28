@@ -107,7 +107,7 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureIndex) {
   const auto bgNode = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  auto* bgShape = bgNode->AddComponent(new ShapeInstance(true));
+  auto* bgShape = bgNode->AddComponent(new ShapeInstance());
   bgShape->SetSize({10.F, 10.F});
   bgShape->SetTextureIndex(textureIndex);
   bgNode->SetPosition({0.F, 0.F, -1.F});
@@ -124,11 +124,10 @@ void Stage::initCarrots(soil::stage::scene::Scene* scene,
     for (auto col = 0; col < SHAPES_PER_DIM; ++col) {
       const auto i = row * SHAPES_PER_DIM + col;
       auto* shapeNode = scene->AddChild(new common::RotationNode(initRotation));
-      shapes_[i] = shapeNode->AddComponent(new ShapeInstance(true));
+      shapes_[i] = shapeNode->AddComponent(new ShapeInstance());
       shapes_[i]->SetTextureIndex(textureIndex);
       shapes_[i]->SetSize(glm::vec2(1, 1));
       shapes_[i]->SetColor(glm::vec4(colors[i % 4], 1.0F));
-      shapes_[i]->SetVisible(i != 0);
       shapeNode->SetPosition(glm::vec3(static_cast<float>(col) + offset.x,
                                        static_cast<float>(row) + offset.y,
                                        -0.5F));

@@ -11,7 +11,7 @@
 #include "line/stage.h"
 #include "sound/stage.h"
 #include "text/stage.h"
-#include "volume/stage.h"
+#include "world/stage.h"
 
 int parseIntOrDefault(const std::string& s, const int defaultValue) {
   try {
@@ -87,6 +87,11 @@ int main(const int argc, const char* argv[]) {
           .Id = "sound",
           .Name = "Sound",
           .NewStage = [] { return new soil_samples::sound::Stage(); },
+      },
+      {
+          .Id = "world",
+          .Name = "World (Physics)",
+          .NewStage = [] { return new soil_samples::world::Stage(); },
       },
   };
 

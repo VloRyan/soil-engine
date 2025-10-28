@@ -22,8 +22,8 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/instancing/shape_instance.h
         src/instancing/stage.cc
         src/instancing/stage.h
-        src/volume/stage.cc
-        src/volume/stage.h
+        src/world/stage.cc
+        src/world/stage.h
 
         src/text/stage.cc
         src/text/stage.h

@@ -1,5 +1,6 @@
 #include "shape_tile_instance.h"
 
+#include "stage/scene/node.h"
 #include "video/vertex/vertex.h"
 
 namespace soil_samples::gui::component {
@@ -34,10 +35,11 @@ std::vector<soil::video::vertex::VertexAttribDescriptor>
 ShapeTileInstance::ShapeTileInstance(const bool isOpaque)
     : InstanceData(BATCH_NAME, isOpaque), positionOffset_(0.F) {}
 
-void ShapeTileInstance::UpdateTransform(const glm::mat4& transform) {
-  InstanceData::UpdateTransform(transform);
-  data_.Transform = transform;
+void ShapeTileInstance::Update() {
+  // InstanceData::UpdateTransform(transform);
+  data_.Transform = GetParent()->Transform().GetMatrix();
   data_.Transform[3] += glm::vec4(positionOffset_, 0.0F);
+  InstanceData::Update();
 }
 
 void ShapeTileInstance::WriteData(soil::video::buffer::Cursor* cursor) const {
@@ -51,7 +53,8 @@ void ShapeTileInstance::SetTileIndex(const int index) {
     return;
   }
   data_.TileIndex = index;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 void ShapeTileInstance::SetTileScale(const glm::vec2 scale) {
@@ -59,7 +62,8 @@ void ShapeTileInstance::SetTileScale(const glm::vec2 scale) {
     return;
   }
   data_.TileScale = scale;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 glm::vec2 ShapeTileInstance::GetTileScale() const { return data_.TileScale; }
@@ -71,7 +75,8 @@ void ShapeTileInstance::SetSize(const glm::vec2& size) {
     return;
   }
   data_.Size = size;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 glm::vec4 ShapeTileInstance::GetColor() const { return data_.Color; }
@@ -82,7 +87,8 @@ void ShapeTileInstance::SetColor(const glm::vec4& color) {
   }
   data_.Color = color;
   SetOpaque(color.a == 1.0F);
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 void ShapeTileInstance::SetPositionOffset(glm::vec3 offset) {
@@ -90,7 +96,8 @@ void ShapeTileInstance::SetPositionOffset(glm::vec3 offset) {
     return;
   }
   positionOffset_ = offset;
-  SetDirty();
+  SignalChanged();
+  ;
 }
 
 glm::vec3 ShapeTileInstance::GetPositionOffset() const {
