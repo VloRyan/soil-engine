@@ -7,9 +7,9 @@
 #include <debug/deque>
 #include <ranges>
 #include <stdexcept>
-#include <utility>
 
 #include "stage/event/node.h"
+#include "stage/scene/component/transform_component.h"
 #include "stage/scene/scene.h"
 
 namespace soil::stage::scene {
@@ -17,7 +17,13 @@ Node::Node(const Type type)
     : type_(type),
       parent_(nullptr),
       state_(State::Normal),
-      updateType_(UpdateType::Passive) {}
+      updateType_(UpdateType::Passive),
+      transform_(new component::TransformComponent()) {
+  const auto compTypeIndex = static_cast<std::int8_t>(transform_->GetType());
+  components_[compTypeIndex].push_back(transform_);
+  transform_->SetParent(this);
+  transform_->AddListener(this);
+}
 
 Node::~Node() {
   for (auto* child : children_) {
@@ -26,11 +32,12 @@ Node::~Node() {
     delete child;
   }
   children_.clear();
+  transform_->RemoveListener(this);
   for (const auto& comps : components_ | std::views::values) {
     for (auto* comp : comps) {
       comp->SetParent(nullptr);
       const auto removedEvent =
-          event::Component(comp, event::Component::ChangeType::Removed);
+          event::Component(comp, event::Component::TriggerType::Removed);
       Observable::fire(event::Node::MakeComponentEvent(this, removedEvent));
       delete comp;
     }
@@ -49,10 +56,9 @@ void Node::addChild(Node* node) {
     return;
   }
   node->SetParent(this);
-  node->SetDirty(DirtyImpact::Transform);
+  node->MarkDirtyWith(DirtyImpact::Transform);
+  node->UpdateDirty();
   children_.push_back(node);
-  // TODO: Only children
-  SetDirty(DirtyImpact::Dependents);
   fire(event::Node::MakeChildAddedEvent(this, node));
 }
 
@@ -81,45 +87,87 @@ Node::UpdateType Node::GetUpdateType() const { return updateType_; }
 
 Node::Type Node::GetType() const { return type_; }
 
-void Node::SetPosition(const glm::vec3& pos) {
-  if (pos == GetPosition()) {
-    return;
-  }
-  Object3d::SetPosition(pos);
-  SetDirty(DirtyImpact::Transform);
+glm::vec3 Node::GetPosition() const { return transform_->GetPosition(); }
+
+void Node::SetPosition(const glm::vec3& pos) { transform_->SetPosition(pos); }
+
+glm::vec3 Node::GetLocalPosition() const {
+  return transform_->GetLocalPosition();
+}
+void Node::SetLocalPosition(const glm::vec3& pos) {
+  transform_->SetLocalPosition(pos);
 }
 
+/*
 void Node::SetDirection(const glm::vec3& direction) {
-  if (direction == GetDirection()) {
+  auto localDirection = glm::vec3(localTransform_[2]);
+  /*
+  if (auto* parent = GetParent(); parent != nullptr) {
+    auto relDir = direction - parent->GetDirection();
+    if (relDir == localDirection) {
+      return;
+    }
+    localTransform_[2] = glm::vec4(relDir, 0.F);
+    auto localPos = glm::vec3(localTransform_[3]);
+    localTransform_ = glm::inverse(parent->GetTransform()) * localTransform_;
+    localTransform_[3] = glm::vec4(localPos, 1.F);
+  } else {*//*
+  // TODO
+  if (direction == localDirection) {
     return;
   }
-  Object3d::SetDirection(direction);
+  localTransform_[2] = glm::vec4(direction, 0.F);
+  Object3d::SetTransform(localTransform_);
+  //}
   SetDirty(DirtyImpact::Transform);
 }
-
+/*
 void Node::SetRight(const glm::vec3& right) {
-  if (right == GetRight()) {
+  auto localRight = glm::vec3(localTransform_[0]);
+  /*if (auto* parent = GetParent(); parent != nullptr) {
+    auto relRight = right - parent->GetRight();
+    if (relRight == localRight) {
+      return;
+    }
+    localTransform_[0] = glm::vec4(relRight, 1.F);
+  } else {*//*
+  // TODO
+  if (right == localRight) {
     return;
   }
-  Object3d::SetRight(right);
+  localTransform_[0] = glm::vec4(right, 1.F);
+  Object3d::SetTransform(localTransform_);
+  //}
   SetDirty(DirtyImpact::Transform);
 }
-
+/*
 void Node::SetUp(const glm::vec3& up) {
-  if (up == GetUp()) {
+  auto localUp = glm::vec3(localTransform_[1]);
+  /*if (auto* parent = GetParent(); parent != nullptr) {
+    auto relUp = up - parent->GetUp();
+    if (relUp == localUp) {
+      return;
+    }
+    localTransform_[1] = glm::vec4(relUp, 1.F);
+  } else {*//*
+  // TODO
+  if (up == localUp) {
     return;
   }
-  Object3d::SetUp(up);
+  localTransform_[0] = glm::vec4(up, 1.F);
+  Object3d::SetTransform(localTransform_);
+  //}
   SetDirty(DirtyImpact::Transform);
 }
-
-void Node::SetLocalTransform(const glm::mat4& transform) {
-  if (transform == GetLocalTransform()) {
+/*
+void Node::SetTransform(const glm::mat4& transform) {
+  if (transform == localTransform_) {
     return;
   }
-  Object3d::SetLocalTransform(transform);
+  localTransform_ = transform;
   SetDirty(DirtyImpact::Transform);
 }
+*/
 
 void Node::Update() {
   if (!IsDirty()) {
@@ -131,29 +179,34 @@ void Node::Update() {
   UpdateDirty();
 }
 
+component::TransformComponent& Node::Transform() const { return *transform_; }
+
 void Node::UpdateDirty() {
   if (IsDirtyImpact(DirtyImpact::Transform)) {
     if (GetParent() != nullptr) {
-      ComputeWorldTransform(GetParent()->GetWorldTransform());
+      transform_->UpdateTransform(GetParent()->transform_->GetMatrix());
     }
     ForEachComponent([this](component::Component* component) {
-      component->SetDirty();
-      component->UpdateTransform(GetWorldTransform());
+      if (component == transform_) {
+        return;
+      }
       component->Update();
     });
     for (auto* child : children_) {
-      child->SetDirty(DirtyImpact::Transform);
+      child->MarkDirtyWith(DirtyImpact::Transform);
       child->UpdateDirty();
     }
   } else {
-    if (IsDirtyImpact(DirtyImpact::Components) ||
+    /*if (IsDirtyImpact(DirtyImpact::Components) ||
         IsDirtyImpact(DirtyImpact::Dependents)) {
       ForEachComponent(
           [](component::Component* component) { component->Update(); });
-    }
+    }*/
     if (IsDirtyImpact(DirtyImpact::Dependents)) {
+      ForEachComponent(
+          [](component::Component* component) { component->Update(); });
       for (auto* child : children_) {
-        child->SetDirty(DirtyImpact::Dependents);
+        child->MarkDirtyWith(DirtyImpact::Dependents);
         child->UpdateDirty();
       }
     }
@@ -165,7 +218,6 @@ void Node::UpdateDirty() {
     }
     comp->SetParent(this);
     comp->AddListener(this);
-    comp->UpdateTransform(GetWorldTransform());
     comp->Update();
     const auto compTypeIndex = static_cast<std::int8_t>(comp->GetType());
 
@@ -174,7 +226,7 @@ void Node::UpdateDirty() {
       alwaysUpdateComponents_.push_back(comp);
     }
     const auto addedEvent =
-        event::Component(comp, event::Component::ChangeType::Added);
+        event::Component(comp, event::Component::TriggerType::Added);
     Observable::fire(event::Node::MakeComponentEvent(this, addedEvent));
   }
   addedComponents_.clear();
@@ -203,6 +255,10 @@ void Node::SetState(const State state) {
 void Node::SetDirty(DirtyImpact cause) {
   dirtyImpacts_[static_cast<std::int8_t>(cause)] = true;
   SetState(State::Dirty);
+}
+void Node::MarkDirtyWith(DirtyImpact cause) {
+  dirtyImpacts_[static_cast<std::int8_t>(cause)] = true;
+  state_ = State::Dirty;
 }
 
 Node* Node::GetParent() const { return parent_; }
@@ -254,7 +310,7 @@ void Node::RemoveComponent(component::Component* comp) {
     }
   }
   const auto removedEvent =
-      event::Component(comp, event::Component::ChangeType::Removed);
+      event::Component(comp, event::Component::TriggerType::Removed);
   Observable::fire(event::Node::MakeComponentEvent(this, removedEvent));
 }
 
@@ -263,33 +319,37 @@ bool Node::HasComponent(component::Component::Type type) const {
 }
 
 void Node::Handle(const event::Component& event) {
-  if (event.GetOrigin()->GetParent() != this) {
+  if (event.Origin()->GetParent() != this) {
     return;
   }
-  switch (event.GetChangeType()) {
-    case event::Component::ChangeType::State: {
-      for (const auto* justAddedComp : addedComponents_) {
-        if (event.GetOrigin() == justAddedComp) {
-          return;
-        }
-      }
-      if (event.GetOrigin()->IsDirty()) {
-        SetDirty(DirtyImpact::Components);
-      }
-      break;
-    }
-    case event::Component::ChangeType::UpdateType: {
-      if (event.GetOrigin()->GetUpdateType() ==
-          component::Component::UpdateType::Always) {
-        alwaysUpdateComponents_.push_back(event.GetOrigin());
-      } else {
-        for (auto itr = alwaysUpdateComponents_.begin();
-             itr != alwaysUpdateComponents_.end(); ++itr) {
-          if (event.GetOrigin() == *itr) {
-            alwaysUpdateComponents_.erase(itr);
-            break;
+  switch (event.Trigger()) {
+    case event::Component::TriggerType::Changed: {
+      switch (event.Changed()) {
+        case event::Component::ChangeType::Data:
+          for (const auto* justAddedComp : addedComponents_) {
+            if (event.Origin() == justAddedComp) {
+              return;
+            }
           }
-        }
+          if (event.Origin() == transform_) {
+            SetDirty(DirtyImpact::Transform);
+          }
+          break;
+        case event::Component::ChangeType::UpdateType:
+          if (event.Origin()->GetUpdateType() ==
+              component::Component::UpdateType::Always) {
+            alwaysUpdateComponents_.push_back(event.Origin());
+          } else {
+            for (auto itr = alwaysUpdateComponents_.begin();
+                 itr != alwaysUpdateComponents_.end(); ++itr) {
+              if (event.Origin() == *itr) {
+                alwaysUpdateComponents_.erase(itr);
+                break;
+              }
+            }
+          }
+          break;
+        default:;
       }
       break;
     }
@@ -298,7 +358,7 @@ void Node::Handle(const event::Component& event) {
   Observable::fire(event::Node::MakeComponentEvent(this, event));
 }
 
-bool Node::GetReceiverType(ReceiverType type) const {
+bool Node::IsReceiverOf(ReceiverType type) const {
   if (type == ReceiverType::None) {
     return receiveTypeFlags_ == 0;
   }
@@ -339,17 +399,23 @@ void Node::ForEachComponent(
 void Node::GetComponents(std::vector<component::Component*>& comps,
                          const component::Component::Type type) const {
   if (type == component::Component::Type::Any) {
-    for (const auto& c : components_ | std::views::values) {
-      comps.insert(comps.end(), c.begin(), c.end());
+    for (std::int8_t key = 0;
+         key <= static_cast<std::int8_t>(component::Component::Type::World);
+         key++) {
+      const auto itr = components_.find(key);
+      if (itr == components_.end() || itr->second.empty()) {
+        continue;
+      }
+      comps.insert(comps.end(), itr->second.begin(), itr->second.end());
     }
     return;
   }
   const auto typeIndex = static_cast<std::int8_t>(type);
-  const auto pos = components_.find(typeIndex);
-  if (pos == components_.end() || pos->second.empty()) {
+  const auto itr = components_.find(typeIndex);
+  if (itr == components_.end() || itr->second.empty()) {
     return;
   }
-  comps.insert(comps.end(), pos->second.begin(), pos->second.end());
+  comps.insert(comps.end(), itr->second.begin(), itr->second.end());
 }
 
 component::Component* Node::GetFirstComponent(

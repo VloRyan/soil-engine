@@ -13,7 +13,7 @@ class ListenerComponent final : public Component {
 
   [[nodiscard]] sound::Listener* GetListener() const;
 
-  void UpdateTransform(const glm::mat4& matrix) override;
+  void Update() override;
 
  private:
   sound::Listener* listener_;

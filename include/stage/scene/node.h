@@ -11,14 +11,14 @@
 #include "input/event.h"
 #include "stage/event/component.h"
 #include "stage/event/node.h"
+#include "stage/scene/component/transform_component.h"
 #include "window_event.h"
 #include "world/entity/object_3d.h"
 
 namespace soil::stage::scene {
 class Scene;
 
-class Node : public world::entity::Object3d,
-             public input::EventHandler,
+class Node : public input::EventHandler,
              public WindowEventHandler,
              public event::ComponentEventHandler,
              public soil::event::Observable<event::Node> {
@@ -54,6 +54,7 @@ class Node : public world::entity::Object3d,
     Sound,
     Transform,
     Input,
+    World,
   };
 
   enum class ReceiverType : std::uint8_t { None = 0, Window, Input, COUNT };
@@ -102,7 +103,7 @@ class Node : public world::entity::Object3d,
 
   [[nodiscard]] bool HasComponent(component::Component::Type type) const;
 
-  [[nodiscard]] bool GetReceiverType(ReceiverType type) const;
+  [[nodiscard]] bool IsReceiverOf(ReceiverType type) const;
 
   virtual void Update();
 
@@ -111,16 +112,19 @@ class Node : public world::entity::Object3d,
   [[nodiscard]] UpdateType GetUpdateType() const;
 
   [[nodiscard]] virtual Type GetType() const;
+  virtual glm::vec3 GetPosition() const;
+  virtual void SetPosition(const glm::vec3& pos);
 
-  void SetPosition(const glm::vec3& pos) override;
+  glm::vec3 GetLocalPosition() const;
+  void SetLocalPosition(const glm::vec3& pos);
 
-  void SetDirection(const glm::vec3& direction) override;
+  // void SetDirection(const glm::vec3& direction) override;
 
-  void SetRight(const glm::vec3& right) override;
+  // void SetRight(const glm::vec3& right) override;
 
-  void SetUp(const glm::vec3& up) override;
+  // void SetUp(const glm::vec3& up) override;
 
-  void SetLocalTransform(const glm::mat4& transform) override;
+  // void SetTransform(const glm::mat4& transform) override;
 
   void Handle(const input::Event& event) override {}
 
@@ -140,7 +144,11 @@ class Node : public world::entity::Object3d,
 
   virtual void RemoveChild(Node* node);
 
+  component::TransformComponent& Transform() const;
+
  protected:
+  void MarkDirtyWith(DirtyImpact cause);
+
   virtual void SetParent(Node* parent);
 
   virtual void UpdateDirty();
@@ -157,6 +165,9 @@ class Node : public world::entity::Object3d,
   virtual void SetReceiverType(ReceiverType type, bool value);
 
   [[nodiscard]] virtual std::bitset<4> GetDirtyImpacts() const;
+
+ protected:
+  component::TransformComponent* transform_;
 
  private:
   Type type_;

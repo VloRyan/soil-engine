@@ -21,7 +21,7 @@ class Sound final : public Component, sound::event::EventHandler {
 
   [[nodiscard]] sound::Source& Source() const;
 
-  void UpdateTransform(const glm::mat4& matrix) override;
+  void Update() override;
 
   void Handle(const sound::event::Event& event) override;
 

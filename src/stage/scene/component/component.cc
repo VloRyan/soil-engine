@@ -4,10 +4,7 @@
 
 namespace soil::stage::scene::component {
 Component::Component(const Type type)
-    : parent_(nullptr),
-      type_(type),
-      state_(State::Normal),
-      updateType_(UpdateType::WhenDirty) {}
+    : parent_(nullptr), type_(type), updateType_(UpdateType::WhenNodeDirty) {}
 
 Component::~Component() {
   if (parent_ != nullptr) {
@@ -30,23 +27,12 @@ Component::UpdateType Component::GetUpdateType() const { return updateType_; }
 
 Component::Type Component::GetType() const { return type_; }
 
-void Component::Update() { SetState(State::Normal); }
-
-void Component::UpdateTransform(const glm::mat4& transform) {}
-
-Component::State Component::GetState() const { return state_; }
+void Component::Update() {}
 
 Node* Component::GetParent() const { return parent_; }
 
-void Component::SetState(const State state) {
-  if (state == state_) {
-    return;
-  }
-  state_ = state;
-  fire(event::Component::MakeStateChangedEvent(this));
+void Component::SignalChanged() {
+  fire(event::Component::MakeDataChangedEvent(this));
 }
 
-void Component::SetDirty() { SetState(State::Dirty); }
-
-bool Component::IsDirty() const { return GetState() == State::Dirty; }
 }  // namespace soil::stage::scene::component

@@ -28,7 +28,7 @@ void MeshComponent::Render(video::render::State& state) {
 }
 
 float MeshComponent::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetWorldPosition(), point);
+  return glm::distance(GetParent()->GetPosition(), point);
 }
 
 video::shader::Shader* MeshComponent::GetShader() const { return shader_; }

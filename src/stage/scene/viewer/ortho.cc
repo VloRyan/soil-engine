@@ -18,7 +18,7 @@ Ortho::Ortho(const glm::ivec2 resolution)
 
 void Ortho::Look(const glm::vec3 pos, const glm::vec3 center,
                  const glm::vec3 up) {
-  view_ = glm::lookAt(pos + GetWorldPosition(), center, up);
+  view_ = glm::lookAt(pos + GetPosition(), center, up);
   glm::mat4 invTransform = inverse(view_);
   this->right_ = glm::vec3(invTransform[0]);
   this->up_ = glm::vec3(invTransform[1]);
@@ -71,7 +71,7 @@ void Ortho::SetOrthoType(const OrthoType orthoType) {
 
 void Ortho::UpdateDirty() {
   Node::UpdateDirty();
-  const auto wPos = GetWorldPosition();
+  const auto wPos = GetPosition();
   view_ = glm::lookAt(wPos, wPos + direction_, glm::vec3(0.F, 1.F, 0.F));
   glm::mat4 invTransform = inverse(view_);
   right_ = glm::vec3(invTransform[0]);

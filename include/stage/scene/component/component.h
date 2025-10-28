@@ -15,8 +15,9 @@ class Component : public soil::event::Observable<event::Component> {
 
  public:
   enum class Type : std::uint8_t {
-    Visual = 0,
-    BoundingVolume,
+    Transform = 0,
+    Visual,
+    WorldEntity,
     Interaction,
     Sound,
     Metadata,
@@ -25,14 +26,8 @@ class Component : public soil::event::Observable<event::Component> {
     Any = 255
   };
 
-  enum class State : std::uint8_t {
-    Dirty = 0,
-    Normal,
-    Delete,
-  };
-
   enum class UpdateType : std::uint8_t {
-    WhenDirty = 0,
+    WhenNodeDirty = 0,
     Always,
   };
 
@@ -46,28 +41,16 @@ class Component : public soil::event::Observable<event::Component> {
 
   virtual void Update();
 
-  [[nodiscard]] State GetState() const;
-
-  [[nodiscard]] bool IsDirty() const;
-
   [[nodiscard]] virtual UpdateType GetUpdateType() const;
+  virtual void SetUpdateType(UpdateType updateType);
 
  protected:
-  virtual void SetDirty();
-
-  void SetState(State state);
-
-  virtual void UpdateTransform(const glm::mat4& transform);
-
   virtual void SetParent(Node* parent);
-
- public:
-  virtual void SetUpdateType(const UpdateType updateType);
+  virtual void SignalChanged();
+  Node* parent_;
 
  private:
-  Node* parent_;
   Type type_;
-  State state_;
   UpdateType updateType_;
 };
 }  // namespace soil::stage::scene::component

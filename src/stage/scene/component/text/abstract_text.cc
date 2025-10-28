@@ -1,7 +1,6 @@
 #include "stage/scene/component/text/abstract_text.h"
 
 #include "stage/scene/component/text/parser.h"
-#include "stage/scene/scene.h"
 
 namespace soil::stage::scene::component::text {
 std::unordered_map<std::string, AbstractText::PrefabData>
@@ -43,35 +42,28 @@ void AbstractText::SetText(const std::string& text) {
     return;
   }
   text_ = text;
-  SetDirty();
+  updateText();
 }
 
+std::string AbstractText::GetText() const { return text_; }
+
 float AbstractText::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetWorldPosition().z + positionOffset_.z,
+  return glm::distance(GetParent()->GetPosition().z + positionOffset_.z,
                        point.z);
 }
 
-void AbstractText::UpdateTransform(const glm::mat4& transform) {
-  MeshComponent::UpdateTransform(transform);
-}
-
-void AbstractText::Update() {
-  if (IsDirty()) {
-    updateText();
-  }
-  MeshComponent::Update();
-}
+void AbstractText::Update() { MeshComponent::Update(); }
 
 const std::vector<Line>& AbstractText::GetLines() const { return lines_; }
 
 void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
   positionOffset_ = positionOffset;
+  SignalChanged();
 }
 
 glm::vec3 AbstractText::GetPositionOffset() const { return positionOffset_; }
 
 void AbstractText::updateText() {
-  const std::string text = GetText();
   lines_ = Parser::Parse(GetText(), data_->Font, static_cast<int>(maxSize_.x));
   const auto effectiveLineHeight =
       static_cast<float>(data_->Font->LineHeight -
@@ -84,6 +76,7 @@ void AbstractText::updateText() {
       size_.x = static_cast<float>(line.Length) * GetCharacterSize();
     }
   }
+  SignalChanged();
 }
 
 glm::vec2 AbstractText::GetSize() const { return size_; }
@@ -93,6 +86,7 @@ void AbstractText::SetBorderOutline(const glm::vec2& borderOutline) {
     return;
   }
   borderOutline_ = borderOutline;
+  SignalChanged();
 }
 
 glm::vec2 AbstractText::GetBorderOutline() const { return borderOutline_; }
@@ -106,6 +100,7 @@ void AbstractText::SetCharacterOutline(const glm::vec2& characterOutline) {
     return;
   }
   characterOutline_ = characterOutline;
+  SignalChanged();
 }
 
 glm::vec2 AbstractText::GetMaxSize() const { return maxSize_; }
@@ -115,7 +110,7 @@ void AbstractText::SetMaxSize(const glm::vec2& max_size) {
     return;
   }
   maxSize_ = max_size;
-  SetDirty();
+  updateText();
 }
 
 byte AbstractText::GetTextureSlot() const {
@@ -129,6 +124,7 @@ void AbstractText::SetColor(const glm::vec4 color) {
     return;
   }
   color_ = color;
+  SignalChanged();
 }
 
 glm::vec3 AbstractText::GetBorderColor() const { return borderColor_; }
@@ -138,18 +134,17 @@ void AbstractText::SetBorderColor(const glm::vec3 color) {
     return;
   }
   borderColor_ = color;
+  SignalChanged();
 }
 
 float AbstractText::GetCharacterSize() const { return characterSize_; }
-
-std::string AbstractText::GetText() const { return text_; }
 
 void AbstractText::SetCharacterSize(const float size) {
   if (size == characterSize_) {
     return;
   }
   characterSize_ = size;
-  SetDirty();
+  updateText();
 }
 
 const file::Font* AbstractText::GetFont() const { return data_->Font; }

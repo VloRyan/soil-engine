@@ -1,5 +1,7 @@
 #include "stage/scene/gui/rectangle.h"
 
+#include "stage/scene/component/transform_component.h"
+
 namespace soil::stage::scene::gui {
 Rectangle::Rectangle()
     : Node(Type::Game),
@@ -16,7 +18,7 @@ Rectangle::Rectangle()
       visibleEffective_(true),
       onMouseOverFunc_(nullptr),
       onMouseOutFunc_(nullptr) {
-  Node::SetPosition(glm::vec3(0.F, 0.F, LAYER_Z_INCREMENT));
+  Node::SetLocalPosition(glm::vec3(0.F, 0.F, LAYER_Z_INCREMENT));
 }
 
 Rectangle* Rectangle::GetParentRect() const {
@@ -34,11 +36,7 @@ void Rectangle::SetSize(const glm::ivec2& size) {
     return;
   }
   size_ = newSize;
-  if (const auto parent = GetParentRect(); parent != nullptr) {
-    parent->SetDirty(DirtyImpact::Dependents);
-  } else {
-    SetDirty(DirtyImpact::Dependents);
-  }
+  SetDirty(DirtyImpact::Dependents);
 }
 
 const glm::ivec2& Rectangle::GetSize() const { return size_; }
@@ -146,11 +144,13 @@ void Rectangle::removeChildRect(const Rectangle* rect) {
 }
 
 void Rectangle::RemoveChild(Node* node) {
-  Node::RemoveChild(node);
-
-  if (const auto* rect = dynamic_cast<Rectangle*>(node); rect != nullptr) {
-    removeChildRect(rect);
+  for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
+    if (*itr == node) {
+      children_.erase(itr);
+      break;
+    }
   }
+  Node::RemoveChild(node);
 }
 
 void Rectangle::UpdateDirty() {
@@ -165,7 +165,7 @@ void Rectangle::UpdateDirty() {
       UpdateSize(childSize);
       ApplyAnchors(childSize, parent->GetCenter());
       if (IsDirtyImpact(DirtyImpact::Transform)) {
-        ComputeWorldTransform(parent->GetWorldTransform());
+        transform_->UpdateTransform(parent->Transform().GetMatrix());
       }
       UpdateScissor(parent->childScissorRect_);
     }
@@ -180,8 +180,7 @@ void Rectangle::UpdateScissor(const video::render::Rect& parentRect) {
   auto size = glm::ivec2(GetSize());
   const auto halfSize = GetSize() / 2;
   const auto maxParentPos = parentRect.LowerLeftPosition + parentRect.Size;
-  const auto bottomLeftPos =
-      glm::ivec2(glm::ivec2(GetWorldPosition()) - halfSize);
+  const auto bottomLeftPos = glm::ivec2(glm::ivec2(GetPosition()) - halfSize);
 
   scissorRect_.LowerLeftPosition = bottomLeftPos;
   scissorRect_.Size = size;
@@ -251,7 +250,7 @@ void Rectangle::SetVisible(const bool visible) {
 bool Rectangle::IsVisible() const { return visibleEffective_; }
 
 glm::vec2 Rectangle::GetCenter() const {
-  return glm::vec2(padding_[0] - padding_[2], padding_[3] - padding_[1]);
+  return {padding_[0] - padding_[2], padding_[3] - padding_[1]};
 }
 
 void Rectangle::SetOnMouseOverFunc(
@@ -273,7 +272,7 @@ void Rectangle::ApplyAnchors(const glm::ivec2& parentSize,
       verticalAnchors_ == VerticalAnchors::None) {
     return;
   }
-  glm::vec3 pos{parentCenter.x, parentCenter.y, GetPosition().z};
+  glm::vec3 pos{parentCenter.x, parentCenter.y, GetLocalPosition().z};
   const glm::vec2 parentHalfSize = parentSize / glm::ivec2(2);
   const glm::vec2 halfSize = GetSize() / glm::ivec2(2);
   switch (horizontalAnchors_) {
@@ -296,12 +295,12 @@ void Rectangle::ApplyAnchors(const glm::ivec2& parentSize,
     case VerticalAnchors::Middle:
     case VerticalAnchors::None:;
   }
-  SetPosition(pos);
+  SetLocalPosition(pos);
 }
 
 bool Rectangle::Contains(const glm::ivec2 pos) const {
   const auto halfSize = glm::ivec2(GetSize()) / glm::ivec2(2);
-  const auto cPos = glm::ivec2(GetWorldPosition());
+  const auto cPos = glm::ivec2(GetPosition());
   return pos.x >= cPos.x - halfSize.x &&  //
          pos.x <= cPos.x + halfSize.x &&  //
          pos.y >= cPos.y - halfSize.y &&  //
@@ -311,8 +310,8 @@ bool Rectangle::Contains(const glm::ivec2 pos) const {
 bool Rectangle::Contains(const Rectangle* other) const {
   const auto halfSize = glm::ivec2(GetSize()) / glm::ivec2(2);
   const auto otherHalfSize = glm::ivec2(other->GetSize()) / glm::ivec2(2);
-  const auto pos = glm::ivec2(GetWorldPosition());
-  const auto otherPos = glm::ivec2(GetWorldPosition());
+  const auto pos = glm::ivec2(GetPosition());
+  const auto otherPos = glm::ivec2(GetPosition());
   const bool betweenX = (otherPos.x + otherHalfSize.x >= pos.x - halfSize.x &&
                          otherPos.x + otherHalfSize.x <= pos.x + halfSize.x) ||
                         (otherPos.x - otherHalfSize.x <= pos.x + halfSize.x &&

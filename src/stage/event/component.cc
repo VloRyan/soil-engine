@@ -3,20 +3,22 @@
 #include <glm/gtc/constants.hpp>
 
 namespace soil::stage::event {
-Component::Component(scene::component::Component* origin, const ChangeType type)
-    : Event(Type::Stage), origin_(origin), changeType_(type) {}
+Component::Component(scene::component::Component* origin,
+                     const TriggerType type, const ChangeType what)
+    : Event(Type::Stage), origin_(origin), trigger_(type), changed_(what) {}
 
-Component::ChangeType Component::GetChangeType() const { return changeType_; }
+Component::TriggerType Component::Trigger() const { return trigger_; }
 
-scene::component::Component* Component::GetOrigin() const { return origin_; }
+scene::component::Component* Component::Origin() const { return origin_; }
 
-Component Component::MakeStateChangedEvent(
-    scene::component::Component* origin) {
-  return {origin, ChangeType::State};
+Component::ChangeType Component::Changed() const { return changed_; }
+
+Component Component::MakeDataChangedEvent(scene::component::Component* origin) {
+  return {origin, TriggerType::Changed, ChangeType::Data};
 }
 
 Component Component::MakeUpdateTypeChangedEvent(
     scene::component::Component* origin) {
-  return {origin, ChangeType::UpdateType};
+  return {origin, TriggerType::Changed, ChangeType::UpdateType};
 }
 }  // namespace soil::stage::event

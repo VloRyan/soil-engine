@@ -12,11 +12,12 @@ ListenerComponent::ListenerComponent(sound::Listener* listener,
 
 sound::Listener* ListenerComponent::GetListener() const { return listener_; }
 
-void ListenerComponent::UpdateTransform(const glm::mat4& matrix) {
-  Component::UpdateTransform(matrix);
+void ListenerComponent::Update() {
+  auto& matrix = GetParent()->Transform().GetMatrix();
   listener_->SetPosition(matrix[3]);
   if (setOrientation_) {
     listener_->SetOrientation(glm::mat2x3(matrix[2], matrix[1]));
   }
+  Component::Update();
 }
 }  // namespace soil::stage::scene::component

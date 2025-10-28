@@ -88,8 +88,6 @@ class AbstractText : public MeshComponent {
 
   float DistanceTo(const glm::vec3& point) override;
 
-  void UpdateTransform(const glm::mat4& transform) override;
-
   void Update() override;
 
   void Render(video::render::State& state) override = 0;

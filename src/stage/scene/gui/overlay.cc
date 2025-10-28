@@ -1,5 +1,6 @@
 #include "stage/scene/gui/overlay.h"
 
+#include "stage/scene/component/transform_component.h"
 #include "stage/scene/gui/root.h"
 
 namespace soil::stage::scene::gui {
@@ -23,13 +24,13 @@ void Overlay::SetPositionRelativeToRoot(const bool positionRelativeToRoot) {
   this->positionRelativeToRoot_ = positionRelativeToRoot;
 }
 
-void Overlay::ComputeWorldTransform(const glm::mat4& parentWorldTransform) {
+void Overlay::UpdateTransform(const glm::mat4& parentWorldTransform) {
   auto topLevel = parentWorldTransform;
   if (positionRelativeToRoot_) {
     topLevel[3] = glm::vec4(0.F, 0.F, -10.F, 1.F);
   } else {
     topLevel[3].z = -10.F;
   }
-  Rectangle::ComputeWorldTransform(topLevel);
+  transform_->UpdateTransform(topLevel);
 }
 }  // namespace soil::stage::scene::gui

@@ -13,10 +13,10 @@ class Overlay : public Rectangle {
 
   [[nodiscard]] virtual bool IsPositionRelativeToRoot() const;
 
-  virtual void SetPositionRelativeToRoot(const bool positionRelativeToRoot);
+  virtual void SetPositionRelativeToRoot(bool positionRelativeToRoot);
 
  protected:
-  void ComputeWorldTransform(const glm::mat4& parentWorldTransform) override;
+  void UpdateTransform(const glm::mat4& parentTransform);
 
  private:
   Root* root_;

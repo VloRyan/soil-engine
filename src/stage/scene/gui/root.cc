@@ -11,7 +11,6 @@ Root::Root(const glm::ivec2 windowSize) {
   Node::SetReceiverType(ReceiverType::Window, true);
   const auto parentHalfSize = size_ / glm::ivec2(2);
   Node::SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
-  Object3d::ComputeWorldTransform(glm::mat4(1.F));
 }
 
 void Root::Handle(const input::Event& event) {
@@ -19,9 +18,8 @@ void Root::Handle(const input::Event& event) {
       event.GetOrigin() == input::Event::Origin::MousePosition ||
       event.GetOrigin() == input::Event::Origin::MouseWheel) {
     const auto pos =
-        glm::vec2(event.GetCursorPos().x,
-                  static_cast<float>(size_.y) -
-                      event.GetCursorPos().y);  // origin to bottom-left
+        glm::ivec2(event.GetCursorPos().x,
+                   size_.y - event.GetCursorPos().y);  // origin to bottom-left
     if (!Contains(pos)) {
       if (isMouseOver_) {
         OnMouseOut();
@@ -52,6 +50,7 @@ void Root::Handle(const WindowEvent& event) {
   childScissorRect_.Size = size_;
   const auto parentHalfSize = size_ / glm::ivec2(2);
   SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
+  SetDirty(DirtyImpact::Dependents);
   Node::Handle(event);
 }
 

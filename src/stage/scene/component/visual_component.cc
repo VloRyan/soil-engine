@@ -18,7 +18,7 @@ void VisualComponent::SetVisible(const bool visible) {
     return;
   }
   visible_ = visible;
-  SetDirty();
+  SignalChanged();
 }
 
 bool VisualComponent::IsOpaque() const { return opaque_; }
@@ -28,7 +28,7 @@ void VisualComponent::SetOpaque(const bool opaque) {
     return;
   }
   opaque_ = opaque;
-  SetDirty();
+  SignalChanged();
 }
 
 bool VisualComponent::IsCulled() const { return culled_; }
@@ -38,7 +38,7 @@ void VisualComponent::SetCulled(const bool culled) {
     return;
   }
   culled_ = culled;
-  SetDirty();
+  SignalChanged();
 }
 
 VisualComponent* VisualComponent::Cast(Component* component) {

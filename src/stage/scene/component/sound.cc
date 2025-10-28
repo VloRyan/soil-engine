@@ -50,11 +50,11 @@ void Sound::Stop() const {
 
 sound::Source& Sound::Source() const { return *source_; }
 
-void Sound::UpdateTransform(const glm::mat4& matrix) {
-  Component::UpdateTransform(matrix);
+void Sound::Update() {
   if (source_ == nullptr) {
     return;
   }
-  source_->SetPosition(matrix[3]);
+  source_->SetPosition(GetParent()->Transform().GetPosition());
+  Component::Update();
 }
 }  // namespace soil::stage::scene::component

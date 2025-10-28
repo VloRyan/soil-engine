@@ -6,17 +6,19 @@
 #include "window.h"
 
 namespace soil::stage::scene::viewer {
-Perspective::Perspective()
+Perspective::Perspective(glm::ivec2 resolution)
     : updateVelocity_(false),
       moveSpeed_(),
       rotate_(0.0F),
       velocity_(0.0F),
       fovY_(60.0F),
-      perspective_(0.0F),
+      perspective_(glm::mat4(1.F)),
       view_(1.0F) {
   nearZ_ = 0.1F;
   SetRotate(rotate_);
   Node::SetReceiverType(ReceiverType::Window, true);
+  windowSize_ = resolution;
+  UpdateProjection(windowSize_);
 }
 
 glm::mat4 Perspective::GetProjectionMatrix() const { return perspective_; }
@@ -24,21 +26,21 @@ glm::mat4 Perspective::GetProjectionMatrix() const { return perspective_; }
 glm::mat4 Perspective::GetViewMatrix() const { return view_; }
 
 void Perspective::Look(const glm::vec3 center, const glm::vec3 up) {
-  view_ = glm::lookAt(GetWorldPosition(), center, up);
+  /*view_ = glm::lookAt(GetWorldPosition(), center, up);
   glm::mat4 invTransform = inverse(view_);
   this->right_ = glm::vec3(invTransform[0]);
   this->up_ = glm::vec3(invTransform[1]);
   this->direction_ =
       glm::vec3(invTransform[2]) * glm::vec3(-1.0F);  // direction is inverse
-  frustum_->SetProjectionView(GetProjectionMatrix() * GetViewMatrix());
+  frustum_->SetProjectionView(GetProjectionMatrix() * GetViewMatrix());*/
 }
 
 void Perspective::Move(const glm::vec3 move) {
-  auto localTransform = GetLocalTransform();
+  /*auto localTransform = GetLocalTransform();
   localTransform[3] += glm::vec4(right_ * move[0], 0);
   localTransform[3] += glm::vec4(up_ * move[1], 0);
   localTransform[3] += glm::vec4(direction_ * move[2], 0);
-  SetLocalTransform(localTransform);
+  SetLocalTransform(localTransform);*/
 }
 
 void Perspective::AddVelocity(glm::vec3 velocity, const bool relative) {
@@ -53,19 +55,19 @@ void Perspective::AddVelocity(glm::vec3 velocity, const bool relative) {
 }
 
 void Perspective::Update() {
-  auto localTransform = GetLocalTransform();
+  /*auto localTransform = GetLocalTransform();
   if (updateVelocity_) {
     localTransform[3] += glm::vec4(velocity_, 0);
     SetLocalTransform(localTransform);
     velocity_ = glm::vec3(0.0F);
     updateVelocity_ = false;
-  }
+  }*/
   Node::Update();
 }
 
 void Perspective::UpdateDirty() {
   Node::UpdateDirty();
-  if (IsDirtyImpact(DirtyImpact::Dependents)) {
+  /*if (IsDirtyImpact(DirtyImpact::Dependents)) {
     view_ = glm::lookAt(GetWorldPosition(), GetWorldPosition() + GetDirection(),
                         GetUp());
     glm::mat4 invTransform = inverse(view_);
@@ -74,18 +76,19 @@ void Perspective::UpdateDirty() {
     direction_ =
         glm::vec3(invTransform[2]) * glm::vec3(-1.0F);  // direction is inverse
     frustum_->SetProjectionView(GetProjectionMatrix() * GetViewMatrix());
-  }
+  }*/
 }
 
 void Perspective::UpdateProjection(const glm::ivec2& size) {
   const float aspect = static_cast<float>(size.x) / static_cast<float>(size.y);
   perspective_ = glm::perspective(glm::radians(fovY_), aspect, nearZ_, farZ_);
 }
-
+/*
 void Perspective::SetDirection(const glm::vec3& direction) {
   direction_ = direction;
 }
 
+ * TODO
 void Perspective::SetPosition(const glm::vec3& pos) {
   auto localTransform = GetLocalTransform();
   localTransform[3] = glm::vec4(pos, 1.0F);
@@ -114,5 +117,5 @@ void Perspective::SetRotate(const glm::vec3 rot) {
                      std::cos(rot[0] - 3.14F / 2.0F));
   up_ = glm::cross(right_, direction_);
 }
-
+*/
 }  // namespace soil::stage::scene::viewer

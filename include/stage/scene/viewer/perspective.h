@@ -7,7 +7,7 @@
 namespace soil::stage::scene::viewer {
 class Perspective : public Node {
  public:
-  explicit Perspective();
+  explicit Perspective(glm::ivec2 resolution);
 
   ~Perspective() override = default;
 
@@ -25,7 +25,7 @@ class Perspective : public Node {
 
   void SetRotate(glm::vec3 rot);
 
-  [[nodiscard]] glm::vec3 GetRight() const override;
+  /*[[nodiscard]] glm::vec3 GetRight() const override;
 
   [[nodiscard]] glm::vec3 GetUp() const override;
 
@@ -33,11 +33,11 @@ class Perspective : public Node {
 
   void SetRight(const glm::vec3& right) override;
 
-  void SetUp(const glm::vec3& up) override;
+  void SetUp(const glm::vec3& up) override;*/
 
-  void SetPosition(const glm::vec3& pos) override;
+  // void SetPosition(const glm::vec3& pos) override;
 
-  void SetDirection(const glm::vec3& direction) override;
+  // void SetDirection(const glm::vec3& direction) override;
 
   void Update() override;
 

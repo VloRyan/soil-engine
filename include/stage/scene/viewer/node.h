@@ -22,13 +22,13 @@ class Node : public scene::Node {
 
   virtual void SetFarZ(float farZ);
 
-  virtual world::volume::Frustum* GetFrustum();
+  virtual soil::world::volume::Frustum* GetFrustum();
 
-  [[nodiscard]] glm::vec3 GetDirection() const override;
+  /*[[nodiscard]] glm::vec3 GetDirection() const override;
 
   [[nodiscard]] glm::vec3 GetRight() const override;
 
-  [[nodiscard]] glm::vec3 GetUp() const override;
+  [[nodiscard]] glm::vec3 GetUp() const override;*/
 
   void Handle(const WindowEvent& event) override;
 
@@ -46,7 +46,7 @@ class Node : public scene::Node {
 
   glm::ivec2 windowSize_;
 
-  world::volume::Frustum* frustum_;
+  soil::world::volume::Frustum* frustum_;
 };
 }  // namespace soil::stage::scene::viewer
 #endif

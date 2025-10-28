@@ -8,7 +8,7 @@ Node::Node(scene::Node* origin, const ChangeType type)
       origin_(origin),
       changedNode_(nullptr),
       changeType_(type),
-      componentEvent_(nullptr, Component::ChangeType::State) {}
+      componentEvent_(nullptr, Component::TriggerType::Added) {}
 
 Node::~Node() = default;
 
