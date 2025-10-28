@@ -1,10 +1,17 @@
 #include "stage/scene/hook/hook.h"
 
 namespace soil::stage::scene::hook {
-Hook::Hook(const Type type, const HandlerType handlerType)
-    : type_(type), handlerType_(handlerType) {}
+Hook::Hook(const std::vector<Hook::Trigger_t>& triggers,
+           const HandlerType handlerType)
+    : triggers_(0), handlerType_(handlerType) {
+  for (auto trigger : triggers) {
+    triggers_[static_cast<int>(trigger)] = true;
+  }
+}
 
-Type Hook::GetType() const { return type_; }
+bool Hook::IsTrigger(Hook::Trigger_t trigger) {
+  return triggers_[static_cast<int>(trigger)];
+}
 
 Hook::HandlerType Hook::GetHandlerType() const { return handlerType_; }
 

@@ -5,7 +5,6 @@
 
 #include "stage/scene/node.h"
 #include "stage/stage.h"
-#include "util/deque.hpp"
 
 namespace soil::stage::scene {
 Scene::Scene()
@@ -29,7 +28,7 @@ Scene::~Scene() {
 
 void Scene::Render(video::render::State& state) {
   for (const auto hook : renderHooks_) {
-    hook->OnRender(state);
+    hook->Perform(hook::Hook::Trigger_t::Render);
   }
   if (pipeline_ != nullptr) {
     pipeline_->Run(state);
@@ -55,6 +54,9 @@ void Scene::Update() {
     }
   }
   dirtyActiveUpdateNodes_.clear();
+  for (const auto hook : beforeUpdateHooks_) {
+    hook->Perform(hook::Hook::Trigger_t::BeforeUpdateScene);
+  }
   for (auto* node : activeUpdateNodes_) {
     node->Update();
   }
@@ -71,8 +73,8 @@ void Scene::Update() {
     computeTopDirtyNode(node, this)->Update();
   }
   lastDirtyNodes->clear();
-  for (const auto hook : updateHooks_) {
-    hook->OnUpdate();
+  for (const auto hook : afterUpdateHooks_) {
+    hook->Perform(hook::Hook::Trigger_t::AfterUpdateScene);
   }
 }
 
@@ -122,19 +124,19 @@ void Scene::OnNodeAdded(Node* node) {
   } else {
     if (node->IsDirty()) {
       dirtyNodesPtr_->push_back(node);
-    } else {
+    } /*else {
       node->SetDirty(DirtyImpact::Self);
-    }
+    }*/
   }
   for (auto i = 1; i < static_cast<int>(ReceiverType::COUNT); ++i) {
     const auto type = static_cast<ReceiverType>(i);
-    if (node->GetReceiverType(type)) {
+    if (node->IsReceiverOf(type)) {
       eventReceiverNodes_[i].push_back(node);
     }
   }
   if (!componentEventHandler_.empty()) {
     node->ForEachComponent([this](component::Component* component) {
-      Handle(event::Component(component, event::Component::ChangeType::Added));
+      Handle(event::Component(component, event::Component::TriggerType::Added));
     });
   }
 }
@@ -173,7 +175,7 @@ void Scene::OnNodeRemoved(Node* node) {
   }
   for (auto i = 1; i < static_cast<int>(ReceiverType::COUNT); ++i) {
     const auto type = static_cast<ReceiverType>(i);
-    if (node->GetReceiverType(type)) {
+    if (node->IsReceiverOf(type)) {
       for (auto itr = eventReceiverNodes_[i].begin();
            itr != eventReceiverNodes_[i].end(); ++itr) {
         if (*itr == node) {
@@ -187,8 +189,8 @@ void Scene::OnNodeRemoved(Node* node) {
   if (!componentEventHandler_.empty()) {
     node->ForEachComponent([this](component::Component* component) {
       for (auto* listener : componentEventHandler_) {
-        listener->Handle(
-            event::Component(component, event::Component::ChangeType::Removed));
+        listener->Handle(event::Component(
+            component, event::Component::TriggerType::Removed));
       }
     });
   }
@@ -201,49 +203,47 @@ void Scene::addChild(Node* node) {
 }
 
 void Scene::addHook(hook::Hook* hook) {
-  switch (hook->GetType()) {
-    case hook::Type::AfterUpdateScene: {
-      auto* uHook = dynamic_cast<hook::UpdateHook*>(hook);
-#ifdef DEBUG
-      if (uHook == nullptr) {
-        throw std::invalid_argument("hook can not be cast to UpdateHook");
-      }
-#endif
-      updateHooks_.push_back(uHook);
-      break;
-    }
-    case hook::Type::Render: {
-      auto* rHook = dynamic_cast<hook::RenderHook*>(hook);
-#ifdef DEBUG
-      if (rHook == nullptr) {
-        throw std::invalid_argument("hook can not be cast to RenderHook");
-      }
-#endif
-      renderHooks_.push_back(rHook);
-      break;
-    }
+  if (hook->IsTrigger(hook::Hook::Trigger_t::BeforeUpdateScene)) {
+    beforeUpdateHooks_.push_back(hook);
   }
+  if (hook->IsTrigger(hook::Hook::Trigger_t::AfterUpdateScene)) {
+    afterUpdateHooks_.push_back(hook);
+  }
+  if (hook->IsTrigger(hook::Hook::Trigger_t::Render)) {
+    renderHooks_.push_back(hook);
+  }
+
   if (hook->GetHandlerType() == hook::Hook::HandlerType::Component) {
     componentEventHandler_.push_back(hook);
   }
 }
 
-void Scene::RemoveHook(hook::Hook* theHook) {
-  switch (theHook->GetType()) {
-    case hook::Type::AfterUpdateScene:
-      for (auto itr = updateHooks_.begin(); itr != updateHooks_.end(); ++itr) {
-        if (*itr == theHook) {
-          updateHooks_.erase(itr);
-          break;
-        }
+void Scene::RemoveHook(hook::Hook* hook) {
+  if (hook->IsTrigger(hook::Hook::Trigger_t::BeforeUpdateScene)) {
+    for (auto itr = beforeUpdateHooks_.begin(); itr != beforeUpdateHooks_.end();
+         ++itr) {
+      if (*itr == hook) {
+        beforeUpdateHooks_.erase(itr);
+        break;
       }
-    case hook::Type::Render:
-      for (auto itr = renderHooks_.begin(); itr != renderHooks_.end(); ++itr) {
-        if (*itr == theHook) {
-          renderHooks_.erase(itr);
-          break;
-        }
+    }
+  }
+  if (hook->IsTrigger(hook::Hook::Trigger_t::AfterUpdateScene)) {
+    for (auto itr = afterUpdateHooks_.begin(); itr != afterUpdateHooks_.end();
+         ++itr) {
+      if (*itr == hook) {
+        afterUpdateHooks_.erase(itr);
+        break;
       }
+    }
+  }
+  if (hook->IsTrigger(hook::Hook::Trigger_t::Render)) {
+    for (auto itr = renderHooks_.begin(); itr != renderHooks_.end(); ++itr) {
+      if (*itr == hook) {
+        renderHooks_.erase(itr);
+        break;
+      }
+    }
   }
 }
 

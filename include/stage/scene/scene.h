@@ -2,7 +2,6 @@
 #ifndef SOIL_STAGE_SCENE_SCENE_H
 #define SOIL_STAGE_SCENE_SCENE_H
 #include "hook/hook.h"
-#include "hook/update_hook.h"
 #include "node.h"
 #include "render/instancing.h"
 #include "stage/event/game_event.h"
@@ -94,8 +93,9 @@ class Scene : public Node,
   std::vector<event::ComponentEventHandler*> componentEventHandler_;
   video::render::Container* renderContainer_;
 
-  std::vector<hook::UpdateHook*> updateHooks_;
-  std::vector<hook::RenderHook*> renderHooks_;
+  std::vector<hook::Hook*> beforeUpdateHooks_;
+  std::vector<hook::Hook*> afterUpdateHooks_;
+  std::vector<hook::Hook*> renderHooks_;
   video::render::Pipeline* pipeline_;
 };
 }  // namespace soil::stage::scene
