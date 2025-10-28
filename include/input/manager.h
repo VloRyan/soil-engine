@@ -23,9 +23,11 @@ class Manager final : public event::Observable<Event> {
  protected:
   void processEvents(EventQueue* queue);
 
-  static MouseButton getMouseButton(int button);
+  static MouseButton GetMouseButton(int button);
 
   static Keys getKey(int key);
+
+  static glm::ivec2 GetCursorPosition(GLFWwindow* window);
 
  private:
   static std::mutex mutex_;
@@ -33,7 +35,7 @@ class Manager final : public event::Observable<Event> {
   EventQueue* eventQueue_;
   EventQueue eventQueueBack1_;
   EventQueue eventQueueBack2_;
-  glm::vec2 cursorPosition_;
+  glm::ivec2 cursorPosition_;
 };
 }  // namespace soil::input
 

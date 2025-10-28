@@ -40,16 +40,16 @@ class Event final : public event::Event {
 
   [[nodiscard]] glm::vec2 GetWheelOffset() const;
 
-  [[nodiscard]] const glm::vec2& GetCursorPos() const;
+  [[nodiscard]] const glm::ivec2& GetCursorPos() const;
 
   static Event MakeKeyChangedEvent(Keys key, State state);
 
   static Event MakeCharacterEnteredEvent(char character);
 
-  static Event MakeMouseButtonEvent(glm::vec2 pos, MouseButton button,
+  static Event MakeMouseButtonEvent(glm::ivec2 pos, MouseButton button,
                                     State state);
 
-  static Event MakeMouseWheelEvent(glm::vec2 pos, glm::vec2 offset);
+  static Event MakeMouseWheelEvent(glm::ivec2 pos, glm::vec2 offset);
 
   static Event MakeMousePositionEvent(glm::vec2 pos);
 
@@ -64,7 +64,7 @@ class Event final : public event::Event {
   State state_;
   char character_;
   glm::vec2 wheelOffset_;
-  glm::vec2 cursorPos_{};
+  glm::ivec2 cursorPos_{};
 };
 
 using EventHandler = event::Handler<Event>;

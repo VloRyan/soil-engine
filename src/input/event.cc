@@ -40,8 +40,8 @@ Event Event::MakeCharacterEnteredEvent(const char character) {
   return event;
 }
 
-Event Event::MakeMouseButtonEvent(const glm::vec2 pos, const MouseButton button,
-                                  const State state) {
+Event Event::MakeMouseButtonEvent(const glm::ivec2 pos,
+                                  const MouseButton button, const State state) {
   auto event = Event(Origin::MouseButton, Cause::StateChanges);
   event.mouseButton_ = button;
   event.state_ = state;
@@ -49,7 +49,7 @@ Event Event::MakeMouseButtonEvent(const glm::vec2 pos, const MouseButton button,
   return event;
 }
 
-Event Event::MakeMouseWheelEvent(const glm::vec2 pos, const glm::vec2 offset) {
+Event Event::MakeMouseWheelEvent(const glm::ivec2 pos, const glm::vec2 offset) {
   auto event = Event(Origin::MouseWheel, Cause::StateChanges);
   event.wheelOffset_ = offset;
   event.cursorPos_ = pos;
@@ -62,5 +62,5 @@ Event Event::MakeMousePositionEvent(const glm::vec2 pos) {
   return event;
 }
 
-const glm::vec2& Event::GetCursorPos() const { return cursorPos_; }
+const glm::ivec2& Event::GetCursorPos() const { return cursorPos_; }
 }  // namespace soil::input
