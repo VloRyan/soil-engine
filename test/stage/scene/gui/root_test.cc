@@ -19,15 +19,16 @@ TEST_F(RootTest, Contructor) {
 TEST_F(RootTest, MouseOver) {
   auto root = Root(glm::ivec2(800, 600));
   auto* item1 = root.AddChild(new Rectangle());
-  item1->SetPosition(glm::vec3(-300, 200, 0));
+  item1->SetPosition(glm::vec3(100, 500, 0));
   auto* item2 = root.AddChild(new Rectangle());
-  item2->SetPosition(glm::vec3(300, 200, 0));
+  item2->SetPosition(glm::vec3(700, 500, 0));
   auto* item3 = root.AddChild(new Rectangle());
-  item3->SetPosition(glm::vec3(-300, -200, 0));
+  item3->SetPosition(glm::vec3(100, 100, 0));
   auto* subItem = item3->AddChild(new Rectangle());
   root.Update();
 
-  root.Handle(input::Event::MakeMousePositionEvent(glm::vec2(100.F, 100.F)));
+  root.Handle(input::Event::MakeMousePositionEvent(glm::vec2(
+      100.F, 100.F) /*cursor origin to top-left: (100,500) in scene coords*/));
   EXPECT_TRUE(item1->IsMouseOver());
   EXPECT_FALSE(item2->IsMouseOver());
   EXPECT_FALSE(item3->IsMouseOver());

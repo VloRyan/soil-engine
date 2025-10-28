@@ -17,34 +17,41 @@ void HBox::SetAlignItems(const AlignItems alignItems) {
 
 void HBox::arrangeItems() {
   itemsSize_ = glm::vec2(0.F);
-  if (items_.empty()) {
+  if (children_.empty()) {
     return;
   }
 
   auto offset = glm::ivec2(padding_[0] + GetOffset().x, GetOffset().y);
   const auto halfWidth = GetSize().x / 2;
-  for (auto* item : GetItems()) {
-    auto pos = glm::ivec2(item->GetPosition());
-    pos.x = offset.x - halfWidth + item->GetSize().x / 2;
-    pos.y = offset.y;
+  for (auto* item : children_) {
+    auto pos = item->GetLocalPosition();
+    pos.z = 0.F;
+    pos.x = static_cast<float>(offset.x) - static_cast<float>(halfWidth) +
+            static_cast<float>(item->GetSize().x) / 2.F;
+    pos.y = static_cast<float>(offset.y);
     switch (alignItems_) {
       case AlignItems::Top:
-        pos.y += GetSize().y / 2 - padding_[1] - item->GetSize().y / 2;
+        pos.y += static_cast<float>(GetSize().y) / 2.F -
+                 static_cast<float>(padding_[1]) -
+                 static_cast<float>(item->GetSize().y) / 2.F;
         break;
       case AlignItems::Center:
-        pos.y += padding_[1] - padding_[3];
+        pos.y +=
+            static_cast<float>(padding_[1]) - static_cast<float>(padding_[3]);
         break;
       case AlignItems::Bottom:
-        pos.y -= GetSize().y / 2 - padding_[3] - item->GetSize().y / 2;
+        pos.y -= static_cast<float>(GetSize().y) / 2.F -
+                 static_cast<float>(padding_[3]) -
+                 static_cast<float>(item->GetSize().y) / 2.F;
         break;
     }
-    item->SetPosition(glm::vec3(pos, GetPosition().z));
+    item->SetLocalPosition(pos);
     offset.x += item->GetSize().x + margin_;
     itemsSize_.x += item->GetSize().x;
     if (item->GetSize().y > itemsSize_.y) {
       itemsSize_.y = item->GetSize().y;
     }
   }
-  itemsSize_.x += (static_cast<int>(items_.size()) - 1) * margin_;
+  itemsSize_.x += (static_cast<int>(children_.size()) - 1) * margin_;
 }
 }  // namespace soil::stage::scene::gui::container

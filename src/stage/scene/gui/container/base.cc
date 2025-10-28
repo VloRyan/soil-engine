@@ -7,14 +7,7 @@ Base::Base(const int margin, const glm::ivec4 padding)
   Rectangle::SetPadding(padding);
 }
 
-Base::~Base() {
-  for (auto* item : items_) {
-    item->RemoveListener(this);
-  }
-  items_.clear();
-}
-
-const std::vector<Rectangle*>& Base::GetItems() const { return items_; }
+const std::vector<Rectangle*>& Base::GetItems() const { return children_; }
 
 void Base::Handle(const event::Node& event) {
   if (event.GetChangeType() == event::Node::ChangeType::State &&
@@ -45,36 +38,23 @@ void Base::SetMargin(const int margin) {
 
 const glm::ivec2& Base::GetItemsSize() const { return itemsSize_; }
 
-void Base::addChild(Node* node) { addChild(node, true); }
-
-void Base::addChild(Node* node, const bool asItem) {
+void Base::addChild(Node* node) {
   if (node->GetParent() == this) {
     return;
   }
   Rectangle::addChild(node);
-  if (!asItem) {
-    return;
-  }
-  if (auto* item = dynamic_cast<Rectangle*>(node); item != nullptr) {
-    items_.push_back(item);
-    item->AddListener(this);
-  }
+  SetDirty(Node::DirtyImpact::Dependents);
 }
 
 void Base::RemoveChild(Node* node) {
-  for (auto it = items_.begin(); it != items_.end(); ++it) {
-    if (*it == node) {
-      (*it)->RemoveListener(this);
-      items_.erase(it);
-      break;
-    }
-  }
   Rectangle::RemoveChild(node);
+  SetDirty(Node::DirtyImpact::Dependents);
 }
 
 void Base::BeforeNodeUpdate() {
-  for (auto* item : items_) {
-    item->UpdateSize(GetChildSize());
+  auto cs = GetChildSize();
+  for (auto* item : children_) {
+    item->UpdateSize(cs);
   }
   arrangeItems();
 }

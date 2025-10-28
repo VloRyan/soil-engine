@@ -14,8 +14,7 @@ class RectangleTest : public testing::Test {};
 TEST_F(RectangleTest, Contruct) {
   const auto rect = Rectangle();
 
-  EXPECT_VEC_EQ(rect.GetPosition(),
-                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(rect.GetPosition(), glm::vec3(0.F, 0.F, 0.1F));
   EXPECT_VEC_EQ(rect.GetRelativeSize(), glm::vec2(0.F));
   EXPECT_VEC_EQ(rect.GetAspectRatio(), glm::vec2(0.F));
   EXPECT_VEC_EQ(rect.GetChildSize(), rect.GetSize());
@@ -25,37 +24,32 @@ TEST_F(RectangleTest, UpdateScissor) {
   auto root = Root(glm::ivec2(800, 600));
   const auto rect = root.AddChild(new Rectangle());
   rect->SetSize(glm::vec2(400, 400));
-  rect->SetPosition(
-      glm::vec3(-400.F, -300.F, 0.F));  // center(0, 0) -> only 200px visible
+  rect->SetPosition(glm::vec3(0.F, 0.F, 0.F));
 
   rect->Update();
   EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
   EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(200, 200))
 
-  rect->SetPosition(glm::vec3(
-      -400.F, -100.F, 0.F));  // center(0, 200) -> 400px of height visible
+  rect->SetPosition(glm::vec3(0.F, 200.F, 0.F));
   rect->Update();
   EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
   EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(200, 400))
 
-  rect->SetPosition(
-      glm::vec3(-200.F, -100.F, 0.F));  // center(200, 200) -> 400px visible
+  rect->SetPosition(glm::vec3(200.F, 200.F, 0.F));
   rect->Update();
   EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
   EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(400, 400))
 
-  rect->SetPosition(
-      glm::vec3(100.F, 200.F,
-                0.F));  // center(400, 400) -> 400px width, 350px height visible
+  rect->SetPosition(glm::vec3(400.F, 500.F, 0.F));
   rect->Update();
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(300, 300))
+  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(200, 300))
   EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(400, 300))
 }
 
 TEST_F(RectangleTest, UpdateScissorWithPadding) {
   auto root = Root(glm::ivec2(800, 600));
   const auto rect = root.AddChild(new Rectangle());
-  rect->SetPosition(glm::vec3(-200.F, -100.F, 0.F));
+  rect->SetPosition(glm::vec3(200.F, 200.F, 0.F));
   rect->SetSize(glm::vec2(400, 400));
 
   const auto childRect = rect->AddChild(new Rectangle());

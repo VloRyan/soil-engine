@@ -6,7 +6,7 @@
 namespace soil::stage::scene::gui::container {
 class Base : public Rectangle, public soil::event::Handler<event::Node> {
  public:
-  ~Base() override;
+  ~Base() override = default;
 
   [[nodiscard]] const std::vector<Rectangle*>& GetItems() const;
 
@@ -29,14 +29,11 @@ class Base : public Rectangle, public soil::event::Handler<event::Node> {
 
   void addChild(Node* node) override;
 
-  void addChild(Node* node, bool asItem);
-
   void BeforeNodeUpdate() override;
 
   virtual void arrangeItems() = 0;
 
   int margin_;
-  std::vector<Rectangle*> items_;
   glm::ivec2 offset_;
   glm::ivec2 itemsSize_;
 };

@@ -1,8 +1,6 @@
 #include "stage/scene/gui/container/h_box.h"
 
-#include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
-#include "stage/scene/gui/container/v_box.h"
 #include "stage/scene/gui/rectangle.h"
 #include "testing.h"
 
@@ -34,7 +32,7 @@ TEST_F(HBoxTest, Update) {
   EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(100));
   EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600))
   EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-350.F, 0.F, box.GetPosition().z));
 
   auto* child2 = box.AddChild(new Rectangle());
   child2->SetSize(glm::ivec2(100));
