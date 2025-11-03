@@ -3,14 +3,16 @@
 #include <string>
 #include <unordered_map>
 
+#include "stage/event/node.h"
+#include "stage/hook/event_hook.hpp"
+#include "stage/hook/trigger_hook.h"
 #include "stage/scene/component/instance_data.h"
-#include "stage/scene/hook/hook.h"
 #include "video/render/batch.h"
 #include "video/render/container.h"
 #include "video/render/vertex_array.h"
-
 namespace soil::stage::scene::render {
-class Instancing : public hook::Hook {
+class Instancing : public hook::EventHook<event::Node>,
+                   public hook::TriggerHook {
  public:
   class BatchObject : public video::render::RenderableObject {
    public:
@@ -65,9 +67,9 @@ class Instancing : public hook::Hook {
   void AddRenderBatch(const std::string& key,
                       const BatchObjectCreationArgs& args);
 
-  virtual void Perform(hook::Hook::Trigger_t trigger) override;
-
-  void Handle(const event::Component& event) override;
+  void Handle(const event::Component& event);
+  void OnTrigger(soil::stage::hook::TriggerHook::TriggerType trigger) override;
+  void OnEvent(const soil::stage::event::Node& event) override;
 
   StateBatches* GetStateBatches(const std::string& name);
 

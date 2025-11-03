@@ -11,6 +11,7 @@
 #include "stage/event/node.h"
 #include "stage/scene/component/transform_component.h"
 #include "stage/scene/scene.h"
+#include "stage/stage.h"
 
 namespace soil::stage::scene {
 Node::Node(const Type type)
@@ -27,7 +28,7 @@ Node::Node(const Type type)
 
 Node::~Node() {
   for (auto* child : children_) {
-    Observable::fire(event::Node::MakeChildRemovedEvent(this, child));
+    Node::fire(event::Node::MakeChildRemovedEvent(this, child));
     child->SetParent(nullptr);
     delete child;
   }
@@ -38,7 +39,7 @@ Node::~Node() {
       comp->SetParent(nullptr);
       const auto removedEvent =
           event::Component(comp, event::Component::TriggerType::Removed);
-      Observable::fire(event::Node::MakeComponentEvent(this, removedEvent));
+      Node::fire(event::Node::MakeComponentEvent(this, removedEvent));
       delete comp;
     }
   }
@@ -46,18 +47,45 @@ Node::~Node() {
   if (auto* parent = GetParent(); parent != nullptr) {
     parent->RemoveChild(this);
   }
-  Observable::fire(event::Node::MakeNodeDeletedEvent(this));
+  Node::fire(event::Node::MakeNodeDeletedEvent(this));
 }
 
-void Node::SetParent(Node* parent) { parent_ = parent; }
+void Node::SetParent(Node* parent) {
+  if (parent_ == parent) {
+    return;
+  }
+  auto* prevScene = Scene();
+  auto* prevStage = prevScene != nullptr ? prevScene->GetStage() : nullptr;
+  class Scene* scene = nullptr;
+  Stage* stage = nullptr;
+  parent_ = parent;
+  if (parent_ != nullptr) {
+    transform_->UpdateTransform(parent_->transform_->GetMatrix());
+    scene = Scene();
+    stage = scene != nullptr ? scene->GetStage() : nullptr;
+  }
+  if (prevStage != stage) {
+    OnStageChanged(stage, prevStage);
+  }
+}
+
+void Node::OnStageChanged(Stage* stage, Stage* prevStage) {
+  ForEachChild(this, [stage, prevStage](Node* node) {
+    node->OnStageChanged(stage, prevStage);
+  });
+  ForEachComponent([stage, prevStage](component::Component* component) {
+    component->OnStageChanged(stage, prevStage);
+  });
+}
 
 void Node::addChild(Node* node) {
   if (node->GetParent() == this) {
     return;
   }
+  // auto* prevParent = node->GetParent();
   node->SetParent(this);
-  node->MarkDirtyWith(DirtyImpact::Transform);
-  node->UpdateDirty();
+  // node->MarkDirtyWith(DirtyImpact::Transform);
+  // node->UpdateDirty();
   children_.push_back(node);
   fire(event::Node::MakeChildAddedEvent(this, node));
 }
@@ -181,6 +209,14 @@ void Node::Update() {
 
 component::TransformComponent& Node::Transform() const { return *transform_; }
 
+Scene* Node::Scene() const {
+  auto p = const_cast<Node*>(this);
+  while (p->GetParent() != nullptr) {
+    p = p->GetParent();
+  }
+  return dynamic_cast<class Scene*>(p);
+}
+
 void Node::UpdateDirty() {
   if (IsDirtyImpact(DirtyImpact::Transform)) {
     if (GetParent() != nullptr) {
@@ -197,11 +233,6 @@ void Node::UpdateDirty() {
       child->UpdateDirty();
     }
   } else {
-    /*if (IsDirtyImpact(DirtyImpact::Components) ||
-        IsDirtyImpact(DirtyImpact::Dependents)) {
-      ForEachComponent(
-          [](component::Component* component) { component->Update(); });
-    }*/
     if (IsDirtyImpact(DirtyImpact::Dependents)) {
       ForEachComponent(
           [](component::Component* component) { component->Update(); });
@@ -227,7 +258,7 @@ void Node::UpdateDirty() {
     }
     const auto addedEvent =
         event::Component(comp, event::Component::TriggerType::Added);
-    Observable::fire(event::Node::MakeComponentEvent(this, addedEvent));
+    fire(event::Node::MakeComponentEvent(this, addedEvent));
   }
   addedComponents_.clear();
   SetState(State::Normal);
@@ -311,7 +342,7 @@ void Node::RemoveComponent(component::Component* comp) {
   }
   const auto removedEvent =
       event::Component(comp, event::Component::TriggerType::Removed);
-  Observable::fire(event::Node::MakeComponentEvent(this, removedEvent));
+  fire(event::Node::MakeComponentEvent(this, removedEvent));
 }
 
 bool Node::HasComponent(component::Component::Type type) const {
@@ -319,30 +350,30 @@ bool Node::HasComponent(component::Component::Type type) const {
 }
 
 void Node::Handle(const event::Component& event) {
-  if (event.Origin()->GetParent() != this) {
+  if (event.Origin->GetParent() != this) {
     return;
   }
-  switch (event.Trigger()) {
+  switch (event.Trigger) {
     case event::Component::TriggerType::Changed: {
-      switch (event.Changed()) {
+      switch (event.Changed) {
         case event::Component::ChangeType::Data:
           for (const auto* justAddedComp : addedComponents_) {
-            if (event.Origin() == justAddedComp) {
+            if (event.Origin == justAddedComp) {
               return;
             }
           }
-          if (event.Origin() == transform_) {
+          if (event.Origin == transform_) {
             SetDirty(DirtyImpact::Transform);
           }
           break;
         case event::Component::ChangeType::UpdateType:
-          if (event.Origin()->GetUpdateType() ==
+          if (event.Origin->GetUpdateType() ==
               component::Component::UpdateType::Always) {
-            alwaysUpdateComponents_.push_back(event.Origin());
+            alwaysUpdateComponents_.push_back(event.Origin);
           } else {
             for (auto itr = alwaysUpdateComponents_.begin();
                  itr != alwaysUpdateComponents_.end(); ++itr) {
-              if (event.Origin() == *itr) {
+              if (event.Origin == *itr) {
                 alwaysUpdateComponents_.erase(itr);
                 break;
               }
@@ -355,7 +386,7 @@ void Node::Handle(const event::Component& event) {
     }
     default:;
   }
-  Observable::fire(event::Node::MakeComponentEvent(this, event));
+  fire(event::Node::MakeComponentEvent(this, event));
 }
 
 bool Node::IsReceiverOf(ReceiverType type) const {
@@ -487,5 +518,14 @@ void Node::ForEachChild(const Node* node,
     cursor++;
   }
   delete[] buffer;
+}
+
+void Node::fire(const event::Node& event) {
+  Observable::fire(event);
+  auto* scene = Scene();
+  auto* stage = scene != nullptr ? scene->GetStage() : nullptr;
+  if (stage != nullptr) {
+    stage->Handle(event);
+  }
 }
 }  // namespace soil::stage::scene

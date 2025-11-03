@@ -4,10 +4,12 @@
 
 #include "event/observable.hpp"
 #include "stage/event/component.h"
-
-namespace soil::stage::scene {
+namespace soil::stage {
+class Stage;
+namespace scene {
 class Node;
 }
+}  // namespace soil::stage
 
 namespace soil::stage::scene::component {
 class Component : public soil::event::Observable<event::Component> {
@@ -15,6 +17,7 @@ class Component : public soil::event::Observable<event::Component> {
 
  public:
   enum class Type : std::uint8_t {
+    // TODO rename
     Transform = 0,
     Visual,
     WorldEntity,
@@ -47,6 +50,7 @@ class Component : public soil::event::Observable<event::Component> {
  protected:
   virtual void SetParent(Node* parent);
   virtual void SignalChanged();
+  virtual void OnStageChanged(Stage* stage, Stage* prevStage);
   Node* parent_;
 
  private:

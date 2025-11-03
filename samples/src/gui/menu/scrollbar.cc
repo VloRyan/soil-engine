@@ -21,7 +21,7 @@ Scrollbar::Scrollbar(const Definition& definition)
 
 void Scrollbar::OnMouseButton(const glm::ivec2& pos,
                               const soil::input::MouseButton button,
-                              const soil::input::Event::State state) {
+                              const soil::input::Event::StateType state) {
   Plane::OnMouseButton(pos, button, state);
   if (!scroller_->Contains(pos)) {
     auto direction = Direction::Down;

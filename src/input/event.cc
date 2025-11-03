@@ -1,66 +1,56 @@
 #include "input/event.h"
 
+#include "sound/event/event.hpp"
+
 namespace soil::input {
-Event::Event(const Origin origin, const Cause cause)
-    : event::Event(Type::Input),
-      cause_(cause),
-      origin_(origin),
-      key_(Keys::Unknown),
-      mouseButton_(MouseButton::Left),
-      state_(State::Release),
-      character_(' '),
-      wheelOffset_(glm::vec2(0.F)) {}
+Event::Event(const OriginType origin, const CauseType cause)
+    : event::Event(Type_t::Input),
+      Cause(cause),
+      Origin(origin),
+      Key(Keys::Unknown),
+      MouseButton(MouseButton::Left),
+      State(StateType::Release),
+      Character(' '),
+      WheelOffset(glm::vec2(0.F)),
+      CursorPos(glm::vec2(0.F)) {}
 
 Event::~Event() = default;
 
-Event::Cause Event::GetCause() const { return cause_; }
-
-Event::Origin Event::GetOrigin() const { return origin_; }
-
-Keys Event::GetKey() const { return key_; }
-
-Event::State Event::GetState() const { return state_; }
-
-char Event::GetCharacter() const { return character_; }
-
-MouseButton Event::GetMouseButton() const { return mouseButton_; }
-
-glm::vec2 Event::GetWheelOffset() const { return wheelOffset_; }
-
-Event Event::MakeKeyChangedEvent(const Keys key, const State state) {
-  auto event = Event(Origin::Keyboard, Cause::StateChanges);
-  event.key_ = key;
-  event.state_ = state;
+Event Event::MakeKeyChangedEvent(const Keys key, const StateType state) {
+  auto event = Event(OriginType::Keyboard, CauseType::StateChanges);
+  event.Key = key;
+  event.State = state;
   return event;
 }
 
 Event Event::MakeCharacterEnteredEvent(const char character) {
-  auto event = Event(Origin::Keyboard, Cause::Entered);
-  event.character_ = character;
+  auto event = Event(OriginType::Keyboard, CauseType::Entered);
+  event.Character = character;
   return event;
 }
 
 Event Event::MakeMouseButtonEvent(const glm::ivec2 pos,
-                                  const MouseButton button, const State state) {
-  auto event = Event(Origin::MouseButton, Cause::StateChanges);
-  event.mouseButton_ = button;
-  event.state_ = state;
-  event.cursorPos_ = pos;
+                                  const enum MouseButton button,
+                                  const StateType state) {
+  auto event = Event(OriginType::MouseButton, CauseType::StateChanges);
+  event.MouseButton = button;
+  event.State = state;
+  event.CursorPos = pos;
   return event;
 }
 
 Event Event::MakeMouseWheelEvent(const glm::ivec2 pos, const glm::vec2 offset) {
-  auto event = Event(Origin::MouseWheel, Cause::StateChanges);
-  event.wheelOffset_ = offset;
-  event.cursorPos_ = pos;
+  auto event = Event(OriginType::MouseWheel, CauseType::StateChanges);
+  event.WheelOffset = offset;
+  event.CursorPos = pos;
   return event;
 }
 
 Event Event::MakeMousePositionEvent(const glm::vec2 pos) {
-  auto event = Event(Origin::MousePosition, Cause::StateChanges);
-  event.cursorPos_ = pos;
+  auto event = Event(OriginType::MousePosition, CauseType::StateChanges);
+  event.CursorPos = pos;
   return event;
 }
 
-const glm::ivec2& Event::GetCursorPos() const { return cursorPos_; }
 }  // namespace soil::input
+// namespace soil::input

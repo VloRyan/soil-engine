@@ -1,24 +1,26 @@
 #ifndef SOIL_INPUT_EVENT_H_
 #define SOIL_INPUT_EVENT_H_
 
-#include "event/event.h"
+#include "event/event.hpp"
 #include "event/handler.hpp"
 #include "glm/vec2.hpp"
 #include "input/constants.hpp"
 
 namespace soil::input {
-class Event final : public event::Event {
- public:
-  enum class Origin {
+struct Event final : event::Event {
+  enum class OriginType {
     Keyboard,
     MouseButton,
     MouseWheel,
     MousePosition,
   };
 
-  enum class Cause { StateChanges, Entered };
+  enum class CauseType {
+    StateChanges,
+    Entered,
+  };
 
-  enum class State {
+  enum class StateType {
     Release,
     Press,
     Repeat,
@@ -26,45 +28,28 @@ class Event final : public event::Event {
 
   ~Event() override;
 
-  [[nodiscard]] Origin GetOrigin() const;
-
-  [[nodiscard]] Cause GetCause() const;
-
-  [[nodiscard]] Keys GetKey() const;
-
-  [[nodiscard]] State GetState() const;
-
-  [[nodiscard]] char GetCharacter() const;
-
-  [[nodiscard]] MouseButton GetMouseButton() const;
-
-  [[nodiscard]] glm::vec2 GetWheelOffset() const;
-
-  [[nodiscard]] const glm::ivec2& GetCursorPos() const;
-
-  static Event MakeKeyChangedEvent(Keys key, State state);
+  static Event MakeKeyChangedEvent(Keys key, StateType state);
 
   static Event MakeCharacterEnteredEvent(char character);
 
   static Event MakeMouseButtonEvent(glm::ivec2 pos, MouseButton button,
-                                    State state);
+                                    StateType state);
 
   static Event MakeMouseWheelEvent(glm::ivec2 pos, glm::vec2 offset);
 
   static Event MakeMousePositionEvent(glm::vec2 pos);
 
- protected:
-  Event(Origin origin, Cause cause);
+  CauseType Cause;
+  OriginType Origin;
+  Keys Key;
+  enum MouseButton MouseButton;
+  StateType State;
+  char Character;
+  glm::vec2 WheelOffset;
+  glm::ivec2 CursorPos;
 
- private:
-  Cause cause_;
-  Origin origin_;
-  Keys key_;
-  MouseButton mouseButton_;
-  State state_;
-  char character_;
-  glm::vec2 wheelOffset_;
-  glm::ivec2 cursorPos_{};
+ protected:
+  Event(OriginType origin, CauseType cause);
 };
 
 using EventHandler = event::Handler<Event>;

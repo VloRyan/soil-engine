@@ -25,7 +25,7 @@ class Scrollbar final : public Plane {
   ~Scrollbar() override = default;
 
   void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
-                     soil::input::Event::State state) override;
+                     soil::input::Event::StateType state) override;
   [[nodiscard]] float GetValue() const;
   void SetOnValueChange(const std::function<void(float)>& onValueChange);
   void SetValue(float value);

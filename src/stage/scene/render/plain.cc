@@ -7,19 +7,26 @@
 
 namespace soil::stage::scene::render {
 Plain::Plain(video::render::Container* renderContainer)
-    : Hook({Hook::Trigger_t::AfterUpdateScene}, HandlerType::Component),
+    : hook::TriggerHook({TriggerHook::TriggerType::Render}),
       renderContainer_(renderContainer) {}
 
+void Plain::OnEvent(const event::Node& event) {
+  if (event.ChangeType != event::Node::ChangeType::Component) {
+    return;
+  }
+  Handle(event.ComponentEvent);
+}
+
 void Plain::Handle(const event::Component& event) {
-  if (!component::VisualComponent::IsRenderType(event.Origin(),
+  if (!component::VisualComponent::IsRenderType(event.Origin,
                                                 render::Type::Plain)) {
     return;
   }
-  auto* vComp = dynamic_cast<component::VisualComponent*>(event.Origin());
+  auto* vComp = dynamic_cast<component::VisualComponent*>(event.Origin);
   if (vComp->GetRenderable() == nullptr) {
     return;
   }
-  switch (event.Trigger()) {
+  switch (event.Trigger) {
     case event::Component::TriggerType::Added:
       OnAdded(vComp);
       break;
@@ -27,7 +34,7 @@ void Plain::Handle(const event::Component& event) {
       OnRemoved(vComp);
       break;
     case event::Component::TriggerType::Changed:
-      if (event.Changed() == event::Component::ChangeType::Data) {
+      if (event.Changed == event::Component::ChangeType::Data) {
         OnChanged(vComp);
       }
       break;
@@ -99,7 +106,8 @@ void Plain::OnChanged(component::VisualComponent* component) {
     added_.push_back(component);
   }
 }
-void Plain::Perform(hook::Hook::Trigger_t trigger) {
+
+void Plain::OnTrigger(hook::TriggerHook::TriggerType trigger) {
   for (auto* comp : added_) {
     if (comp->IsOpaque()) {
       renderContainer_->Add(comp->GetRenderable(),

@@ -17,9 +17,9 @@ void Stage::Load() {
   auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
   auto& inputMap = inputNode->GetEventMap();
   if (backAction_ != nullptr) {
-    inputNode->GetEventMap().                              //
-        AddKeyMapping(soil::input::Keys::Escape,           //
-                      soil::input::Event::State::Release,  //
+    inputNode->GetEventMap().                                  //
+        AddKeyMapping(soil::input::Keys::Escape,               //
+                      soil::input::Event::StateType::Release,  //
                       [this](const soil::input::Event&) {
                         backAction_();  //
                       });

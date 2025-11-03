@@ -3,7 +3,7 @@
 #include <bitset>
 #include <vector>
 
-#include "event/event.h"
+#include "event/event.hpp"
 #include "event/handler.hpp"
 
 namespace soil::stage {
@@ -11,35 +11,20 @@ class Stage;
 }
 
 namespace soil::stage::event {
-class StageEvent : soil::event::Event {
- public:
+struct StageEvent : soil::event::Event {
   enum class TriggerType : std::uint8_t {
     ActiveStageChanged = 0,
     StageChanged,
   };
-
+  explicit StageEvent(class Stage* stage = nullptr,
+                      TriggerType trigger = TriggerType::ActiveStageChanged);
   ~StageEvent() override = default;
 
-  [[nodiscard]] TriggerType Trigger() const;
-
-  [[nodiscard]] Stage* GetStage() const;
-
-  [[nodiscard]] Stage* GetPreviousStage() const;
-
-  [[nodiscard]] virtual bool GetStateChangeFlag(int flag) const;
-
   static StageEvent MakeActiveStageChanged(Stage* current, Stage* previous);
+  ;
 
-  static StageEvent MakeStateChanged(Stage* stage,
-                                     const std::vector<int>& changeFlags);
-
- private:
-  explicit StageEvent(TriggerType triggerType);
-
-  TriggerType triggerType_;
-  Stage* stage_;
-  Stage* previousStage_;
-  std::bitset<32> stateChangeFlags_;
+  TriggerType Trigger{TriggerType::StageChanged};
+  class Stage* Stage{nullptr};
 };
 
 using StageEventHandler = soil::event::Handler<StageEvent>;

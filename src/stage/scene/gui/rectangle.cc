@@ -88,7 +88,7 @@ void Rectangle::OnMouseOut() {
 
 void Rectangle::OnMouseButton(const glm::ivec2& pos,
                               const input::MouseButton button,
-                              input::Event::State state) {
+                              input::Event::StateType state) {
   for (auto* child : children_) {
     if (child->Contains(pos)) {
       child->OnMouseButton(pos, button, state);

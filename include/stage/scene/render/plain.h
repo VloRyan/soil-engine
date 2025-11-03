@@ -1,20 +1,22 @@
 #ifndef SOIL_STAGE_SCENE_RENDER_PLAIN_H
 #define SOIL_STAGE_SCENE_RENDER_PLAIN_H
 
+#include "stage/event/node.h"
+#include "stage/hook/event_hook.hpp"
+#include "stage/hook/trigger_hook.h"
 #include "stage/scene/component/visual_component.h"
-#include "stage/scene/hook/hook.h"
 #include "video/render/container.h"
 
 namespace soil::stage::scene::render {
-class Plain : public hook::Hook {
+class Plain : public hook::EventHook<event::Node>, public hook::TriggerHook {
  public:
   explicit Plain(video::render::Container* renderContainer);
 
   ~Plain() override = default;
 
-  virtual void Perform(hook::Hook::Trigger_t trigger) override;
-
-  void Handle(const event::Component& event) override;
+  void OnTrigger(hook::TriggerHook::TriggerType trigger) override;
+  void OnEvent(const soil::stage::event::Node& event) override;
+  void Handle(const event::Component& event);
 
  protected:
   void OnAdded(component::VisualComponent* component);

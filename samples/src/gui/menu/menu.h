@@ -55,7 +55,7 @@ class Menu : public soil::stage::scene::gui::Rectangle {
   void OnMouseOut() override;
   void OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset) override;
   void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
-                     soil::input::Event::State state) override;
+                     soil::input::Event::StateType state) override;
 
   void BeforeNodeUpdate() override;
   Definition definition_;

@@ -16,7 +16,7 @@ class Item : public Plane {
  protected:
   void UpdateDirty() override;
   void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
-                     soil::input::Event::State state) override;
+                     soil::input::Event::StateType state) override;
 
  private:
   std::string value_;

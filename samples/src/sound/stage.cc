@@ -24,9 +24,9 @@ void Stage::OnLoad() {
 
 void Stage::Handle(const soil::stage::event::StageEvent& event) {
   if (music_ != nullptr &&
-      event.Trigger() ==
+      event.Trigger ==
           soil::stage::event::StageEvent::TriggerType::ActiveStageChanged) {
-    if (event.GetStage() == this) {
+    if (event.Stage == this) {
       music_->Play();
     } else {
       music_->Stop();

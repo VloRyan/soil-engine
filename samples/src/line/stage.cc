@@ -10,6 +10,7 @@
 #include "line_instance.h"
 #include "shader.h"
 #include "stage/scene/input.h"
+#include "stage/scene/render/instancing.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -32,8 +33,12 @@ void Stage::OnLoad() {
 
   auto* mesh =
       GetResources().GetMesh({.Type = soil::video::mesh::Prefab::Type::Line});
-  auto* instancing = scene->AddHook(
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer()));
+
+  auto* instancing =
+      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
+  AddEventHook(instancing);
+  AddTriggerHook(instancing);
+
   instancing->AddRenderBatch(
       LineInstance::BATCH_NAME,
       {.Mesh = mesh,
@@ -48,7 +53,7 @@ void Stage::Update() { soil::stage::Stage::Update(); }
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (event.GetCause() == soil::WindowEvent::StatisticsChanged) {
+  if (event.Cause == soil::WindowEvent::StatisticsChanged) {
     if (lines_[0] != nullptr) {
       offset_++;
       for (auto i = 0; i < MAX_LINES; ++i) {
@@ -59,7 +64,7 @@ void Stage::Handle(const soil::WindowEvent& event) {
       }
     }
     if (printStatistics_) {
-      const auto stats = event.GetWindow()->GetStatistics();
+      const auto stats = event.Window->GetStatistics();
       PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
                  << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
                  << " Vertices: "
@@ -80,7 +85,7 @@ void Stage::Handle(const soil::WindowEvent& event) {
 
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
   eventMap.AddKeyMapping(soil::input::Keys::S,
-                         soil::input::Event::State::Release,
+                         soil::input::Event::StateType::Release,
                          [this](const soil::input::Event&) {
                            printStatistics_ = !printStatistics_;
                          });

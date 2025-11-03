@@ -13,6 +13,7 @@
 #include "instancing/shader.h"
 #include "instancing/shape_instance.h"
 #include "node.h"
+#include "stage/scene/render/instancing.h"
 #include "stage/scene/render/plain.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
@@ -37,8 +38,10 @@ void Stage::OnLoad() {
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
   auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
-  auto* instancing = scene->AddHook(
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer()));
+  auto* instancing =
+      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
+  AddEventHook(instancing);
+  AddTriggerHook(instancing);
   auto* bgTexture = GetResources().Textures().GetTexture2D(
       asset::GetPath("Textures/crt.jpg"));
   auto& renderState = GetResources().GetRenderState();
@@ -58,8 +61,10 @@ void Stage::OnLoad() {
       });
   initBackground(scene, 0);
 
-  scene->AddHook(
-      new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
+  auto* plainRenderer =
+      new soil::stage::scene::render::Plain(scene->GetRenderContainer());
+  AddEventHook(plainRenderer);
+  AddTriggerHook(plainRenderer);
 
   auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
   auto* fontTexture =
@@ -123,20 +128,21 @@ void Stage::OnLoad() {
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
   eventMap
       .AddKeyMapping(soil::input::Keys::Key_Plus,
-                     soil::input::Event::State::Press,
+                     soil::input::Event::StateType::Press,
                      [this](const soil::input::Event&) {
                        text_->Text().SetCharacterSize(
                            text_->Text().GetCharacterSize() + 0.1F);
                      })
       .AddKeyMapping(soil::input::Keys::Key_Minus,
-                     soil::input::Event::State::Press,
+                     soil::input::Event::StateType::Press,
                      [this](const soil::input::Event&) {
                        if (text_->Text().GetCharacterSize() > 0.1F) {
                          text_->Text().SetCharacterSize(
                              text_->Text().GetCharacterSize() - 0.1F);
                        };
                      })
-      .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+      .AddKeyMapping(soil::input::Keys::S,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        printStatistics_ = !printStatistics_;
                        if (!printStatistics_) {
@@ -144,7 +150,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                        }
                      })
       .AddKeyMapping(
-          soil::input::Keys::T, soil::input::Event::State::Release,
+          soil::input::Keys::T, soil::input::Event::StateType::Release,
           [this](const soil::input::Event&) {
             if (text_->Text().GetText().starts_with("Lorem")) {
               text_->Text().SetText("Hallo world!");
@@ -168,7 +174,8 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                   "takimata sanctus est Lorem ipsum dolor sit amet.");
             }
           })
-      .AddKeyMapping(soil::input::Keys::F, soil::input::Event::State::Release,
+      .AddKeyMapping(soil::input::Keys::F,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        if (fastChangeIndex == -1) {
                          fastChangeIndex = 0;
@@ -192,9 +199,8 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (printStatistics_ &&
-      event.GetCause() == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.GetWindow()->GetStatistics();
+  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
+    const auto stats = event.Window->GetStatistics();
     text_->Text().SetText(
         "Hello world!\n"
         "FPS:" +
@@ -219,9 +225,9 @@ void Stage::Handle(const soil::WindowEvent& event) {
         std::to_string(stats.renderTime / stats.FPS) + ", " +
         std::to_string(stats.endRenderTime / stats.FPS));
   }
-  if (event.GetCause() == soil::WindowEvent::SizeChanged) {
+  if (event.Cause == soil::WindowEvent::SizeChanged) {
     const auto winSize =
-        glm::vec2(event.GetWindow()->GetSize() - glm::ivec2(30, 30));
+        glm::vec2(event.Window->GetSize() - glm::ivec2(30, 30));
     const auto winCenter = glm::vec2(winSize) * glm::vec2(.5F);
     bgShape_->SetSize(winSize);
     bgNode_->SetPosition(glm::vec3(winCenter + glm::vec2(15), -1.F));

@@ -101,25 +101,25 @@ void Manager::logErrors() {
 sound::Listener* Manager::GetListener() const { return listener_; }
 
 void Manager::Handle(const event::Event& event) {
-  switch (event.Cause()) {
+  switch (event.Cause) {
     case event::Cause::Source: {
       auto& sourceEvent = dynamic_cast<const event::SourceEvent&>(event);
-      auto* source = dynamic_cast<openal::Source*>(sourceEvent.Source());
-      switch (sourceEvent.Trigger()) {
+      auto* source = dynamic_cast<openal::Source*>(sourceEvent.Source);
+      switch (sourceEvent.Trigger) {
         case event::SourceEvent::TriggerType::Added:
           sources_.push_back(source);
-          if (sourceEvent.Source()->IsPlaying()) {
+          if (sourceEvent.Source->IsPlaying()) {
             playingSources_.push_back(source);
           }
           break;
         case event::SourceEvent::TriggerType::PlayStateChanged: {
           int playingIndex = -1;
           for (auto i = 0; i < playingSources_.size(); i++) {
-            if (playingSources_[i] == sourceEvent.Source()) {
+            if (playingSources_[i] == sourceEvent.Source) {
               playingIndex = i;
             }
           }
-          if (sourceEvent.Source()->IsPlaying()) {
+          if (sourceEvent.Source->IsPlaying()) {
             if (playingIndex == -1) {
               playingSources_.push_back(source);
             }
@@ -129,18 +129,18 @@ void Manager::Handle(const event::Event& event) {
           break;
         }
         case event::SourceEvent::TriggerType::Removed:
-          sourceEvent.Source()->RemoveListener(this);
-          if (sourceEvent.Source()->IsPlaying()) {
+          sourceEvent.Source->RemoveListener(this);
+          if (sourceEvent.Source->IsPlaying()) {
             for (auto itr = playingSources_.begin();
                  itr != playingSources_.end(); ++itr) {
-              if (*itr == sourceEvent.Source()) {
+              if (*itr == sourceEvent.Source) {
                 playingSources_.erase(itr);
                 break;
               }
             }
           }
           for (auto itr = sources_.begin(); itr != sources_.end(); ++itr) {
-            if (*itr == sourceEvent.Source()) {
+            if (*itr == sourceEvent.Source) {
               sources_.erase(itr);
               break;
             }

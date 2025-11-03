@@ -57,7 +57,7 @@ Source::~Source() {
     delete buffer;
   }
   Observable::fire(
-      event::SourceEvent(event::SourceEvent::TriggerType::Removed, this));
+      event::SourceEvent(this, event::SourceEvent::TriggerType::Removed));
   if (this->id_ > 0) {
     alDeleteSources(1, &this->id_);
   }
@@ -222,7 +222,7 @@ void Source::SetPlayState(const PlayStateType playState) {
     return;
   }
   this->playState_ = playState;
-  fire(event::SourceEvent(event::SourceEvent::TriggerType::PlayStateChanged,
-                          this));
+  fire(event::SourceEvent(this,
+                          event::SourceEvent::TriggerType::PlayStateChanged));
 }
 }  // namespace soil::sound::openal

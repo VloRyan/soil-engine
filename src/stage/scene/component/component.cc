@@ -34,5 +34,5 @@ Node* Component::GetParent() const { return parent_; }
 void Component::SignalChanged() {
   fire(event::Component::MakeDataChangedEvent(this));
 }
-
+void Component::OnStageChanged(Stage* stage, Stage* prevStage) {}
 }  // namespace soil::stage::scene::component

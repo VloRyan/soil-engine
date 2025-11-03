@@ -11,7 +11,7 @@ Ortho::Ortho(const glm::ivec2 resolution)
                         glm::vec3(0.0F, 1.0F, 0.0F))),
       orthoSize_(10),
       orthoType_(OrthoType::Full) {
-  Node::SetReceiverType(ReceiverType::Window, true);
+  // Node::SetReceiverType(ReceiverType::Window, true);
   windowSize_ = resolution;
   UpdateProjection(windowSize_);
 }

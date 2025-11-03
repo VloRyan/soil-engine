@@ -44,8 +44,10 @@ void Stage::OnLoad() {
 
   scene->SetPipeline(pipeline);
 
-  scene->AddHook(
-      new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
+  auto* plainRenderer =
+      new soil::stage::scene::render::Plain(scene->GetRenderContainer());
+  AddEventHook(plainRenderer);
+  AddTriggerHook(plainRenderer);
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
@@ -81,12 +83,13 @@ void Stage::OnLoad() {
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
   eventMap
       .AddKeyMapping(soil::input::Keys::Key_1,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        colObj_->SetPosition(glm::vec3(0.F, 4.5F, -0.1F));
                        colObj_->SetVelocity(glm::vec3(0.F, -0.0001F, 0.F));
                      })
-      .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+      .AddKeyMapping(soil::input::Keys::S,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        printStatistics_ = !printStatistics_;
                      });
@@ -134,9 +137,8 @@ void Stage::initCarrots(soil::stage::scene::Scene* scene,
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (printStatistics_ &&
-      event.GetCause() == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.GetWindow()->GetStatistics();
+  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
+    const auto stats = event.Window->GetStatistics();
     PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
                << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
                << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)

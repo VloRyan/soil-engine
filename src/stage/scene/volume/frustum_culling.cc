@@ -7,14 +7,16 @@
 namespace soil::stage::scene::volume {
 FrustumCulling::FrustumCulling(viewer::Node* viewer,
                                const world::WorldNode* world)
-    : Hook({Hook::Trigger_t::AfterUpdateScene}, HandlerType::Component),
+    : hook::TriggerHook({TriggerHook::TriggerType::AfterUpdateScene}),
       world_(world),
       viewer_(viewer) {}
 
-void FrustumCulling::Handle(const event::Component& event) {
-  if (event.Trigger() == event::Component::TriggerType::Added) {
-    OnComponentAdded(event.Origin());
+void FrustumCulling::OnEvent(const event::Node& event) {
+  if (event.ChangeType != event::Node::ChangeType::Component ||
+      event.ComponentEvent.Trigger != event::Component::TriggerType::Added) {
+    return;
   }
+  OnComponentAdded(event.ComponentEvent.Origin);
 }
 
 void FrustumCulling::OnComponentAdded(component::Component* component) {
@@ -25,7 +27,7 @@ void FrustumCulling::OnComponentAdded(component::Component* component) {
   addedVisualComponents_.push_back(vComp);
 }
 
-void FrustumCulling::Perform(hook::Hook::Trigger_t trigger) {
+void FrustumCulling::OnTrigger(hook::TriggerHook::TriggerType trigger) {
   if (nodesVisibility_.size() < world_->Container()->GetNodeCount()) {
     // TODO make it more efficient
     nodesVisibility_.resize(world_->Container()->GetNodeCount(), false);
@@ -117,4 +119,5 @@ void FrustumCulling::setVisibility(const int index, const bool visible) {
     setVisibility(childrenStartIndex + j, visible);
   }
 }
+
 }  // namespace soil::stage::scene::volume

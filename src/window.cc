@@ -77,7 +77,8 @@ void Window::registerCallbacks() {
     instance->parameter_.RenderSizeAspect = glm::ivec2(
         static_cast<float>(instance->parameter_.RenderSize.y) * aspect,
         instance->parameter_.RenderSize.y);
-    const auto event = WindowEvent(instance, WindowEvent::Cause::SizeChanged);
+    const auto event =
+        WindowEvent(instance, WindowEvent::CauseType::SizeChanged);
     instance->fire(event);
   });
 
@@ -127,7 +128,7 @@ void Window::SetParameter(const WindowParameter &params) {
   glfwSetWindowMonitor(glfwWindow_, monitor, 0, 0, params.Size.x, params.Size.y,
                        params.RefreshRate);
   parameter_ = params;
-  const auto event = WindowEvent(this, WindowEvent::Cause::SizeChanged);
+  const auto event = WindowEvent(this, WindowEvent::CauseType::SizeChanged);
   fire(event);
 }
 
@@ -139,7 +140,8 @@ const WindowParameter &Window::GetParameter() const { return parameter_; }
 
 void Window::UpdateStatistics(const Statistics &newStats) {
   this->statistics_ = newStats;
-  const auto event = WindowEvent(this, WindowEvent::Cause::StatisticsChanged);
+  const auto event =
+      WindowEvent(this, WindowEvent::CauseType::StatisticsChanged);
   fire(event);
 }
 

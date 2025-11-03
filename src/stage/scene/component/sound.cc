@@ -21,15 +21,15 @@ Sound::~Sound() {
 }
 
 void Sound::Handle(const sound::event::Event& event) {
-  if (event.Cause() != sound::event::Cause::Source) {
+  if (event.Cause != sound::event::Cause::Source) {
     return;
   }
   auto& sourceEvent = dynamic_cast<const sound::event::SourceEvent&>(event);
-  if (sourceEvent.Trigger() !=
+  if (sourceEvent.Trigger !=
       sound::event::SourceEvent::TriggerType::PlayStateChanged) {
     return;
   }
-  if (deleteAfterPlayed_ && !sourceEvent.Source()->IsPlaying()) {
+  if (deleteAfterPlayed_ && !sourceEvent.Source->IsPlaying()) {
     delete this;  // suicide
   }
 }

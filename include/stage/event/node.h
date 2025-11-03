@@ -2,14 +2,14 @@
 #define SOIL_STAGE_EVENT_NODE_H
 
 #include "component.h"
-#include "event/event.h"
+#include "event/event.hpp"
 
 namespace soil::stage::scene {
 class Node;
 }
 
 namespace soil::stage::event {
-class Node final : soil::event::Event {
+struct Node final : soil::event::Event {
  public:
   enum class ChangeType : std::uint8_t {
     Deleted,
@@ -20,24 +20,20 @@ class Node final : soil::event::Event {
     Component,
   };
 
-  Node(scene::Node* origin, ChangeType type);
-
-  ~Node() override;
-
-  [[nodiscard]] ChangeType GetChangeType() const;
-
-  [[nodiscard]] scene::Node* GetOrigin() const;
-
-  [[nodiscard]] scene::Node* GetChangedNode() const;
-
-  [[nodiscard]] const Component& GetComponentEvent() const;
+  explicit Node(scene::Node* origin = nullptr,
+                enum ChangeType changeType = ChangeType::State,
+                scene::Node* changedNode = nullptr,
+                scene::Node* prevParentNode = nullptr,
+                const Component& componentEvent = Component());
+  ~Node() override = default;
 
   friend bool operator==(const Node& lhs, const Node& rhs) {
     return static_cast<const soil::event::Event&>(lhs) ==
                static_cast<const soil::event::Event&>(rhs) &&
-           lhs.origin_ == rhs.origin_ && lhs.changedNode_ == rhs.changedNode_ &&
-           lhs.changeType_ == rhs.changeType_ &&
-           lhs.componentEvent_ == rhs.componentEvent_;
+           lhs.Origin == rhs.Origin && lhs.ChangedNode == rhs.ChangedNode &&
+           lhs.PrevParentNode == rhs.PrevParentNode &&
+           lhs.ChangeType == rhs.ChangeType &&
+           lhs.ComponentEvent == rhs.ComponentEvent;
   }
 
   friend bool operator!=(const Node& lhs, const Node& rhs) {
@@ -51,12 +47,11 @@ class Node final : soil::event::Event {
   static Node MakeComponentEvent(scene::Node* origin,
                                  const Component& componentEvent);
 
- private:
-  scene::Node* origin_;
-  scene::Node* changedNode_;
-  ChangeType changeType_;
-
-  Component componentEvent_;
+  scene::Node* Origin{nullptr};
+  ChangeType ChangeType{ChangeType::State};
+  scene::Node* ChangedNode{nullptr};
+  scene::Node* PrevParentNode{nullptr};
+  Component ComponentEvent{nullptr};
 };
 
 using NodeEventHandler = soil::event::Handler<Node>;

@@ -1,6 +1,7 @@
 #include "stage/scene/viewer/node.h"
 
 #include "stage/scene/scene.h"
+#include "stage/stage.h"
 #include "window.h"
 
 namespace soil::stage::scene::viewer {
@@ -15,7 +16,16 @@ Node::Node()
       frustum_(new soil::world::volume::Frustum(glm::mat4(1.0F))) {}
 
 Node::~Node() { delete frustum_; }
-
+void Node::OnStageChanged(soil::stage::Stage* stage,
+                          soil::stage::Stage* prevStage) {
+  scene::Node::OnStageChanged(stage, prevStage);
+  if (prevStage != nullptr) {
+    prevStage->RemoveEventHook(this);
+  }
+  if (stage != nullptr) {
+    stage->AddEventHook(this);
+  }
+}
 float Node::GetNearZ() const { return nearZ_; }
 
 void Node::SetNearZ(const float nearZ) {
@@ -38,9 +48,9 @@ glm::vec3 Node::GetRight() const { return right_; }
 
 glm::vec3 Node::GetUp() const { return up_; }
 */
-void Node::Handle(const WindowEvent& event) {
-  if (event.GetCause() == WindowEvent::SizeChanged) {
-    windowSize_ = event.GetWindow()->GetSize();
+void Node::OnEvent(const WindowEvent& event) {
+  if (event.Cause == WindowEvent::SizeChanged) {
+    windowSize_ = event.Window->GetSize();
     UpdateProjection(windowSize_);
   }
 }

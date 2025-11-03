@@ -15,9 +15,9 @@ void Item::SetOnClick(const std::function<void(Item& item)>& onClick) {
 
 void Item::OnMouseButton(const glm::ivec2& pos,
                          const soil::input::MouseButton button,
-                         soil::input::Event::State state) {
-  if (onClick_ &&                                     //
-      state == soil::input::Event::State::Release &&  //
+                         soil::input::Event::StateType state) {
+  if (onClick_ &&                                         //
+      state == soil::input::Event::StateType::Release &&  //
       button == soil::input::MouseButton::Left) {
     onClick_(*this);
   }

@@ -1,8 +1,9 @@
 #ifndef SOIL_STAGE_SCENE_WORLD_NODE_H
 #define SOIL_STAGE_SCENE_WORLD_NODE_H
 
+#include "stage/hook/event_hook.hpp"
+#include "stage/hook/trigger_hook.h"
 #include "stage/scene/component/collision_object_component.h"
-#include "stage/scene/hook/hook.h"
 #include "stage/scene/node.h"
 #include "world/world.h"
 namespace soil::stage::scene {
@@ -10,12 +11,15 @@ class Scene;
 }
 namespace soil::stage::scene::world {
 
-class WorldNode : public scene::Node, public scene::hook::Hook {
+class WorldNode : public scene::Node,
+                  public hook::EventHook<event::Node>,
+                  public hook::TriggerHook {
  public:
   explicit WorldNode(soil::world::World* world);
   ~WorldNode() override;
   void Handle(const stage::event::Component& event) override;
-  void Perform(hook::Hook::Trigger_t trigger) override;
+  void OnEvent(const event::Node& event) override;
+  void OnTrigger(TriggerType trigger) override;
   void Activate(component::CollisionObjectComponent* comp);
   void UpdatePosition(component::CollisionObjectComponent* comp);
 
@@ -34,13 +38,14 @@ class WorldNode : public scene::Node, public scene::hook::Hook {
   const soil::world::volume::Container* Container() const;
 
  protected:
-  void LinkToScene(Scene& scene);
+  void LinkToScene(scene::Scene& scene);
   void Insert(component::CollisionObjectComponent* comp);
   void Remove(component::CollisionObjectComponent* comp);
 
   void SetParent(Node* parent) override;
+  void OnStageChanged(Stage* stage, Stage* prevStage) override;
 
-  Scene* ClimbUpToScene();
+  scene::Scene* ClimbUpToScene();
   bool IsBelowMe(Node* node) const;
 
  private:

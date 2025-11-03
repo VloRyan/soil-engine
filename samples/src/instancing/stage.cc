@@ -10,6 +10,7 @@
 #include "shader.h"
 #include "shape_instance.h"
 #include "stage/scene/input.h"
+#include "stage/scene/render/instancing.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -40,8 +41,8 @@ void Stage::OnLoad() {
         *texture);  // texture will be bound to next free slot
   }
 
-  auto* instancing = scene->AddHook(
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer()));
+  auto* instancing =
+      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
   instancing->AddRenderBatch(
       ShapeInstance::BATCH_NAME,
       {
@@ -49,6 +50,8 @@ void Stage::OnLoad() {
           .Shader = shader,
           .VertexAttribDescriptors = ShapeInstance::ATTRIBS,
       });
+  AddTriggerHook(instancing);
+  AddEventHook(instancing);
 
   initBackground(scene, 0);
   initCarrots(scene, 1);
@@ -56,9 +59,8 @@ void Stage::OnLoad() {
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (printStatistics_ &&
-      event.GetCause() == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.GetWindow()->GetStatistics();
+  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
+    const auto stats = event.Window->GetStatistics();
     PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
                << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
                << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)
@@ -78,26 +80,27 @@ void Stage::Handle(const soil::WindowEvent& event) {
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
   eventMap
       .AddKeyMapping(soil::input::Keys::Key_1,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        shapes_[0]->SetVisible(!shapes_[0]->IsVisible());
                      })
       .AddKeyMapping(soil::input::Keys::Key_2,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        shapes_[1]->SetOpaque(!shapes_[1]->IsOpaque());
                      })
       .AddKeyMapping(soil::input::Keys::Key_3,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        shapes_[2]->SetOpaque(!shapes_[2]->IsOpaque());
                      })
       .AddKeyMapping(soil::input::Keys::Key_4,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        shapes_[3]->SetOpaque(!shapes_[3]->IsOpaque());
                      })
-      .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+      .AddKeyMapping(soil::input::Keys::S,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        printStatistics_ = !printStatistics_;
                      });

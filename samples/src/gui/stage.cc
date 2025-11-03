@@ -53,8 +53,9 @@ void Stage::OnLoad() {
       GetResources().GetWindow()->GetSize()));
   viewer->Look(glm::vec3(0.F), glm::vec3(0.F, 0.F, -1.F));
 
-  scene->AddHook(new soil::stage::scene::render::UpdateMatricesUbo(
-      viewer, UBO_TARGET_MATRICES, &state));
+  auto* updateUbo = new soil::stage::scene::render::UpdateMatricesUbo(
+      viewer, UBO_TARGET_MATRICES, &state);
+  AddTriggerHook(updateUbo);
 
   auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
 
@@ -63,8 +64,10 @@ void Stage::OnLoad() {
   shapeTileShader->SetViewer(
       viewer);  // will update PV matrix in Shader::Prepare())
 
-  scene->AddHook(
-      new soil::stage::scene::render::Plain(scene->GetRenderContainer()));
+  auto* plainRenderer =
+      new soil::stage::scene::render::Plain(scene->GetRenderContainer());
+  AddEventHook(plainRenderer);
+  AddTriggerHook(plainRenderer);
 
   root_ = scene->AddChild(
       new soil::stage::scene::gui::Root(GetResources().GetWindow()->GetSize()));
@@ -92,11 +95,12 @@ void Stage::OnLoad() {
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
   eventMap
       .AddKeyMapping(soil::input::Keys::Escape,
-                     soil::input::Event::State::Release,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        GetResources().GetWindow()->Close();
                      })
-      .AddKeyMapping(soil::input::Keys::S, soil::input::Event::State::Release,
+      .AddKeyMapping(soil::input::Keys::S,
+                     soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        printStatistics_ = !printStatistics_;
                      });
@@ -198,9 +202,8 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
 
 void Stage::Handle(const soil::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (printStatistics_ &&
-      event.GetCause() == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.GetWindow()->GetStatistics();
+  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
+    const auto stats = event.Window->GetStatistics();
     PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
                << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
                << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)

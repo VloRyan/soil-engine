@@ -2,11 +2,12 @@
 #define SOIL_STAGE_SCENE_VIEWER_NODE_H
 
 #include "glm/glm.hpp"
+#include "stage/hook/event_hook.hpp"
 #include "stage/scene/node.h"
 #include "world/volume/frustum.h"
 
 namespace soil::stage::scene::viewer {
-class Node : public scene::Node {
+class Node : public scene::Node, public hook::EventHook<WindowEvent> {
  public:
   ~Node() override;
 
@@ -30,11 +31,12 @@ class Node : public scene::Node {
 
   [[nodiscard]] glm::vec3 GetUp() const override;*/
 
-  void Handle(const WindowEvent& event) override;
+  void OnEvent(const WindowEvent& event) override;
 
  protected:
   Node();
-
+  void OnStageChanged(soil::stage::Stage* stage,
+                      soil::stage::Stage* prevStage) override;
   virtual void UpdateProjection(const glm::ivec2& size) = 0;
 
   glm::vec3 direction_;

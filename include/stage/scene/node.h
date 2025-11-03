@@ -14,7 +14,9 @@
 #include "stage/scene/component/transform_component.h"
 #include "window_event.h"
 #include "world/entity/object_3d.h"
-
+namespace soil::stage {
+class Stage;
+}
 namespace soil::stage::scene {
 class Scene;
 
@@ -145,6 +147,7 @@ class Node : public input::EventHandler,
   virtual void RemoveChild(Node* node);
 
   component::TransformComponent& Transform() const;
+  scene::Scene* Scene() const;
 
  protected:
   void MarkDirtyWith(DirtyImpact cause);
@@ -166,7 +169,10 @@ class Node : public input::EventHandler,
 
   [[nodiscard]] virtual std::bitset<4> GetDirtyImpacts() const;
 
- protected:
+  virtual void OnStageChanged(Stage* stage, Stage* prevStage);
+
+  void fire(const event::Node& event) override;
+
   component::TransformComponent* transform_;
 
  private:

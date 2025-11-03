@@ -6,25 +6,19 @@ namespace soil::sound {
 class Source;
 
 namespace event {
-class SourceEvent : public Event {
+struct SourceEvent : public Event {
  public:
   enum class TriggerType : std::uint8_t {
     Added,
     PlayStateChanged,
     Removed,
   };
-
-  explicit SourceEvent(TriggerType trigger, sound::Source* source);
-
+  explicit SourceEvent(sound::Source* source = nullptr,
+                       TriggerType trigger = TriggerType::Added)
+      : Event(Cause::Source), Source(source), Trigger(trigger) {}
   ~SourceEvent() override = default;
-
-  [[nodiscard]] virtual sound::Source* Source() const;
-
-  [[nodiscard]] TriggerType Trigger() const;
-
- private:
-  sound::Source* source_;
-  TriggerType trigger_;
+  sound::Source* Source{nullptr};
+  TriggerType Trigger{TriggerType::Added};
 };
 }  // namespace event
 }  // namespace soil::sound

@@ -3,7 +3,7 @@
 #include <functional>
 #include <type_traits>
 
-#include "event/event.h"
+#include "event/event.hpp"
 
 namespace soil::event {
 template <class T, std::enable_if_t<std::is_base_of_v<Event, T>>* = nullptr>

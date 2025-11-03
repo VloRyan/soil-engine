@@ -5,14 +5,13 @@
 #include <utility>
 
 #include "stage/scene/component/instance_data.h"
-#include "stage/scene/hook/hook.h"
 
 namespace soil::stage::scene::render {
 Instancing::Instancing(
     video::render::Container* renderContainer,
     std::function<BatchObject*(const BatchObjectCreationArgs& args)>
         creatorFunc)
-    : Hook({Hook::Trigger_t::AfterUpdateScene}, HandlerType::Component),
+    : hook::TriggerHook({TriggerHook::TriggerType::AfterUpdateScene}),
       renderContainer_(renderContainer),
       batchObjectCreatorFunc_(std::move(creatorFunc)) {}
 
@@ -22,14 +21,20 @@ Instancing::~Instancing() {
     delete states.NonOpaque;
   }
 }
+void Instancing::OnEvent(const event::Node& event) {
+  if (event.ChangeType != event::Node::ChangeType::Component) {
+    return;
+  }
+  Handle(event.ComponentEvent);
+}
 
 void Instancing::Handle(const event::Component& event) {
-  if (!component::VisualComponent::IsRenderType(event.Origin(),
+  if (!component::VisualComponent::IsRenderType(event.Origin,
                                                 render::Type::Instancing)) {
     return;
   }
-  auto* data = dynamic_cast<component::InstanceData*>(event.Origin());
-  switch (event.Trigger()) {
+  auto* data = dynamic_cast<component::InstanceData*>(event.Origin);
+  switch (event.Trigger) {
     case event::Component::TriggerType::Added:
       OnAdded(data);
       break;
@@ -37,7 +42,7 @@ void Instancing::Handle(const event::Component& event) {
       OnRemoved(data);
       break;
     case event::Component::TriggerType::Changed:
-      if (event.Changed() == event::Component::ChangeType::Data) {
+      if (event.Changed == event::Component::ChangeType::Data) {
         OnChanged(data);
       }
       break;
@@ -146,8 +151,8 @@ void Instancing::OnRemoved(component::InstanceData* data) {
   }
   // TODO remove batch if empty
 }
-
-void Instancing::Perform(hook::Hook::Trigger_t trigger) {
+void Instancing::OnTrigger(
+    soil::stage::hook::TriggerHook::TriggerType trigger) {
   for (auto* data : addedData_) {
     auto& states = renderBatchPerKey_[data->GetBatchKey()];
     if (data->IsOpaque()) {

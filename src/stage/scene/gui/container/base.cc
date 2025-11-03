@@ -10,8 +10,8 @@ Base::Base(const int margin, const glm::ivec4 padding)
 const std::vector<Rectangle*>& Base::GetItems() const { return children_; }
 
 void Base::Handle(const event::Node& event) {
-  if (event.GetChangeType() == event::Node::ChangeType::State &&
-      event.GetOrigin()->GetState() == State::Dirty) {
+  if (event.ChangeType == event::Node::ChangeType::State &&
+      event.Origin->GetState() == State::Dirty) {
     SetDirty(DirtyImpact::Dependents);
   }
 }

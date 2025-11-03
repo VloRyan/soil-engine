@@ -1,7 +1,7 @@
 #ifndef SOIL_SOUND_SOURCE_H
 #define SOIL_SOUND_SOURCE_H
 #include "event/observable.hpp"
-#include "event/source_event.h"
+#include "event/source_event.hpp"
 #include "file.h"
 #include "glm/vec3.hpp"
 

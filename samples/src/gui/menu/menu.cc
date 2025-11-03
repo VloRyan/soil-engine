@@ -86,12 +86,12 @@ void Menu::OnMouseWheel(const glm::ivec2& pos, const glm::vec2 offset) {
 
 void Menu::OnMouseButton(const glm::ivec2& pos,
                          const soil::input::MouseButton button,
-                         const soil::input::Event::State state) {
+                         const soil::input::Event::StateType state) {
   if (!IsVisible()) {
     return;
   }
   Rectangle::OnMouseButton(pos, button, state);
-  if (state == soil::input::Event::State::Release) {
+  if (state == soil::input::Event::StateType::Release) {
     for (int i = 0; i < container_->GetItems().size(); i++) {
       if (const auto* item = container_->GetItems()[i]; item->Contains(pos)) {
         if (i != selectedItemIndex_) {

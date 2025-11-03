@@ -9,24 +9,24 @@
 
 namespace soil::input {
 struct KeyEventMapping {
-  KeyEventMapping(Keys key, Event::State state,
+  KeyEventMapping(Keys key, Event::StateType state,
                   std::function<void(const Event&)> action);
 
   [[nodiscard]] bool Matches(const Event& event) const;
 
   Keys key_;
-  Event::State state_;
+  Event::StateType state_;
   std::function<void(const Event&)> fun_;
 };
 
 struct MouseButtonEventMapping {
-  MouseButtonEventMapping(MouseButton button, Event::State state,
+  MouseButtonEventMapping(MouseButton button, Event::StateType state,
                           std::function<void(const Event&)> action);
 
   [[nodiscard]] bool Matches(const Event& event) const;
 
   MouseButton button_;
-  Event::State state_;
+  Event::StateType state_;
   std::function<void(const Event&)> fun_;
 };
 
@@ -48,11 +48,11 @@ class EventMap final : public EventHandler {
 
   void Handle(const Event& event) override;
 
-  EventMap& AddKeyMapping(Keys key, Event::State state,
+  EventMap& AddKeyMapping(Keys key, Event::StateType state,
                           const std::function<void(const Event&)>& action);
 
   EventMap& AddMouseButtonMapping(
-      MouseButton button, Event::State state,
+      MouseButton button, Event::StateType state,
       const std::function<void(const Event&)>& action);
 
   EventMap& AddMouseWheelMapping(

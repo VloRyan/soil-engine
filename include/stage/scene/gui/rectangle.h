@@ -95,7 +95,7 @@ class Rectangle : public Node {
   virtual void OnMouseOut();
 
   virtual void OnMouseButton(const glm::ivec2& pos, input::MouseButton button,
-                             input::Event::State state);
+                             input::Event::StateType state);
 
   virtual void OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset);
 

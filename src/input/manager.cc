@@ -24,7 +24,7 @@ void Manager::Init(Window *window) {
   glfwSetKeyCallback(
       window_->GetGLFWWindow(),
       [](GLFWwindow *, const int key, const int, const int action, const int) {
-        const auto state = static_cast<Event::State>(action);
+        const auto state = static_cast<Event::StateType>(action);
         mutex_.lock();
         instance->eventQueue_->push_back(
             Event::MakeKeyChangedEvent(getKey(key), state));
@@ -42,7 +42,7 @@ void Manager::Init(Window *window) {
       [](GLFWwindow *win, const int button, const int action, const int) {
         const auto mouseButton = GetMouseButton(button);
         const auto cursorPosition = GetCursorPosition(win);
-        const auto state = static_cast<Event::State>(action);
+        const auto state = static_cast<Event::StateType>(action);
         mutex_.lock();
         instance->eventQueue_->push_back(
             Event::MakeMouseButtonEvent(cursorPosition, mouseButton, state));
@@ -85,20 +85,20 @@ void Manager::processEvents(EventQueue *queue) {
 
   for (auto itr = queue->begin(); itr != queue->end();) {
     Event event = *itr;
-    switch (event.GetOrigin()) {
-      case Event::Origin::Keyboard: {
-        if (event.GetState() != Event::State::Release) {
-          pressedKeys.push_back(event.GetKey());
+    switch (event.Origin) {
+      case Event::OriginType::Keyboard: {
+        if (event.State != Event::StateType::Release) {
+          pressedKeys.push_back(event.Key);
         } else {
-          releasedKeys.push_back(event.GetKey());
+          releasedKeys.push_back(event.Key);
         }
         break;
       }
-      case Event::Origin::MouseButton: {
-        if (event.GetState() != Event::State::Release) {
-          pressedButtons.push_back(event.GetMouseButton());
+      case Event::OriginType::MouseButton: {
+        if (event.State != Event::StateType::Release) {
+          pressedButtons.push_back(event.MouseButton);
         } else {
-          releasedButtons.push_back(event.GetMouseButton());
+          releasedButtons.push_back(event.MouseButton);
         }
         break;
       }
@@ -121,7 +121,7 @@ void Manager::processEvents(EventQueue *queue) {
     }
     if (!isReleasedInThisFrame) {
       eventQueue_->push_back(
-          Event::MakeKeyChangedEvent(pressedKey, Event::State::Press));
+          Event::MakeKeyChangedEvent(pressedKey, Event::StateType::Press));
     }
   }
   for (const MouseButton pressedButton : pressedButtons) {
@@ -137,7 +137,7 @@ void Manager::processEvents(EventQueue *queue) {
       double y;
       glfwGetCursorPos(window_->GetGLFWWindow(), &x, &y);
       eventQueue_->push_back(Event::MakeMouseButtonEvent(
-          glm::vec2(x, y), pressedButton, Event::State::Press));
+          glm::vec2(x, y), pressedButton, Event::StateType::Press));
     }
   }
 }

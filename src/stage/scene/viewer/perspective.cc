@@ -16,7 +16,7 @@ Perspective::Perspective(glm::ivec2 resolution)
       view_(1.0F) {
   nearZ_ = 0.1F;
   SetRotate(rotate_);
-  Node::SetReceiverType(ReceiverType::Window, true);
+  // Node::SetReceiverType(ReceiverType::Window, true);
   windowSize_ = resolution;
   UpdateProjection(windowSize_);
 }
