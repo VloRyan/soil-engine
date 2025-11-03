@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
         stage/scene/render/mocks.hpp
         world/world_test.cc
         world/volume/mocks.hpp
+        stage/scene/component/update_graph_component_test.cc
 
 )
 

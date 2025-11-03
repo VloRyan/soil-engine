@@ -31,13 +31,11 @@ add_library(${PROJECT_NAME}
         include/util/pointer_cache.hpp
         include/video/render/step/context.hpp
         src/engine.cc
-        src/event/event.cc
         src/file/font.cc
         src/file/sprite_sheet.cc
         src/input/event.cc
         src/input/event_map.cc
         src/input/manager.cc
-        src/sound/event/source_event.cc
         src/sound/file.cc
         src/sound/ogg.cc
         src/sound/openal/buffer.cc
@@ -46,7 +44,6 @@ add_library(${PROJECT_NAME}
         src/sound/openal/source.cc
         src/sound/wave.cc
         src/stage/event/component.cc
-        src/stage/event/game_event.cc
         src/stage/event/node.cc
         src/stage/event/stage_event.cc
         src/stage/manager.cc
@@ -66,7 +63,7 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/overlay.cc
         src/stage/scene/gui/rectangle.cc
         src/stage/scene/gui/root.cc
-        src/stage/scene/hook/hook.cc
+        src/stage/hook/trigger_hook.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
         src/stage/scene/render/instancing.cc
@@ -89,7 +86,6 @@ add_library(${PROJECT_NAME}
         src/video/buffer/object.cc
         src/video/buffer/ubo.cc
         src/video/buffer/vbo.cc
-        src/video/event.cc
         src/video/manager.cc
         src/video/mesh/cache.cc
         src/video/mesh/data.cc
@@ -135,6 +131,10 @@ add_library(${PROJECT_NAME}
         src/world/entity/transform_3d.cc
         src/stage/scene/component/transform_component.cc
         src/stage/scene/world/world_node.cc
+        src/stage/scene/component/update_graph_component.cc
+        src/stage/scene/component/event_component.cc
+        include/stage/scene/component/event_component.h
+
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -148,7 +148,7 @@ target_sources(
         FILES
         include/base.h
         include/engine.h
-        include/event/event.h
+        include/event/event.hpp
         include/event/handler.hpp
         include/event/observable.hpp
         include/file/font.h
@@ -160,7 +160,7 @@ target_sources(
         include/input/manager.h
         include/sound/buffer.h
         include/sound/event/event.hpp
-        include/sound/event/source_event.h
+        include/sound/event/source_event.hpp
         include/sound/file.h
         include/sound/listener.h
         include/sound/manager.h
@@ -189,7 +189,9 @@ target_sources(
         include/stage/scene/gui/overlay.h
         include/stage/scene/gui/rectangle.h
         include/stage/scene/gui/root.h
-        include/stage/scene/hook/hook.h
+        include/stage/hook/trigger_hook.h
+        include/stage/scene/component/update_graph_component.h
+        include/stage/hook/event_hook.hpp
         include/stage/scene/input.h
         include/stage/scene/node.h
         include/stage/scene/render/instancing.h
@@ -214,7 +216,6 @@ target_sources(
         include/video/buffer/object.h
         include/video/buffer/ubo.h
         include/video/buffer/vbo.h
-        include/video/event.h
         include/video/manager.h
         include/video/mesh
         include/video/mesh/cache.h
