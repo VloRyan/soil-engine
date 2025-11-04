@@ -11,4 +11,5 @@ TEST_F(StageTest, Contruct) {
   EXPECT_EQ(stage.IsLoaded(), false);
   EXPECT_THROW(stage.GetResources(), StageNotRegisteredException);
 }
+
 }  // namespace soil::stage

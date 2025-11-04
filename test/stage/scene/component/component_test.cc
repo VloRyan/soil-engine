@@ -40,10 +40,10 @@ TEST_F(ComponentTest, SetUpdateType) {
       node.AddComponent(new ComponentMock(Component::Type::Metadata));
   node.Update();  // apply add
 
-  ASSERT_EQ(node.HandleComponentEventCalledCount, 0);
+  ASSERT_EQ(node.Calls.HandleComponentEvent, 0);
 
   component->SetUpdateType(Component::UpdateType::Always);
 
-  EXPECT_EQ(node.HandleComponentEventCalledCount, 1);
+  EXPECT_EQ(node.Calls.HandleComponentEvent, 1);
 }
 }  // namespace soil::stage::scene::component

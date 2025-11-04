@@ -1,3 +1,5 @@
+#include "stage/scene/component/update_graph_component.h"
+
 #include "../mocks.hpp"
 #include "gtest/gtest.h"
 

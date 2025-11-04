@@ -26,7 +26,7 @@ TEST_F(PlainTest, OnAdded) {
 
   EXPECT_EQ(renderContainer.Calls.Add, 0);  // still in added state
 
-  plain.Perform(hook::Hook::Trigger_t::Render);
+  plain.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
 
   EXPECT_EQ(renderContainer.Calls.Add, 1);
 }
@@ -37,7 +37,7 @@ TEST_F(PlainTest, OnChanged) {
 
   plain.Handle(
       event::Component(&component, event::Component::TriggerType::Added));
-  plain.Perform(hook::Hook::Trigger_t::Render);
+  plain.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   EXPECT_EQ(renderContainer.Calls.Add, 1);
 
   plain.Handle(event::Component(&component,
@@ -56,7 +56,7 @@ TEST_F(PlainTest, OnChangedWithoutAdded) {
 
   EXPECT_EQ(renderContainer.Calls.Add, 0);  //  no effect
 
-  plain.Perform(hook::Hook::Trigger_t::Render);
+  plain.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
 
   EXPECT_EQ(renderContainer.Calls.Add, 1);
 }
@@ -83,7 +83,7 @@ TEST_F(PlainTest, OnChangedBeforeFirstRender) {
   EXPECT_EQ(renderContainer.Calls.Add, 0);
   EXPECT_EQ(renderContainer.Calls.Remove, 0);
 
-  plain.Perform(hook::Hook::Trigger_t::Render);
+  plain.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   EXPECT_EQ(renderContainer.Calls.Add, 0);
   EXPECT_EQ(renderContainer.Calls.Remove, 0);
 }

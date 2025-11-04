@@ -11,25 +11,21 @@ class NodeMock : public Node {
   explicit NodeMock(const Type type = Type::Transform) : Node(type) {}
 
   ~NodeMock() override = default;
-  int UpdateCalledCount = 0;
-  int UpdateDirtyCalledCount = 0;
-  int HandleComponentEventCalledCount = 0;
-  int HandleWindowEventCalledCount = 0;
-  int HandleInputEventCalledCount = 0;
   std::vector<Node*> AddedChildren;
   std::vector<Node*> RemovedChildren;
   std::bitset<4> UpdateDirtyImpacts;
   std::function<void()> UpdateFunc = nullptr;
 
-  void ResetMocks() {
-    UpdateCalledCount = 0;
-    UpdateDirtyCalledCount = 0;
-    HandleComponentEventCalledCount = 0;
+  void Reset() {
+    Calls.Reset();
+    AddedChildren.clear();
+    RemovedChildren.clear();
+    UpdateDirtyImpacts = 0;
     UpdateFunc = nullptr;
   }
 
   void Update() override {
-    UpdateCalledCount++;
+    Calls.Update++;
     if (UpdateFunc != nullptr) {
       UpdateFunc();
     }
@@ -37,8 +33,8 @@ class NodeMock : public Node {
   }
 
   void UpdateDirty() override {
+    Calls.UpdateDirty++;
     UpdateDirtyImpacts = GetDirtyImpacts();
-    UpdateDirtyCalledCount++;
     Node::UpdateDirty();
   }
 
@@ -53,17 +49,17 @@ class NodeMock : public Node {
   }
 
   void Handle(const event::Component& event) override {
-    HandleComponentEventCalledCount++;
+    Calls.HandleComponentEvent++;
     Node::Handle(event);
   }
 
   void Handle(const WindowEvent& event) override {
-    HandleWindowEventCalledCount++;
+    Calls.HandleWindowEvent++;
     Node::Handle(event);
   }
 
   void Handle(const input::Event& event) override {
-    HandleInputEventCalledCount++;
+    Calls.HandleInputEvent++;
     Node::Handle(event);
   }
 
@@ -75,6 +71,20 @@ class NodeMock : public Node {
   void SetUpdateType(const UpdateType type) override {
     Node::SetUpdateType(type);
   }
+  struct {
+    int Update{0};
+    int UpdateDirty{0};
+    int HandleComponentEvent{0};
+    int HandleWindowEvent{0};
+    int HandleInputEvent{0};
+    void Reset() {
+      Update = 0;
+      UpdateDirty = 0;
+      HandleInputEvent = 0;
+      HandleWindowEvent = 0;
+      HandleComponentEvent = 0;
+    }
+  } Calls;
 };
 
 class NodeEventMockListener : public event::NodeEventHandler {

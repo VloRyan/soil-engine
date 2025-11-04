@@ -76,7 +76,7 @@ TEST_F(InstancingTest, OnAdded) {
 
   // Simulate render
   auto emptyState = video::render::State{};
-  instancing.Perform(hook::Hook::Trigger_t::AfterUpdateScene);
+  instancing.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   component.SetIndex(1);
 
   auto* batchMock = dynamic_cast<BatchObjectMock*>(dataStateBatches->Opaque);
@@ -96,7 +96,7 @@ TEST_F(InstancingTest, OnChanged) {
       event::Component(&component, event::Component::TriggerType::Added));
   // Simulate render
   auto emptyState = video::render::State{};
-  instancing.Perform(hook::Hook::Trigger_t::AfterUpdateScene);
+  instancing.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   component.SetIndex(1);
   ASSERT_EQ(renderContainer.Calls.Add, 1);
 
@@ -122,7 +122,7 @@ TEST_F(InstancingTest, OnChangedWithoutAdded) {
 
   // Simulate render
   auto emptyState = video::render::State{};
-  instancing.Perform(hook::Hook::Trigger_t::AfterUpdateScene);
+  instancing.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   component.SetIndex(1);
 
   EXPECT_EQ(renderContainer.Calls.Add, 1);
@@ -149,7 +149,7 @@ TEST_F(InstancingTest, OnChangedBeforeFirstRender) {
 
   // Simulate render
   auto emptyState = video::render::State{};
-  instancing.Perform(hook::Hook::Trigger_t::AfterUpdateScene);
+  instancing.OnTrigger(hook::TriggerHook::TriggerType::AfterUpdateScene);
   component.SetIndex(1);
 
   EXPECT_EQ(renderContainer.Calls.Add, 0);

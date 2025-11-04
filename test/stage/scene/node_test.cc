@@ -127,14 +127,14 @@ TEST_F(NodeTest, RemoveComponentJustAdded) {
 
 TEST_F(NodeTest, Update) {
   auto node = NodeMock();
-  ASSERT_EQ(node.UpdateDirtyCalledCount, 0);
+  ASSERT_EQ(node.Calls.UpdateDirty, 0);
 
   node.Update();
-  EXPECT_EQ(node.UpdateDirtyCalledCount, 0) << "after update";
+  EXPECT_EQ(node.Calls.UpdateDirty, 0) << "after update";
 
   node.SetDirty(Node::DirtyImpact::Self);
   node.Update();
-  EXPECT_EQ(node.UpdateDirtyCalledCount, 1) << "after dirty update";
+  EXPECT_EQ(node.Calls.UpdateDirty, 1) << "after dirty update";
 }
 
 TEST_F(NodeTest, UpdateDirtySelf) {
@@ -144,7 +144,7 @@ TEST_F(NodeTest, UpdateDirtySelf) {
       new component::ComponentMock(component::Component::Type::Metadata));
   node.Update();       // update to set comp
   comp->ResetMocks();  // UpdateMatrix is called on add
-  child->ResetMocks();
+  child->Reset();
 
   node.SetDirty(Node::DirtyImpact::Self);
   node.Update();
@@ -153,8 +153,8 @@ TEST_F(NodeTest, UpdateDirtySelf) {
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Self));
   EXPECT_EQ(comp->UpdateCalledCount, 0);
 
-  EXPECT_EQ(child->UpdateCalledCount, 0);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 0);
+  EXPECT_EQ(child->Calls.Update, 0);
+  EXPECT_EQ(child->Calls.UpdateDirty, 0);
 }
 /*
 TEST_F(NodeTest, UpdateDirtyComponent) {
@@ -171,10 +171,10 @@ TEST_F(NodeTest, UpdateDirtyComponent) {
 
   EXPECT_FALSE(node.IsDirty());
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Components));
-  EXPECT_EQ(comp->UpdateCalledCount, 1);
+  EXPECT_EQ(comp->Update, 1);
 
-  EXPECT_EQ(child->UpdateCalledCount, 0);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 0);
+  EXPECT_EQ(child->Update, 0);
+  EXPECT_EQ(child->UpdateDirty, 0);
 }
 */
 std::bitset<4> toBitset(std::vector<Node::DirtyImpact> impacts) {
@@ -198,8 +198,8 @@ TEST_F(NodeTest, UpdateDirtyDependents) {
   comp->ResetMocks();  // UpdateMatrix is called on add
   childComp->ResetMocks();
   childOfChildComp->ResetMocks();
-  child->ResetMocks();
-  childOfChild->ResetMocks();
+  child->Reset();
+  childOfChild->Reset();
 
   node.SetDirty(Node::DirtyImpact::Dependents);
   node.Update();
@@ -208,15 +208,15 @@ TEST_F(NodeTest, UpdateDirtyDependents) {
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Dependents));
   EXPECT_EQ(comp->UpdateCalledCount, 1);
 
-  EXPECT_EQ(child->UpdateCalledCount, 0);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
+  EXPECT_EQ(child->Calls.Update, 0);
+  EXPECT_EQ(child->Calls.UpdateDirty, 1);
   EXPECT_THAT(
       child->UpdateDirtyImpacts,
       toBitset({Node::DirtyImpact::Components, Node::DirtyImpact::Dependents}));
   EXPECT_EQ(childComp->UpdateCalledCount, 1);
 
-  EXPECT_EQ(childOfChild->UpdateCalledCount, 0);
-  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
+  EXPECT_EQ(childOfChild->Calls.Update, 0);
+  EXPECT_EQ(childOfChild->Calls.UpdateDirty, 1);
   EXPECT_THAT(childOfChild->UpdateDirtyImpacts,
               toBitset({Node::DirtyImpact::Dependents}));
   EXPECT_EQ(childOfChildComp->UpdateCalledCount, 1);
@@ -236,8 +236,8 @@ TEST_F(NodeTest, UpdateDirtyTransform) {
   comp->ResetMocks();  // UpdateMatrix is called on add
   childComp->ResetMocks();
   childOfChildComp->ResetMocks();
-  child->ResetMocks();
-  childOfChild->ResetMocks();
+  child->Reset();
+  childOfChild->Reset();
 
   node.SetDirty(Node::DirtyImpact::Transform);
   node.Update();
@@ -246,15 +246,15 @@ TEST_F(NodeTest, UpdateDirtyTransform) {
   EXPECT_FALSE(node.IsDirtyImpact(Node::DirtyImpact::Transform));
   EXPECT_EQ(comp->UpdateCalledCount, 1);
 
-  EXPECT_EQ(child->UpdateCalledCount, 0);
-  EXPECT_EQ(child->UpdateDirtyCalledCount, 1);
+  EXPECT_EQ(child->Calls.Update, 0);
+  EXPECT_EQ(child->Calls.UpdateDirty, 1);
   EXPECT_THAT(
       child->UpdateDirtyImpacts,
       toBitset({Node::DirtyImpact::Transform, Node::DirtyImpact::Components}));
   EXPECT_EQ(childComp->UpdateCalledCount, 1);
 
-  EXPECT_EQ(childOfChild->UpdateCalledCount, 0);
-  EXPECT_EQ(childOfChild->UpdateDirtyCalledCount, 1);
+  EXPECT_EQ(childOfChild->Calls.Update, 0);
+  EXPECT_EQ(childOfChild->Calls.UpdateDirty, 1);
   EXPECT_THAT(childOfChild->UpdateDirtyImpacts,
               toBitset({Node::DirtyImpact::Transform}));
   EXPECT_EQ(childOfChildComp->UpdateCalledCount, 1);
@@ -294,6 +294,7 @@ TEST_F(NodeTest, HandleTransformChanges) {
   EXPECT_EQ(node.GetState(), Node::State::Dirty);
   EXPECT_TRUE(node.IsDirtyImpact(Node::DirtyImpact::Transform));
 }
+
 /*
 TEST_F(NodeTest, HandleComponentEventStateFilterOnNew) {
   auto eventListener = NodeEventMockListener();
@@ -394,10 +395,10 @@ TEST_F(NodeTest, ForEach) {
      std::this_thread::sleep_for(std::chrono::milliseconds(1));*/
   }
   /*   for (const auto* child : nodes) {
-         if (child->UpdateCalledCount != probes * 2) {
+         if (child->Update != probes * 2) {
              printf("g");
          }
-         ASSERT_EQ(child->UpdateCalledCount, probes * 2);
+         ASSERT_EQ(child->Update, probes * 2);
      }*/
 
   std::cout
@@ -480,10 +481,10 @@ TEST_F(NodeTest, ForEachChild) {
   Node::ForEachChild(root, [](Node* child) { child->Update(); });
 
   for (const auto* child : children) {
-    if (child->UpdateCalledCount == 0) {
+    if (child->Calls.Update == 0) {
       printf("g");
     }
-    ASSERT_EQ(child->UpdateCalledCount, 1);
+    ASSERT_EQ(child->Calls.Update, 1);
   }
 
   delete root;

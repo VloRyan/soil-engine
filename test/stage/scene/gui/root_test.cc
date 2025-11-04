@@ -27,20 +27,20 @@ TEST_F(RootTest, MouseOver) {
   auto* subItem = item3->AddChild(new Rectangle());
   root.Update();
 
-  root.Handle(input::Event::MakeMousePositionEvent(glm::vec2(
+  root.OnEvent(input::Event::MakeMousePositionEvent(glm::vec2(
       100.F, 100.F) /*cursor origin to top-left: (100,500) in scene coords*/));
   EXPECT_TRUE(item1->IsMouseOver());
   EXPECT_FALSE(item2->IsMouseOver());
   EXPECT_FALSE(item3->IsMouseOver());
   EXPECT_FALSE(subItem->IsMouseOver());
 
-  root.Handle(input::Event::MakeMousePositionEvent(glm::vec2(700.F, 100.F)));
+  root.OnEvent(input::Event::MakeMousePositionEvent(glm::vec2(700.F, 100.F)));
   EXPECT_FALSE(item1->IsMouseOver());
   EXPECT_TRUE(item2->IsMouseOver());
   EXPECT_FALSE(item3->IsMouseOver());
   EXPECT_FALSE(subItem->IsMouseOver());
 
-  root.Handle(input::Event::MakeMousePositionEvent(glm::vec2(100.F, 500.F)));
+  root.OnEvent(input::Event::MakeMousePositionEvent(glm::vec2(100.F, 500.F)));
   EXPECT_FALSE(item1->IsMouseOver());
   EXPECT_FALSE(item2->IsMouseOver());
   EXPECT_TRUE(item3->IsMouseOver());
