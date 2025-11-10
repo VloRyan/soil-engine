@@ -36,13 +36,13 @@ void State::Apply(const StateDef& def) {
 
 void State::WriteUbo(
     const int target,
-    const std::function<void(buffer::Cursor* cursor)>& writeFunc) {
+    const std::function<void(buffer::Cursor& cursor)>& writeFunc) {
   const auto itr = uboMap_.find(target);
   if (itr == uboMap_.end()) {
     throw std::runtime_error("Cannot find Ubo for target: " +
                              std::to_string(target));
   }
-  auto* cursor = itr->second->GetCursor();
+  auto& cursor = itr->second->GetCursor();
   writeFunc(cursor);
   itr->second->Flush();
 #ifdef DEBUG
@@ -255,4 +255,24 @@ void State::Clear(const BufferBitDescription bits) {
 
 int State::GetChanges() const { return changes_; }
 
+bool StateDef::operator==(const StateDef& rhs) const {
+  return Blend == rhs.Blend && DepthTest == rhs.DepthTest &&
+         StencilTest == rhs.StencilTest && ScissorTest == rhs.ScissorTest &&
+         DepthFunc == rhs.DepthFunc;
+}
+bool StateDef::operator!=(const StateDef& rhs) const { return !(rhs == *this); }
+bool StateDef::operator<(const StateDef& rhs) const {
+  if (Blend < rhs.Blend) return true;
+  if (rhs.Blend < Blend) return false;
+  if (DepthTest < rhs.DepthTest) return true;
+  if (rhs.DepthTest < DepthTest) return false;
+  if (StencilTest < rhs.StencilTest) return true;
+  if (rhs.StencilTest < StencilTest) return false;
+  if (ScissorTest < rhs.ScissorTest) return true;
+  if (rhs.ScissorTest < ScissorTest) return false;
+  return DepthFunc < rhs.DepthFunc;
+}
+bool StateDef::operator>(const StateDef& rhs) const { return rhs < *this; }
+bool StateDef::operator<=(const StateDef& rhs) const { return !(rhs < *this); }
+bool StateDef::operator>=(const StateDef& rhs) const { return !(*this < rhs); }
 }  // namespace soil::video::render

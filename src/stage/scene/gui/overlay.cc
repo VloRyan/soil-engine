@@ -4,7 +4,7 @@
 #include "stage/scene/gui/root.h"
 
 namespace soil::stage::scene::gui {
-Overlay::Overlay(Root* root, const bool positionRelativeToRoot)
+Overlay::Overlay(class Root* root, const bool positionRelativeToRoot)
     : root_(root), positionRelativeToRoot_(positionRelativeToRoot) {
   Node::SetPosition(glm::vec3(0.F));
 }

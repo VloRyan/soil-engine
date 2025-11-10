@@ -34,14 +34,16 @@ Shape* Shape::New(const soil::stage::Resources& resources, const bool isOpaque,
   if (mesh == nullptr) {
     throw std::runtime_error("mesh is null");
   };
-  return new Shape(*mesh, isOpaque, shader);
+  return nullptr;
+  // return new Shape(*mesh, isOpaque, shader);
 }
 
 float Shape::DistanceTo(const glm::vec3& point) {
   return glm::distance(point.z, GetParent()->GetPosition().z);
 }
 
-void Shape::PrepareRender(soil::video::render::State& state) {
+void Shape::ApplyData(const soil::video::render::data::IWriter& writer,
+                      soil::video::render::State& state) {
   GetShader()->Use();
   GetShader()->SetUniform("Transform", GetParent()->Transform().GetMatrix());
   GetShader()->SetUniform("Size", GetSize());

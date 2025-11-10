@@ -8,8 +8,6 @@ Root::Root(const glm::ivec2 windowSize) {
   size_ = windowSize;
   scissorRect_.Size = size_;
   childScissorRect_.Size = size_;
-  // Node::SetReceiverType(ReceiverType::Input, true);
-  // Node::SetReceiverType(ReceiverType::Window, true);
   const auto parentHalfSize = size_ / glm::ivec2(2);
   Node::SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
 }

@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include <oneapi/tbb/detail/_task.h>
 
+#include "video/render/renderable_group.h"
+#include "video/render/renderable_group_elements.h"
 namespace soil::video::render::step {
 class RenderableObjectMock : public RenderableObject {
  public:
@@ -11,12 +13,21 @@ class RenderableObjectMock : public RenderableObject {
                                 const bool sortable = true)
       : Distance(distance), Sortable(sortable) {}
 
-  void Render(State& state) override { RenderCalledCount++; }
+  // void Render(State& state) override { RenderCalledCount++; }
+  [[nodiscard]] const vertex::Vao* Vao() const override { return nullptr; }
+  [[nodiscard]] enum DrawMode DrawMode() const override {
+    return DrawMode::Quads;
+  }
 
   float DistanceTo(const glm::vec3& point) override { return Distance; }
 
   bool IsSortable() const override { return Sortable; }
-
+  [[nodiscard]] RenderableGroup* NewGroup() const override {
+    return new RenderableGroupElements();
+  }
+  void ApplyData(const data::IWriter& writer,
+                 soil::video::render::State& state) const override {}
+  void Render(soil::video::render::State& state, int count) override {}
   int RenderCalledCount = 0;
   float Distance = 0.F;
   bool Sortable;

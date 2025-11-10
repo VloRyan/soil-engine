@@ -28,7 +28,7 @@ Data* Prefab::New(const Type type) {
       constexpr int vertices[2]{0, 1};
       constexpr GLushort indices[2]{0, 1};
       auto* meshData = new Data();
-      meshData->SetDrawMode(shader::DrawMode::Lines);
+      meshData->SetDrawMode(render::DrawMode::Lines);
       meshData->SetIndices(indices, 2);
       meshData->SetData(reinterpret_cast<const byte*>(vertices),
                         2 * sizeof(int),
@@ -49,7 +49,7 @@ Data* Prefab::New(const Type type) {
       constexpr GLushort indices[4]{0, 1, 2, 3};
 
       auto* meshData = new Data();
-      meshData->SetDrawMode(shader::DrawMode::TriangleStrip);
+      meshData->SetDrawMode(render::DrawMode::TriangleStrip);
       meshData->SetIndices(indices, 4);
       meshData->SetData(reinterpret_cast<const byte*>(vertices),
                         4 * sizeof(glm::vec2),
@@ -68,7 +68,7 @@ Data* Prefab::New(const Type type) {
                       reinterpret_cast<const byte *>(boxVertices), 24 *
          sizeof(float), 3 * sizeof(float), vertex::VertexType::VERT_3D);*/
       auto* meshData = new Data();
-      meshData->SetDrawMode(shader::DrawMode::Triangles);
+      meshData->SetDrawMode(render::DrawMode::Triangles);
       meshData->SetIndices(indices, 36);
       meshData->SetData(reinterpret_cast<const byte*>(vertices),
                         8 * sizeof(glm::vec3),

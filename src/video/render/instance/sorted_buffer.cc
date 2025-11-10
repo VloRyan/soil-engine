@@ -24,7 +24,7 @@ void SortedBuffer::Update() {
       perInstanceBuffer->GetBufferSize() / instanceSize;
   const auto maxInstancesPerDraw = bufferSizeInInstances;
 
-  auto *cursor = perInstanceBuffer->GetCursor();
+  auto &cursor = perInstanceBuffer->GetCursor();
 
   for (auto *instance : dirtyInstances_) {
     if (instance->GetIndex() == -1) {
@@ -53,8 +53,8 @@ void SortedBuffer::Update() {
     auto *instance = sortedInstances[i].second;
     instances_[i] = instance;
     if (instance->GetIndex() != i) {
-      cursor->MoveTo(instanceSize * i);
-      instance->WriteData(cursor);
+      cursor.MoveTo(instanceSize * i);
+      instance->WriteData(&cursor);
       instance->SetIndex(i);
     }
   }

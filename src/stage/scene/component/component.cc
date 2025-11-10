@@ -1,6 +1,7 @@
 #include "stage/scene/component/component.h"
 
 #include "stage/scene/node.h"
+#include "stage/scene/scene.h"
 
 namespace soil::stage::scene::component {
 Component::Component(const Type type)
@@ -13,7 +14,17 @@ Component::~Component() {
   // TODO: fire Removed event?! Currently only node creates and fires it
 }
 
-void Component::SetParent(Node* parent) { parent_ = parent; }
+void Component::SetParent(Node* parent) {
+  if (parent_ == parent) {
+    return;
+  }
+  parent_ = parent;
+  auto prevRoot = parent != nullptr ? parent->Root() : nullptr;
+  auto prevStage = prevRoot != nullptr ? prevRoot->GetStage() : nullptr;
+  auto root = parent_ != nullptr ? parent_->Root() : nullptr;
+  auto stage = root != nullptr ? root->GetStage() : nullptr;
+  OnStageChanged(stage, prevStage);
+}
 
 void Component::SetUpdateType(const UpdateType updateType) {
   if (updateType_ == updateType) {

@@ -2,7 +2,6 @@
 #define SOIL_ENGINE_WORLD_RAY_H
 #include <glm/glm.hpp>
 
-#include "stage/scene/viewer/node.h"
 namespace soil::world {
 
 struct Ray {

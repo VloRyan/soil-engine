@@ -7,8 +7,7 @@
 
 namespace soil::stage::scene::render {
 Plain::Plain(video::render::Container* renderContainer)
-    : hook::TriggerHook({TriggerHook::TriggerType::Render}),
-      renderContainer_(renderContainer) {}
+    : hook::TriggerHook(), renderContainer_(renderContainer) {}
 
 void Plain::OnEvent(const event::Node& event) {
   if (event.ChangeType != event::Node::ChangeType::Component) {
@@ -43,7 +42,7 @@ void Plain::Handle(const event::Component& event) {
 }
 
 void Plain::OnRemoved(component::VisualComponent* component) {
-  if (component->GetRenderable()->GetContainerStateIndex() != -1) {
+  /*if (component->GetRenderable()->GetContainerStateIndex() != -1) {
     if (component->IsOpaque()) {
       auto removed = renderContainer_->Remove(component->GetRenderable(),
                                               video::render::Container::OPAQUE);
@@ -107,24 +106,24 @@ void Plain::OnChanged(component::VisualComponent* component) {
   }
 }
 
-void Plain::OnTrigger(hook::TriggerHook::TriggerType trigger) {
-  for (auto* comp : added_) {
-    if (comp->IsOpaque()) {
-      renderContainer_->Add(comp->GetRenderable(),
-                            video::render::Container::OPAQUE);
-    } else {
-      renderContainer_->Add(comp->GetRenderable(),
-                            video::render::Container::NON_OPAQUE);
-    }
-  }
-  added_.clear();
+void Plain::OnTrigger(const TriggerPoint& point) {
+  /* for (auto* comp : added_) {
+     if (comp->IsOpaque()) {
+       renderContainer_->Add(comp->GetRenderable(),
+                             video::render::Container::OPAQUE);
+     } else {
+       renderContainer_->Add(comp->GetRenderable(),
+                             video::render::Container::NON_OPAQUE);
+     }
+   }
+   added_.clear();
 
-  for (auto* comp : changed_) {
-    auto* renderable = comp->GetRenderable();
-    const auto index = renderable->GetContainerStateIndex();
-    UpdateOpacity(comp->IsOpaque(), index, renderable);
-  }
-  changed_.clear();
+   for (auto* comp : changed_) {
+     auto* renderable = comp->GetRenderable();
+     const auto index = renderable->GetContainerStateIndex();
+     UpdateOpacity(comp->IsOpaque(), index, renderable);
+   }
+   changed_.clear();*/
 }
 
 void Plain::UpdateOpacity(bool isOpaque, int index,

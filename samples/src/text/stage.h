@@ -1,7 +1,7 @@
 #ifndef TEXT_STAGE_H
 #define TEXT_STAGE_H
+#include "basic/shape.h"
 #include "common/stage.h"
-#include "instancing/shape_instance.h"
 #include "node.h"
 #include "stage/stage.h"
 
@@ -23,7 +23,7 @@ class Stage final : public common::Stage {
   bool printStatistics_;
   Node* text_;
   soil::stage::scene::Node* bgNode_;
-  instancing::ShapeInstance* bgShape_;
+  basic::Shape* bgShape_;
   Node* description_;
   Node* bounceText_;
   glm::vec2 bounceTextVelocity;

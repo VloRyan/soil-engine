@@ -7,9 +7,7 @@
 namespace soil::stage::scene::volume {
 FrustumCulling::FrustumCulling(viewer::Node* viewer,
                                const world::WorldNode* world)
-    : hook::TriggerHook({TriggerHook::TriggerType::AfterUpdateScene}),
-      world_(world),
-      viewer_(viewer) {}
+    : hook::TriggerHook(), world_(world), viewer_(viewer) {}
 
 void FrustumCulling::OnEvent(const event::Node& event) {
   if (event.ChangeType != event::Node::ChangeType::Component ||
@@ -27,7 +25,7 @@ void FrustumCulling::OnComponentAdded(component::Component* component) {
   addedVisualComponents_.push_back(vComp);
 }
 
-void FrustumCulling::OnTrigger(hook::TriggerHook::TriggerType trigger) {
+void FrustumCulling::OnTrigger(const TriggerPoint& point) {
   if (nodesVisibility_.size() < world_->Container()->GetNodeCount()) {
     // TODO make it more efficient
     nodesVisibility_.resize(world_->Container()->GetNodeCount(), false);

@@ -5,13 +5,15 @@
 #include <utility>
 
 #include "stage/scene/component/instance_data.h"
+#include "video/render/renderable_group.h"
+#include "video/render/renderable_group_instances.h"
 
 namespace soil::stage::scene::render {
 Instancing::Instancing(
     video::render::Container* renderContainer,
     std::function<BatchObject*(const BatchObjectCreationArgs& args)>
         creatorFunc)
-    : hook::TriggerHook({TriggerHook::TriggerType::AfterUpdateScene}),
+    : hook::TriggerHook(),
       renderContainer_(renderContainer),
       batchObjectCreatorFunc_(std::move(creatorFunc)) {}
 
@@ -151,8 +153,7 @@ void Instancing::OnRemoved(component::InstanceData* data) {
   }
   // TODO remove batch if empty
 }
-void Instancing::OnTrigger(
-    soil::stage::hook::TriggerHook::TriggerType trigger) {
+void Instancing::OnTrigger(const TriggerPoint& point) {
   for (auto* data : addedData_) {
     auto& states = renderBatchPerKey_[data->GetBatchKey()];
     if (data->IsOpaque()) {
@@ -242,13 +243,19 @@ float Instancing::BatchObject::DistanceTo(const glm::vec3& point) {
   return 0.F;
 }
 
-void Instancing::BatchObject::Render(video::render::State& state) {
-  batch_->Render(state);
-}
+/*void Instancing::BatchObject::Render(video::render::State& state) {
+  // batch_->Render(state);
+}*/
 
 void Instancing::BatchObject::AddChangedInstance(
     video::render::instance::Instance* instance) {
   batch_->AddChangedInstance(instance);
+}
+const video::vertex::Vao* Instancing::BatchObject::Vao() const {
+  return nullptr;
+}
+video::render::DrawMode Instancing::BatchObject::DrawMode() const {
+  return video::render::DrawMode::Quads;
 }
 void Instancing::BatchObject::AddNewInstance(
     video::render::instance::Instance* instance) {
@@ -261,6 +268,15 @@ bool Instancing::BatchObject::RemoveInstance(
 void Instancing::BatchObject::Update() { batch_->Update(); }
 
 bool Instancing::BatchObject::IsSortable() const { return false; }
+video::render::RenderableGroup* Instancing::BatchObject::NewGroup() const {
+  // return new video::render::RenderableGroupInstances();
+  return nullptr;
+}
+void Instancing::BatchObject::ApplyData(
+    const video::render::data::IWriter& writer,
+    soil::video::render::State& state) const {}
+
+void Instancing::BatchObject::Render(video::render::State& state, int count) {}
 
 Instancing::BatchObject* Instancing::DefaultCreateBatchObject(
     const Instancing::BatchObjectCreationArgs& args) {

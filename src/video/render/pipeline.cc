@@ -113,6 +113,25 @@ Pipeline* Pipeline::NewForwardRenderingPipeline(Container* container,
   return pipeline;
 }
 
+Pipeline* Pipeline::NewSimpleForwardRenderingPipeline(Container* container,
+                                                      bool depthTest,
+                                                      const std::string& name) {
+  auto* pipeline = new Pipeline(name, container);
+  pipeline->InsertStep(
+      new step::SetRenderables("set_opaque", {.Blending = false}));
+  /*pipeline->InsertStep(
+      new step::Sort("sort_near_far", step::Sort::Order::FrontToBack));*/
+  pipeline->InsertStep(new step::Render(
+      "render_opaque", {.Blend = false, .DepthTest = depthTest}));
+  pipeline->InsertStep(
+      new step::SetRenderables("set_transparent", {.Blending = true}));
+  /*pipeline->InsertStep(
+      new step::Sort("sort_far_near", step::Sort::Order::BackToFront));*/
+  pipeline->InsertStep(new step::Render(
+      "render_transparent", {.Blend = true, .DepthTest = depthTest}));
+  return pipeline;
+}
+
 bool Pipeline::Empty() const { return steps_.empty(); }
 
 void Pipeline::Print() const {

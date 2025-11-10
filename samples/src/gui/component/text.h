@@ -13,6 +13,8 @@ class Text : public soil::stage::scene::component::text::AbstractText {
 
   void Render(soil::video::render::State& state) override;
   float DistanceTo(const glm::vec3& point) override;
+  void ApplyData(const soil::video::render::data::IWriter& writer,
+                 soil::video::render::State& state) override;
 };
 }  // namespace soil_samples::gui::component
 

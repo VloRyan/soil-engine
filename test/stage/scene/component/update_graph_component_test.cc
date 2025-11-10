@@ -16,7 +16,8 @@ TEST_F(UpdateGraphComponentTest, Update) {
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
 
   node.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node(&node, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&node, stage::event::Node::ChangeType::State));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 1);
 
@@ -29,19 +30,22 @@ TEST_F(UpdateGraphComponentTest, UpdateAfterAdd) {
   auto node = NodeMock();
   auto &childNode = *node.AddChild(new NodeMock());
 
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 0);
 
   node.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 0);
 
   childNode.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 1);
@@ -54,14 +58,16 @@ TEST_F(UpdateGraphComponentTest, UpdateTopDirty) {
 
   node.SetDirty(Node::DirtyImpact::Self);
   childNode.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node(&childNode, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&childNode, stage::event::Node::ChangeType::State));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 1);
 
   node.SetDirty(Node::DirtyImpact::Dependents);
   childNode.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node(&childNode, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&childNode, stage::event::Node::ChangeType::State));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 1);  // top dirty
   EXPECT_EQ(childNode.Calls.UpdateDirty, 2);
@@ -72,14 +78,17 @@ TEST_F(UpdateGraphComponentTest, UpdateAfterDelete) {
   auto node = NodeMock();
 
   node.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node(&node, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&node, stage::event::Node::ChangeType::State));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 1);
 
   node.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node(&node, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&node, stage::event::Node::ChangeType::State));
   node.SetState(Node::State::Delete);
-  updateGraph.OnEvent(event::Node(&node, event::Node::ChangeType::State));
+  updateGraph.OnEvent(
+      stage::event::Node(&node, stage::event::Node::ChangeType::State));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 1);
 }
@@ -89,20 +98,24 @@ TEST_F(UpdateGraphComponentTest, UpdateAfterChildRemoved) {
   auto node = NodeMock();
   auto &childNode = *node.AddChild(new NodeMock());
 
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 0);
 
   childNode.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 1);
 
   childNode.SetDirty(Node::DirtyImpact::Self);
-  updateGraph.OnEvent(event::Node::MakeChildAddedEvent(&node, &childNode));
-  updateGraph.OnEvent(event::Node::MakeChildRemovedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildAddedEvent(&node, &childNode));
+  updateGraph.OnEvent(
+      stage::event::Node::MakeChildRemovedEvent(&node, &childNode));
   updateGraph.Update();
   EXPECT_EQ(node.Calls.UpdateDirty, 0);
   EXPECT_EQ(childNode.Calls.UpdateDirty, 1);

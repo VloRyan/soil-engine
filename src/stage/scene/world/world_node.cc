@@ -6,7 +6,7 @@ namespace soil::stage::scene::world {
 
 WorldNode::WorldNode(soil::world::World *world)
     : scene::Node(Node::Type::World),
-      hook::TriggerHook({TriggerHook::TriggerType::BeforeUpdateScene}),
+      hook::TriggerHook(),
       world_(world),
       linked_(false) {
   if (world_ == nullptr) {
@@ -58,13 +58,17 @@ void WorldNode::Handle(const event::Component &event) {
 void WorldNode::OnStageChanged(Stage *stage, Stage *prevStage) {
   Node::OnStageChanged(stage, prevStage);
   if (prevStage != nullptr) {
-    prevStage->RemoveEventHook(this);
-    prevStage->RemoveTriggerHook(this);
+    prevStage->RemoveEventHook(Root(), this);
+    prevStage->RemoveTriggerHook(
+        this,
+        {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
     Clear();
   }
   if (stage != nullptr) {
-    stage->AddEventHook(this);
-    stage->AddTriggerHook(this);
+    stage->AddEventHook(Root(), this);
+    stage->AddTriggerHook(
+        this,
+        {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
     std::vector<component::Component *> components;
     ForEachChild(this, [this, &components](Node *child) {
       components.clear();
@@ -80,7 +84,7 @@ void WorldNode::OnStageChanged(Stage *stage, Stage *prevStage) {
     });
   }
 }
-void WorldNode::OnTrigger(hook::TriggerHook::TriggerType trigger) {
+void WorldNode::OnTrigger(const TriggerPoint &point) {
   /*if (!linked_) {
     auto scene = ClimbUpToScene();
     if (scene != nullptr) {
@@ -152,7 +156,7 @@ Scene *WorldNode::ClimbUpToScene() {
     current = current->GetParent();
   }
   return scene;*/
-  return Scene();
+  return Root();
 }
 
 bool WorldNode::IsBelowMe(Node *node) const {

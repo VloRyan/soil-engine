@@ -19,14 +19,6 @@
 using UniformLocation = int;
 
 namespace soil::video::shader {
-enum class DrawMode : std::uint8_t {
-  Points = GL_POINTS,
-  Lines = GL_LINES,
-  Triangles = GL_TRIANGLES,
-  TriangleStrip = GL_TRIANGLE_STRIP,
-  Quads = GL_QUADS,
-};
-
 class Shader {
  public:
   explicit Shader(const std::string& name, const std::string& path);

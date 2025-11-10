@@ -10,10 +10,7 @@
 #include "glm/glm.hpp"
 #include "gui/character_shader.h"
 #include "gui/component/text.h"
-#include "instancing/shader.h"
-#include "instancing/shape_instance.h"
 #include "node.h"
-#include "stage/scene/render/instancing.h"
 #include "stage/scene/render/plain.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
@@ -32,39 +29,25 @@ Stage::Stage()
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer()));
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
   auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
-  auto* instancing =
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
-  AddEventHook(instancing);
-  AddTriggerHook(instancing);
+
   auto* bgTexture = GetResources().Textures().GetTexture2D(
       asset::GetPath("Textures/crt.jpg"));
   auto& renderState = GetResources().GetRenderState();
-  auto* bgShader = dynamic_cast<instancing::Shader*>(
-      GetResources().GetShader(instancing::Shader::NAME));
-  bgShader->SetTextures({bgTexture});
+  auto* bgShader = dynamic_cast<basic::Shader*>(
+      GetResources().GetShader(basic::Shader::NAME));
   renderState.SetTexture(0, *bgTexture);
   bgShader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
-  instancing->AddRenderBatch(
-      instancing::ShapeInstance::BATCH_NAME,
-      {
-          .Mesh = quadMesh,
-          .Shader = bgShader,
-          .VertexAttribDescriptors = instancing::ShapeInstance::ATTRIBS,
-          .State = {.DepthTest = true},
-      });
   initBackground(scene, 0);
 
-  auto* plainRenderer =
+  /*auto* plainRenderer =
       new soil::stage::scene::render::Plain(scene->GetRenderContainer());
   AddEventHook(plainRenderer);
-  AddTriggerHook(plainRenderer);
+  AddTriggerHook(plainRenderer);*/
 
   auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
   auto* fontTexture =
@@ -187,13 +170,16 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
 
 void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureSlot) {
+  auto* bgShader = dynamic_cast<basic::Shader*>(
+      GetResources().GetShader(basic::Shader::NAME));
+  auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
   const auto winSize =
       glm::vec2(GetResources().GetWindow()->GetSize() - glm::ivec2(30, 30));
   bgNode_ = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  bgShape_ = bgNode_->AddComponent(new instancing::ShapeInstance(true));
+  bgShape_ = bgNode_->AddComponent(new basic::Shape(*quadMesh, true, bgShader));
   bgShape_->SetSize(winSize);
-  bgShape_->SetTextureIndex(textureSlot);
+  bgShape_->SetTextureUnit(textureSlot);
   bgShape_->SetColor({.2F, .2F, .2F, 1.F});
 }
 

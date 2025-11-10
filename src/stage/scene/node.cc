@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "stage/event/node.h"
+#include "stage/scene/component/render/render_component.hpp"
 #include "stage/scene/component/transform_component.h"
 #include "stage/scene/scene.h"
 #include "stage/stage.h"
@@ -54,14 +55,14 @@ void Node::SetParent(Node* parent) {
   if (parent_ == parent) {
     return;
   }
-  auto* prevScene = Scene();
+  auto* prevScene = Root();
   auto* prevStage = prevScene != nullptr ? prevScene->GetStage() : nullptr;
   class Scene* scene = nullptr;
   Stage* stage = nullptr;
   parent_ = parent;
   if (parent_ != nullptr) {
     transform_->UpdateTransform(parent_->transform_->GetMatrix());
-    scene = Scene();
+    scene = Root();
     stage = scene != nullptr ? scene->GetStage() : nullptr;
   }
   if (prevStage != stage) {
@@ -82,10 +83,7 @@ void Node::addChild(Node* node) {
   if (node->GetParent() == this) {
     return;
   }
-  // auto* prevParent = node->GetParent();
   node->SetParent(this);
-  // node->MarkDirtyWith(DirtyImpact::Transform);
-  // node->UpdateDirty();
   children_.push_back(node);
   fire(event::Node::MakeChildAddedEvent(this, node));
 }
@@ -198,18 +196,18 @@ void Node::SetTransform(const glm::mat4& transform) {
 */
 
 void Node::Update() {
-  if (!IsDirty()) {
+  if (IsDirty()) {
+    UpdateDirty();
+  } else {
     for (auto* comp : alwaysUpdateComponents_) {
       comp->Update();
     }
-    return;
   }
-  UpdateDirty();
 }
 
 component::TransformComponent& Node::Transform() const { return *transform_; }
 
-Scene* Node::Scene() const {
+Scene* Node::Root() const {
   auto p = const_cast<Node*>(this);
   while (p->GetParent() != nullptr) {
     p = p->GetParent();
@@ -243,6 +241,12 @@ void Node::UpdateDirty() {
     }
   }
 
+  incorporateAddedComponents();
+  SetState(State::Normal);
+  dirtyImpacts_ = 0;
+}
+
+void Node::incorporateAddedComponents() {
   for (auto* comp : addedComponents_) {
     if (comp->GetParent() != nullptr) {
       comp->GetParent()->RemoveComponent(comp);
@@ -261,8 +265,6 @@ void Node::UpdateDirty() {
     fire(event::Node::MakeComponentEvent(this, addedEvent));
   }
   addedComponents_.clear();
-  SetState(State::Normal);
-  dirtyImpacts_ = 0;
 }
 
 bool Node::IsDirty() const { return state_ == State::Dirty; }
@@ -522,10 +524,19 @@ void Node::ForEachChild(const Node* node,
 
 void Node::fire(const event::Node& event) {
   Observable::fire(event);
-  auto* scene = Scene();
+  auto* scene = Root();
   auto* stage = scene != nullptr ? scene->GetStage() : nullptr;
   if (stage != nullptr) {
     stage->Handle(event);
   }
+}
+
+void Node::Render(video::render::State& state) {
+  ForEachComponent(
+      [&state](component::Component* c) {
+        auto* rc = dynamic_cast<component::render::RenderComponent*>(c);
+        rc->Render(state);
+      },
+      component::Component::Type::Render);
 }
 }  // namespace soil::stage::scene

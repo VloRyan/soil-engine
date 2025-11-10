@@ -1,9 +1,6 @@
 #include "stage/scene/scene.h"
 
-#include "component/mocks.hpp"
 #include "gtest/gtest.h"
-#include "hook/mocks.hpp"
-#include "mocks.hpp"
 #include "stage/stage.h"
 
 namespace soil::stage::scene {
@@ -15,7 +12,6 @@ TEST_F(SceneTest, Contruct) {
 
   EXPECT_EQ(scene->GetType(), Node::Type::Scene);
   EXPECT_EQ(scene->GetStage(), nullptr);
-  EXPECT_EQ(scene->GetPipeline(), nullptr);
 }
 /*
 TEST_F(SceneTest, Update) {

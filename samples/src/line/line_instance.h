@@ -4,11 +4,12 @@
 
 #include <vector>
 
+#include "stage/scene/component/render/mesh_instance_component.h"
 #include "video/vertex/vertex.h"
-
 namespace soil_samples::line {
 
-class LineInstance final : public soil::stage::scene::component::InstanceData {
+class LineInstance final
+    : public soil::stage::scene::component::render::MeshInstanceComponent {
  public:
   struct Data {
     glm::vec3 Start;
@@ -16,8 +17,12 @@ class LineInstance final : public soil::stage::scene::component::InstanceData {
     glm::vec4 Color;
   };
 
-  LineInstance(const std::string& batchKey, glm::vec3 StartPoint,
-               glm::vec3 EndPoint);
+  LineInstance(const soil::video::render::MeshInstancePile::PileDescriptor&
+                   pileDescriptor,
+               glm::vec3 StartPoint, glm::vec3 EndPoint);
+
+  static LineInstance* NewFromPile(const std::string& name,
+                                   glm::vec3 StartPoint, glm::vec3 EndPoint);
 
   [[nodiscard]] glm::vec4 GetColor() const;
 
@@ -31,7 +36,8 @@ class LineInstance final : public soil::stage::scene::component::InstanceData {
 
   [[nodiscard]] glm::vec3 GetEndPoint() const;
 
-  void WriteData(soil::video::buffer::Cursor* cursor) const override;
+  void ApplyData(const soil::video::render::data::IWriter& writer,
+                 soil::video::render::State& state) override;
 
   void Update() override;
   inline static const auto BATCH_NAME = std::string("Line");

@@ -7,22 +7,21 @@ namespace soil::stage::scene::render {
 UpdateMatricesUbo::UpdateMatricesUbo(viewer::Node* viewer,
                                      const int uboMatricesBindingTarget,
                                      video::render::State* renderState)
-    : hook::TriggerHook({TriggerHook::TriggerType::Render}),
+    : hook::TriggerHook(),
       viewer_(viewer),
       uboMatricesBindingTarget_(uboMatricesBindingTarget),
       renderState_(renderState) {}
 
-void UpdateMatricesUbo::OnTrigger(
-    soil::stage::hook::TriggerHook::TriggerType trigger) {
+void UpdateMatricesUbo::OnTrigger(const TriggerPoint& point) {
   renderState_->WriteUbo(uboMatricesBindingTarget_,
-                         [this](video::buffer::Cursor* cursor) {
+                         [this](video::buffer::Cursor& cursor) {
                            const auto proj = viewer_->GetProjectionMatrix();
                            const auto view = viewer_->GetViewMatrix();
                            const auto pvMatrix = proj * view;
-                           cursor->Write(proj);
-                           cursor->Write(view);
-                           cursor->Write(glm::inverse(view));
-                           cursor->Write(pvMatrix);
+                           cursor.Write(proj);
+                           cursor.Write(view);
+                           cursor.Write(glm::inverse(view));
+                           cursor.Write(pvMatrix);
                          });
 }
 }  // namespace soil::stage::scene::render

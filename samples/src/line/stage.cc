@@ -1,6 +1,5 @@
 #include "stage.h"
 
-#include <asset.h>
 #include <plog/Log.h>
 
 #include <string>
@@ -10,7 +9,6 @@
 #include "line_instance.h"
 #include "shader.h"
 #include "stage/scene/input.h"
-#include "stage/scene/render/instancing.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -21,8 +19,8 @@ Stage::Stage() : lines_(), printStatistics_(false), offset_(0) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer()));
+  /*scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
+      scene->GetRenderContainer()));*/
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
@@ -31,10 +29,7 @@ void Stage::OnLoad() {
   auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
   shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
-  auto* mesh =
-      GetResources().GetMesh({.Type = soil::video::mesh::Prefab::Type::Line});
-
-  auto* instancing =
+  /*auto* instancing =
       new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
   AddEventHook(instancing);
   AddTriggerHook(instancing);
@@ -43,7 +38,16 @@ void Stage::OnLoad() {
       LineInstance::BATCH_NAME,
       {.Mesh = mesh,
        .Shader = shader,
-       .VertexAttribDescriptors = LineInstance::ATTRIBS});
+       .VertexAttribDescriptors = LineInstance::ATTRIBS});*/
+
+  soil::video::render::MeshInstancePile::RegisterPile(
+      LineInstance::BATCH_NAME,
+      {
+          .MeshData = GetResources().GetMesh(
+              {.Type = soil::video::mesh::Prefab::Type::Line}),
+          .Shader = shader,
+          .VertexAttribDescriptors = LineInstance::ATTRIBS,
+      });
 
   glLineWidth(1.F);
   initLines(scene);
@@ -98,10 +102,10 @@ void Stage::initLines(soil::stage::scene::Scene* scene) {
   for (auto i = 0; i < MAX_LINES; ++i) {
     auto* node = scene->AddChild(new soil::stage::scene::Node(
         soil::stage::scene::Node::Type::Transform));
-    lines_[i] = node->AddComponent(
-        new LineInstance(LineInstance::BATCH_NAME,                         //
-                         glm::vec3(inner * cos(i), inner * sin(i), -0.1),  //
-                         glm::vec3(outer * cos(i), outer * sin(i), -0.1)));
+    lines_[i] = node->AddComponent(LineInstance::NewFromPile(
+        LineInstance::BATCH_NAME,                         //
+        glm::vec3(inner * cos(i), inner * sin(i), -0.1),  //
+        glm::vec3(outer * cos(i), outer * sin(i), -0.1)));
     lines_[i]->SetVisible(false);
     node->SetPosition(glm::vec3(500, 500, 0));
     auto remain = static_cast<float>(i);

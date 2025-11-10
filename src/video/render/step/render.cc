@@ -7,7 +7,7 @@ Render::Render(const std::string& id, const StateDef stateDef)
 void Render::Process(Context& context) {
   for (auto* renderable : *context.Renderables) {
     context.State->Apply(stateDef_);
-    renderable->Render(*context.State);
+    //    renderable->Render(*context.State);
   }
 }
 

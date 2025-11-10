@@ -42,6 +42,11 @@ add_executable(${PROJECT_NAME}
         world/world_test.cc
         world/volume/mocks.hpp
         stage/scene/component/update_graph_component_test.cc
+        video/render/state_identifier_test.cc
+        video/render/state_container_test.cc
+        video/render/mocks.hpp
+        stage/scene/component/event/event_component_test.cc
+        stage/scene/component/event/hook_test.cc
 
 )
 

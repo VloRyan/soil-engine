@@ -12,7 +12,8 @@ class RotationNode : public soil::stage::scene::Node,
   ~RotationNode() override = default;
 
   void Update() override;
-  void OnTrigger(soil::stage::hook::TriggerHook::TriggerType trigger) override;
+  void OnTrigger(
+      const soil::stage::hook::TriggerHook::TriggerPoint &point) override;
 
  protected:
   void OnStageChanged(soil::stage::Stage *stage,

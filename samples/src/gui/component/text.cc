@@ -71,7 +71,11 @@ void Text::Render(soil::video::render::State& state) {
         shader->SetUniform("uBorderColor", GetBorderColor());
         shader->SetUniform("uBorderOutline", GetBorderOutline());
         shader->SetUniform("uCharacterOutline", GetCharacterOutline());
-        GetVertexArray()->Render(state);
+        const auto* ebo = mesh_->Vao()->GetEbo();
+        mesh_->Vao()->Bind();
+        soil::video::shader::Shader::DrawElements(
+            static_cast<uint>(mesh_->DrawMode()), ebo->GetIndexCount(),
+            ebo->GetIndexType());
 
         const auto advance =
             static_cast<float>(character.XAdvance) * GetCharacterSize();
@@ -86,6 +90,26 @@ void Text::Render(soil::video::render::State& state) {
 float Text::DistanceTo(const glm::vec3& point) {
   return glm::distance(GetParent()->GetPosition().z + GetPositionOffset().z,
                        point.z);
+}
+
+void Text::ApplyData(const soil::video::render::data::IWriter& writer,
+                     soil::video::render::State& state) {
+  /*const auto prevDepthFunc = state.GetDepthFunc();
+  state.SetDepthFunc(soil::video::render::DepthFunc::LessEqual);
+  glm::vec2 cursorPosition;
+  const auto effectiveLineHeight =
+      GetSize().y / static_cast<float>(GetLines().size());
+  cursorPosition.y =
+      effectiveLineHeight * static_cast<float>(GetLines().size() + 1) * 0.5F;
+
+  const auto* parentRect =
+      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
+  if (parentRect != nullptr) {
+    state.SetScissorTest(true);
+    state.SetScissor(parentRect->GetScissorRect());
+  } else {
+    state.SetScissorTest(false);
+  }*/
 }
 
 }  // namespace soil_samples::gui::component

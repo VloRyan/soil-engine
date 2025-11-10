@@ -20,15 +20,11 @@ Stage::Stage() : shapes_(), printStatistics_(false) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  auto* pipeline = soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer());
 
-  scene->SetPipeline(pipeline);
-
-  auto* plainRenderer =
+  /*auto* plainRenderer =
       new soil::stage::scene::render::Plain(scene->GetRenderContainer());
   AddEventHook(plainRenderer);
-  AddTriggerHook(plainRenderer);
+  AddTriggerHook(plainRenderer);*/
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));

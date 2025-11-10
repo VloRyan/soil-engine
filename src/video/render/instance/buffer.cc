@@ -34,7 +34,7 @@ void Buffer::Update() {
       perInstanceBuffer->GetBufferSize() / instanceSize;
   const auto maxInstancesPerDraw = bufferSizeInInstances;
 
-  auto* cursor = perInstanceBuffer->GetCursor();
+  auto& cursor = perInstanceBuffer->GetCursor();
 
   for (auto* instance : dirtyInstances_) {
     if (instance->GetIndex() == UnsetId) {
@@ -44,8 +44,8 @@ void Buffer::Update() {
       instance->SetIndex(static_cast<int>(instances_.size()));
       instances_.push_back(instance);
     }
-    cursor->MoveTo(instanceSize * instance->GetIndex());
-    instance->WriteData(cursor);
+    cursor.MoveTo(instanceSize * instance->GetIndex());
+    instance->WriteData(&cursor);
   }
   dirtyInstances_.clear();
   perInstanceBuffer->Flush();

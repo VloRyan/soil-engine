@@ -4,7 +4,7 @@
 #include <string>
 
 #include "stage/scene/viewer/node.h"
-#include "video/shader/instance_shader.h"
+#include "video/shader/shader.h"
 
 namespace soil_samples::gui {
 

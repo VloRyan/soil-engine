@@ -18,6 +18,8 @@ AbstractText::AbstractText(const std::string& prefab, const std::string& text)
       color_(glm::vec4(1.0F)),
       borderColor_(0.F) {
   AbstractText::SetText(text);
+  mesh_->SetRenderFunc(
+      [this](soil::video::render::State& state, int count) { Render(state); });
 }
 
 void AbstractText::InitPrefab(const std::string& name, const PrefabData& data) {

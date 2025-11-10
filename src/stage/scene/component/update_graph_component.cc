@@ -6,12 +6,19 @@
 
 namespace soil::stage::scene::component {
 UpdateGraphComponent::UpdateGraphComponent()
-    : EventComponent({EventComponent::EventType::Node}),
-      dirtyNodesPtr_{&dirtyNodesFront_} {
-  Component::SetUpdateType(UpdateType::Always);
-}
+    : EventComponent(Type::Transform,
+                     {.Events = {EventComponent::EventType::Node},
+                      .TriggerPoints =
+                          {
+                              {.TriggerType = TriggerType::BeforeUpdateScene},
+                          }}),
+      dirtyNodesPtr_{&dirtyNodesFront_} {}
 
 void UpdateGraphComponent::Update() {
+  for (const auto* node : nodesToDelete_) {
+    delete node;
+  }
+  nodesToDelete_.clear();
   auto* lastDirtyNodes = dirtyNodesPtr_;
   if (dirtyNodesPtr_ == &dirtyNodesFront_) {
     dirtyNodesPtr_ = &dirtyNodesBack_;
@@ -26,23 +33,27 @@ void UpdateGraphComponent::Update() {
   }
   lastDirtyNodes->clear();
 }
+void UpdateGraphComponent::OnTrigger(
+    const hook::TriggerHook::TriggerPoint& point) {
+  Update();
+}
 
-void UpdateGraphComponent::OnEvent(const event::Node& event) {
+void UpdateGraphComponent::OnEvent(const stage::event::Node& event) {
   switch (event.ChangeType) {
-    case event::Node::ChangeType::State:
+    case stage::event::Node::ChangeType::State:
       OnNodeStateChanged(event.Origin);
       break;
-    case event::Node::ChangeType::ChildAdded:
+    case stage::event::Node::ChangeType::ChildAdded:
       OnNodeAdded(event.ChangedNode);
       Node::ForEachChild(event.ChangedNode,
                          [this](Node* child) { OnNodeAdded(child); });
       break;
-    case event::Node::ChangeType::Deleted:
+    case stage::event::Node::ChangeType::Deleted:
       OnNodeRemoved(event.Origin);
       Node::ForEachChild(event.Origin,
                          [this](Node* child) { OnNodeRemoved(child); });
       break;
-    case event::Node::ChangeType::ChildRemoved:
+    case stage::event::Node::ChangeType::ChildRemoved:
       OnNodeRemoved(event.ChangedNode);
       Node::ForEachChild(event.ChangedNode,
                          [this](Node* child) { OnNodeRemoved(child); });
@@ -52,6 +63,9 @@ void UpdateGraphComponent::OnEvent(const event::Node& event) {
 }
 
 void UpdateGraphComponent::OnNodeStateChanged(Node* node) {
+  if (node == nullptr) {
+    return;
+  }
   if (node->IsDirty()) {
     dirtyNodesPtr_->push_back(node);
   } else if (node->IsState(Node::State::Delete)) {
@@ -62,16 +76,20 @@ void UpdateGraphComponent::OnNodeStateChanged(Node* node) {
         break;
       }
     }
+    nodesToDelete_.push_back(node);
   }
 }
 
 void UpdateGraphComponent::OnNodeAdded(Node* node) {
-  if (node->IsDirty()) {
+  if (node != nullptr && node->IsDirty()) {
     dirtyNodesPtr_->push_back(node);
   }
 }
 
 void UpdateGraphComponent::OnNodeRemoved(Node* node) {
+  if (node == nullptr) {
+    return;
+  }
   for (auto itr = dirtyNodesPtr_->begin(); itr != dirtyNodesPtr_->end();
        ++itr) {
     if (*itr == node) {
@@ -79,6 +97,13 @@ void UpdateGraphComponent::OnNodeRemoved(Node* node) {
       break;
     }
   }
+  for (auto itr = nodesToDelete_.begin(); itr != nodesToDelete_.end(); ++itr) {
+    if (*itr == node) {
+      nodesToDelete_.erase(itr);
+      break;
+    }
+  }
+  nodesToDelete_.push_back(node);
 }
 
 Node* UpdateGraphComponent::computeTopDirtyNode(Node* node) {

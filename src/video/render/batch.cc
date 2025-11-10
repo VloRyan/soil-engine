@@ -5,14 +5,17 @@
 
 #include "video/buffer/vbo.h"
 #include "video/render/instance/sorted_buffer.h"
-#include "video/vertex/vao_creator.h"
+#include "video/render/renderable_group.h"
+#include "video/render/renderable_group_instances.h"
 
 namespace soil::video::render {
 Batch::Batch(const BatchDescriptor& descriptor)
-    : instanceVbo_(new buffer::Vbo(buffer::Object::UsageType::Dynamic)),
+    : Renderable({}),
+      instanceVbo_(new buffer::Vbo(buffer::Object::UsageType::Dynamic)),
       instanceBuffer_(nullptr),
       shader_(descriptor.Shader),
-      va_(new VertexArray(*descriptor.MeshData)),
+      mesh_(
+          new MeshRenderable(*descriptor.MeshData, descriptor.Shader, nullptr)),
       drawMode_(descriptor.DrawMode),
       stateDef_(descriptor.State) {
   const auto bufferSize =
@@ -21,20 +24,21 @@ Batch::Batch(const BatchDescriptor& descriptor)
   instanceBuffer_ = new instance::Buffer(instanceVbo_, descriptor.InstanceSize);
   size_t offset = 0;
   for (auto [Elements, Type] : descriptor.VertexAttribDescriptors) {
-    offset = va_->GetVao()->AddAttributePointer(
-        instanceVbo_, Type, Elements, descriptor.InstanceSize, offset, true);
+    /*offset = mesh_->Vao()->AddAttributePointer(
+        instanceVbo_, Type, Elements, descriptor.InstanceSize, offset, true);*/
   }
 }
 Batch::Batch()
-    : instanceVbo_(nullptr),
+    : Renderable({}),
+      instanceVbo_(nullptr),
       instanceBuffer_(nullptr),
       shader_(nullptr),
-      va_(nullptr),
-      drawMode_(shader::DrawMode::Points) {}
+      mesh_(nullptr),
+      drawMode_(DrawMode::Points) {}
 
 Batch::~Batch() {
   PLOG_DEBUG << "Deleting Batch";
-  delete va_;
+  delete mesh_;
   delete instanceVbo_;
   delete instanceBuffer_;
 }
@@ -54,31 +58,30 @@ bool Batch::RemoveInstance(instance::Instance* instance) const {
 
 void Batch::Update() const { instanceBuffer_->Update(); }
 
-void Batch::Render(State& state) {
+void Batch::Render(soil::video::render::State& state, int count) {
   const auto amount = instanceBuffer_->GetInstancesCount();
   if (amount == 0) {
     return;
   }
-#ifdef DEBUG
-  if (const buffer::Object* perInstanceBuffer =
-          instanceBuffer_->GetPerInstanceBuffer();
-      perInstanceBuffer != nullptr &&
-      !perInstanceBuffer->IsUsage(buffer::Object::UsageType::Dynamic)) {
-    throw std::runtime_error("Invalid buffer for instance drawing");
-  }
-#endif
   state.Apply(stateDef_);
-  const auto* vao = va_->GetVao();
+  const auto* vao = mesh_->Vao();
   const auto* ebo = vao->GetEbo();
   vao->Bind();
-  shader_->Prepare(state);
+  //  shader_->Prepare(state);
   shader::Shader::DrawElementsInstanced(
       static_cast<int>(drawMode_), ebo->GetIndexCount(), ebo->GetIndexType(),
       static_cast<int>(amount), 0);
 }
 
-shader::DrawMode Batch::GetDrawMode() const { return drawMode_; }
+DrawMode Batch::DrawMode() const { return drawMode_; }
 
 shader::Shader* Batch::GetShader() const { return shader_; }
+RenderableGroup* Batch::NewGroup() const {
+  return nullptr;  // new RenderableGroupInstances();
+}
+const vertex::Vao* Batch::Vao() const { return mesh_->Vao(); }
+
+void Batch::ApplyData(const data::IWriter& writer,
+                      soil::video::render::State& state) const {}
 
 }  // namespace soil::video::render

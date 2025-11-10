@@ -12,6 +12,30 @@ class StageMock : public Stage {
   int RenderCalledCount = 0;
   bool CallRealRender = false;
 
+  const std::unordered_map<
+      scene::Node*, std::vector<soil::stage::hook::EventHook<event::Node>*>>&
+  NodeEventHooks() {
+    return nodeEventHooks_;
+  };
+
+  const std::vector<soil::stage::hook::EventHook<input::Event>*>&
+  InputEventHooks() {
+    return inputEventHooks_;
+  };
+
+  const std::vector<soil::stage::hook::EventHook<WindowEvent>*>&
+  WindowEventHooks() {
+    return windowEventHooks_;
+  }
+
+  const std::unordered_map<
+      soil::stage::hook::TriggerHook::TriggerPoint,
+      std::vector<soil::stage::hook::TriggerHook*>,
+      soil::stage::hook::TriggerHook::TriggerPointEquality>&
+  TriggerHooks() {
+    return triggerHooks_;
+  }
+
   void ResetMocks() {
     HandleInputEventCalledCount = 0;
     HandleWindowEventCalledCount = 0;

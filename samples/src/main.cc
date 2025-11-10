@@ -2,7 +2,6 @@
 #include "basic/shader.h"
 #include "basic/stage.h"
 #include "gui/character_shader.h"
-#include "gui/shape_tile_instance_shader.h"
 #include "gui/shape_tile_shader.h"
 #include "gui/stage.h"
 #include "instancing/shader.h"
@@ -47,8 +46,6 @@ int main(const int argc, const char* argv[]) {
       new soil_samples::instancing::Shader(asset::GetPath("Shader/")));
   vidMgr->PrepareShader(
       new soil_samples::gui::ShapeTileShader(asset::GetPath("Shader/")));
-  vidMgr->PrepareShader(new soil_samples::gui::ShapeTileInstanceShader(
-      asset::GetPath("Shader/")));
   vidMgr->PrepareShader(
       new soil_samples::gui::CharacterShader(asset::GetPath("Shader/")));
   vidMgr->PrepareShader(

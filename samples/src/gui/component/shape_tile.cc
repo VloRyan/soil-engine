@@ -20,26 +20,6 @@ void ShapeTile::InitPrefab(const std::string& name, const PrefabData& data) {
   PREFABS[name] = data;
 }
 
-void ShapeTile::PrepareRender(soil::video::render::State& state) {
-  const auto* parentRect =
-      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
-  if (parentRect != nullptr) {
-    state.SetScissorTest(true);
-    state.SetScissor(parentRect->GetScissorRect());
-  } else {
-    state.SetScissorTest(false);
-  }
-  auto transform = GetParent()->Transform().GetMatrix();
-  transform[3] += glm::vec4(positionOffset_, 0.0F);
-  GetShader()->Use();
-  GetShader()->SetUniform("uTransform", transform);
-  GetShader()->SetUniform("uSize", size_);
-  GetShader()->SetUniform("uTileScale", tileScale_);
-  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
-  GetShader()->SetUniform("uColor", color_);
-  GetShader()->SetUniform("uTileIndex", tileIndex_);
-}
-
 float ShapeTile::DistanceTo(const glm::vec3& point) {
   return glm::distance(GetParent()->GetPosition().z + positionOffset_.z,
                        point.z);
@@ -53,7 +33,6 @@ void ShapeTile::SetTileIndex(const int index) {
   }
   tileIndex_ = index;
   SignalChanged();
-  ;
 }
 
 void ShapeTile::SetTileScale(const glm::vec2 scale) {
@@ -93,9 +72,28 @@ void ShapeTile::SetPositionOffset(glm::vec3 offset) {
   }
   positionOffset_ = offset;
   SignalChanged();
-  ;
 }
 
 glm::vec3 ShapeTile::GetPositionOffset() const { return positionOffset_; }
+void ShapeTile::ApplyData(const soil::video::render::data::IWriter& writer,
+                          soil::video::render::State& state) {
+  const auto* parentRect =
+      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
+  if (parentRect != nullptr) {
+    state.SetScissorTest(true);
+    state.SetScissor(parentRect->GetScissorRect());
+  } else {
+    state.SetScissorTest(false);
+  }
+  auto transform = GetParent()->Transform().GetMatrix();
+  transform[3] += glm::vec4(positionOffset_, 0.0F);
+  GetShader()->Use();
+  GetShader()->SetUniform("uTransform", transform);
+  GetShader()->SetUniform("uSize", size_);
+  GetShader()->SetUniform("uTileScale", tileScale_);
+  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
+  GetShader()->SetUniform("uColor", color_);
+  GetShader()->SetUniform("uTileIndex", tileIndex_);
+}
 
 }  // namespace soil_samples::gui::component

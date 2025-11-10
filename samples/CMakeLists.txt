@@ -36,16 +36,12 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/gui/plane.h
         src/gui/label.cc
         src/gui/label.h
-        src/gui/component/shape_tile_instance.cc
-        src/gui/component/shape_tile_instance.h
         src/gui/component/text.cc
         src/gui/component/text.h
         src/gui/component/shape_tile.cc
         src/gui/component/shape_tile.h
         src/gui/shape_tile_shader.cc
         src/gui/shape_tile_shader.h
-        src/gui/shape_tile_instance_shader.cc
-        src/gui/shape_tile_instance_shader.h
 
         src/gui/character_shader.cc
         src/gui/character_shader.h

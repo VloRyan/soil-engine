@@ -10,6 +10,7 @@ Stage::~Stage() {
   if (IsLoaded()) {
     Stage::Unload();
   }
+  triggerHooks_.clear();
   for (auto* scene : scenes_) {
     scene->stage_ = nullptr;
     delete scene;
@@ -17,16 +18,30 @@ Stage::~Stage() {
 }
 
 void Stage::Update() {
-  triggerHooks(hook::TriggerHook::TriggerType::BeforeUpdateScene);
+  triggerHooks(
+      {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
   for (auto* scene : scenes_) {
+    triggerHooks({
+        .Root = scene,
+        .TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene,
+    });
     scene->Update();
+    triggerHooks({
+        .Root = scene,
+        .TriggerType = hook::TriggerHook::TriggerType::AfterUpdateScene,
+    });
   }
-  triggerHooks(hook::TriggerHook::TriggerType::AfterUpdateScene);
+  triggerHooks(
+      {.TriggerType = hook::TriggerHook::TriggerType::AfterUpdateScene});
 }
 
 void Stage::Render(video::render::State& state) {
-  triggerHooks(hook::TriggerHook::TriggerType::Render);
+  triggerHooks({.TriggerType = hook::TriggerHook::TriggerType::BeforeRender});
   for (auto* scene : scenes_) {
+    triggerHooks({
+        .Root = scene,
+        .TriggerType = hook::TriggerHook::TriggerType::BeforeRender,
+    });
     scene->Render(state);
   }
 }
@@ -39,28 +54,81 @@ void Stage::_addScene(scene::Scene* scene) {
 std::vector<scene::Scene*> Stage::GetScenes() const { return scenes_; }
 
 IManager* Stage::Manager() const { return manager_; }
+void Stage::AddEventHook(scene::Node* root,
+                         soil::stage::hook::EventHook<event::Node>* hook) {
+  auto itr = nodeEventHooks_.find(root);
+  if (itr == nodeEventHooks_.end()) {
+    nodeEventHooks_.insert({root, {hook}});
+  } else {
+    itr->second.push_back(hook);
+  }
+}
+void Stage::AddEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
+  for (auto itr = inputEventHooks_.begin(); itr != inputEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      return;
+    }
+  }
+  inputEventHooks_.push_back(hook);
+}
+void Stage::AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
+  for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      return;
+    }
+  }
+  windowEventHooks_.push_back(hook);
+}
+
+void Stage::RemoveEventHook(scene::Node* root,
+                            soil::stage::hook::EventHook<event::Node>* hook) {
+  _removeEventHook(root, hook, nodeEventHooks_);
+}
+void Stage::RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
+  for (auto itr = inputEventHooks_.begin(); itr != inputEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      inputEventHooks_.erase(itr);
+      return;
+    }
+  }
+}
+void Stage::RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
+  for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      windowEventHooks_.erase(itr);
+      return;
+    }
+  }
+}
 
 void Stage::Handle(const input::Event& event) {
-  /*for (auto* scene : scenes_) {
-    scene->Handle(event);
-  }*/
   for (auto* hook : inputEventHooks_) {
     hook->OnEvent(event);
   }
 }
 
 void Stage::Handle(const WindowEvent& event) {
-  /*for (auto* scene : scenes_) {
-    scene->Handle(event);
-  }*/
   for (auto* hook : windowEventHooks_) {
     hook->OnEvent(event);
   }
 }
 
 void Stage::Handle(const event::Node& event) {
-  for (auto* hook : nodeEventHooks_) {
-    hook->OnEvent(event);
+  auto globals = nodeEventHooks_.find(nullptr);
+  if (globals != nodeEventHooks_.end()) {
+    for (auto* hook : globals->second) {
+      hook->OnEvent(event);
+    }
+  }
+  auto roots = nodeEventHooks_.find(event.Origin->Root());
+  if (roots != nodeEventHooks_.end()) {
+    for (auto* hook : roots->second) {
+      hook->OnEvent(event);
+    }
   }
 }
 
@@ -97,59 +165,41 @@ void Stage::Unload() { loaded_ = false; }
 
 bool Stage::IsLoaded() const { return loaded_; }
 
-void Stage::AddTriggerHook(soil::stage::hook::TriggerHook* trigger) {
-  for (auto typeIdx = 0;
-       typeIdx !=
-       static_cast<int>(soil::stage::hook::TriggerHook::TriggerType::COUNT);
-       typeIdx++) {
-    auto type =
-        static_cast<soil::stage::hook::TriggerHook::TriggerType>(typeIdx);
-    if (trigger->IsTrigger(type)) {
-      auto itr = triggerHooks_.find(type);
-      if (itr == triggerHooks_.end()) {
-        triggerHooks_.insert({type, {trigger}});
-      } else {
-        itr->second.push_back(trigger);
-      }
+void Stage::AddTriggerHook(
+    soil::stage::hook::TriggerHook* trigger,
+    const soil::stage::hook::TriggerHook::TriggerPoint& at) {
+  auto itr = triggerHooks_.find(at);
+  if (itr == triggerHooks_.end()) {
+    triggerHooks_.insert({at, {trigger}});
+  } else {
+    itr->second.push_back(trigger);
+  }
+}
+void Stage::RemoveTriggerHook(
+    soil::stage::hook::TriggerHook* trigger,
+    const soil::stage::hook::TriggerHook::TriggerPoint& at) {
+  auto itr = triggerHooks_.find(at);
+  if (itr == triggerHooks_.end()) {
+    return;
+  }
+  auto& triggers = itr->second;
+  for (auto triggerItr = triggers.begin(); triggerItr != triggers.end();
+       ++triggerItr) {
+    if (*triggerItr == trigger) {
+      triggers.erase(triggerItr);
+      break;
     }
   }
 }
-void Stage::RemoveTriggerHook(soil::stage::hook::TriggerHook* trigger) {
-  for (auto typeIdx = 0;
-       typeIdx !=
-       static_cast<int>(soil::stage::hook::TriggerHook::TriggerType::COUNT);
-       typeIdx++) {
-    auto type =
-        static_cast<soil::stage::hook::TriggerHook::TriggerType>(typeIdx);
-    if (trigger->IsTrigger(type)) {
-      auto itr = triggerHooks_.find(type);
-      if (itr != triggerHooks_.end()) {
-        for (auto triggerItr = itr->second.begin();
-             triggerItr != itr->second.end(); ++itr) {
-          if (*triggerItr == trigger) {
-            itr->second.erase(triggerItr);
-          }
-        }
-      }
-    }
-  }
-}
-void Stage::triggerHooks(soil::stage::hook::TriggerHook::TriggerType type) {
-  auto itr = triggerHooks_.find(type);
+
+void Stage::triggerHooks(
+    const soil::stage::hook::TriggerHook::TriggerPoint& at) {
+  auto itr = triggerHooks_.find(at);
   if (itr != triggerHooks_.end()) {
     for (auto* hook : itr->second) {
-      hook->OnTrigger(type);
+      hook->OnTrigger(at);
     }
   }
 }
-/*
-void Stage::AddEventHook(
-    soil::stage::scene::hook::EventHook<soil::event::Event>* hook) {
-  auto itr = eventHooks_.find(typeid(hook));
-  if (itr != eventHooks_.end()) {
-    itr->second.push_back(hook);
-  } else {
-    eventHooks_.insert({typeid(hook), {hook}});
-  }
-}*/
+
 }  // namespace soil::stage

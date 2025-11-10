@@ -21,9 +21,7 @@ Stage::Stage() : shapes_(), printStatistics_(false) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer()));
-
+  
   auto* viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
   viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
@@ -41,17 +39,12 @@ void Stage::OnLoad() {
         *texture);  // texture will be bound to next free slot
   }
 
-  auto* instancing =
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
-  instancing->AddRenderBatch(
-      ShapeInstance::BATCH_NAME,
-      {
-          .Mesh = GetResources().GetMesh({.Identifier = "Quad"}),
-          .Shader = shader,
-          .VertexAttribDescriptors = ShapeInstance::ATTRIBS,
-      });
-  AddTriggerHook(instancing);
-  AddEventHook(instancing);
+  soil::video::render::MeshInstancePile::RegisterPile(
+      "shape", {
+                   .MeshData = GetResources().GetMesh({.Identifier = "Quad"}),
+                   .Shader = shader,
+                   .VertexAttribDescriptors = ShapeInstance::ATTRIBS,
+               });
 
   initBackground(scene, 0);
   initCarrots(scene, 1);
@@ -110,7 +103,7 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureIndex) {
   const auto bgNode = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  auto* bgShape = bgNode->AddComponent(new ShapeInstance());
+  auto* bgShape = bgNode->AddComponent(ShapeInstance::NewFromPile("shape"));
   bgShape->SetSize({10.F, 10.F});
   bgShape->SetTextureIndex(textureIndex);
   bgNode->SetPosition({0.F, 0.F, -1.F});
@@ -127,7 +120,7 @@ void Stage::initCarrots(soil::stage::scene::Scene* scene,
     for (auto col = 0; col < SHAPES_PER_DIM; ++col) {
       const auto i = row * SHAPES_PER_DIM + col;
       auto* shapeNode = scene->AddChild(new common::RotationNode(initRotation));
-      shapes_[i] = shapeNode->AddComponent(new ShapeInstance());
+      shapes_[i] = shapeNode->AddComponent(ShapeInstance::NewFromPile("shape"));
       shapes_[i]->SetTextureIndex(textureIndex);
       shapes_[i]->SetSize(glm::vec2(1, 1));
       shapes_[i]->SetColor(glm::vec4(colors[i % 4], 1.0F));

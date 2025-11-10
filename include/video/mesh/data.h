@@ -36,9 +36,9 @@ class Data final {
 
   [[nodiscard]] gl_size_t GetDataSize() const;
 
-  [[nodiscard]] shader::DrawMode GetDrawMode() const;
+  [[nodiscard]] render::DrawMode GetDrawMode() const;
 
-  void SetDrawMode(shader::DrawMode drawMode);
+  void SetDrawMode(render::DrawMode drawMode);
 
   [[nodiscard]] const std::vector<vertex::VertexAttribDescriptor>&
   GetVertexAttribs() const;
@@ -49,7 +49,7 @@ class Data final {
   vertex::IndexType indexType_;
   uint indexCount_;
   byte* indices_;
-  shader::DrawMode drawMode_;
+  render::DrawMode drawMode_;
 
   gl_size_t dataSize_;
   byte* data_;

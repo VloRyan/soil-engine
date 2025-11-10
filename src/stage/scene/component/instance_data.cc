@@ -9,7 +9,5 @@ InstanceData::InstanceData(std::string batchKey, const bool opaque)
 
 std::string InstanceData::GetBatchKey() { return batchKey_; }
 
-video::render::RenderableObject* InstanceData::GetRenderable() {
-  return nullptr;
-}
+video::render::Renderable* InstanceData::GetRenderable() { return nullptr; }
 }  // namespace soil::stage::scene::component

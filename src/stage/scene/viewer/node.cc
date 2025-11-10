@@ -54,5 +54,10 @@ void Node::OnEvent(const WindowEvent& event) {
     UpdateProjection(windowSize_);
   }
 }
+const glm::ivec2& Node::WindowSize() { return windowSize_; }
+soil::world::Ray Node::CalculateRay(glm::ivec2 cursorPos) {
+  return soil::world::Ray::Calculate(cursorPos, WindowSize(), GetViewMatrix(),
+                                     GetProjectionMatrix());
+}
 
 }  // namespace soil::stage::scene::viewer

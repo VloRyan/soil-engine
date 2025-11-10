@@ -21,9 +21,8 @@ class Shape : public soil::stage::scene::component::MeshComponent {
                     soil::video::shader::Shader* shader);
 
   float DistanceTo(const glm::vec3& point) override;
-
- protected:
-  void PrepareRender(soil::video::render::State& state) override;
+  void ApplyData(const soil::video::render::data::IWriter& writer,
+                 soil::video::render::State& state) override;
 
  private:
   glm::vec2 size_;

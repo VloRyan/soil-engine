@@ -6,16 +6,14 @@
 
 #include <string>
 
-#include "basic/shader.h"
-#include "basic/shape.h"
 #include "character_shader.h"
-#include "component/shape_tile_instance.h"
 #include "component/text.h"
 #include "file/font.h"
 #include "label.h"
 #include "menu/item.h"
 #include "menu/menu.h"
 #include "shape_tile_shader.h"
+#include "stage/scene/component/render/update_matrices_ubo_component.h"
 #include "stage/scene/gui/container/h_box.h"
 #include "stage/scene/gui/overlay.h"
 #include "stage/scene/gui/root.h"
@@ -32,8 +30,8 @@ Stage::Stage() : printStatistics_(false), root_(nullptr), mainMenu_(nullptr) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer()));
+  /*scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
+      scene->GetRenderContainer()));*/
 
   auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
   auto* fontTexture =
@@ -53,9 +51,12 @@ void Stage::OnLoad() {
       GetResources().GetWindow()->GetSize()));
   viewer->Look(glm::vec3(0.F), glm::vec3(0.F, 0.F, -1.F));
 
-  auto* updateUbo = new soil::stage::scene::render::UpdateMatricesUbo(
+  /*auto* updateUbo = new soil::stage::scene::render::UpdateMatricesUbo(
       viewer, UBO_TARGET_MATRICES, &state);
-  AddTriggerHook(updateUbo);
+  AddTriggerHook(updateUbo);*/
+  scene->AddComponent(
+      new soil::stage::scene::component::render::UpdateMatricesUboComponent(
+          viewer, UBO_TARGET_MATRICES, &state));
 
   auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
 
@@ -64,10 +65,10 @@ void Stage::OnLoad() {
   shapeTileShader->SetViewer(
       viewer);  // will update PV matrix in Shader::Prepare())
 
-  auto* plainRenderer =
+  /*auto* plainRenderer =
       new soil::stage::scene::render::Plain(scene->GetRenderContainer());
-  AddEventHook(plainRenderer);
-  AddTriggerHook(plainRenderer);
+  // AddEventHook(plainRenderer);
+  // AddTriggerHook(plainRenderer);*/
 
   root_ = scene->AddChild(
       new soil::stage::scene::gui::Root(GetResources().GetWindow()->GetSize()));

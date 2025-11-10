@@ -6,11 +6,11 @@
 namespace soil::video::buffer {
 Cursor::Cursor(byte *data) : pos_(data), start_(data), max_(data) {}
 
-void Cursor::Write(const int &data) { Write(&data, sizeof(int)); }
+void Cursor::Write(int data) { Write(&data, sizeof(int)); }
 
-void Cursor::Write(const uint &data) { Write(&data, sizeof(uint)); }
+void Cursor::Write(uint data) { Write(&data, sizeof(uint)); }
 
-void Cursor::Write(const float &data) { Write(&data, sizeof(float)); }
+void Cursor::Write(float data) { Write(&data, sizeof(float)); }
 
 void Cursor::Write(const glm::vec2 &data) { Write(&data, sizeof(glm::vec2)); }
 

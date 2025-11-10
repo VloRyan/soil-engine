@@ -12,7 +12,7 @@ Data::Data()
     : indexType_(vertex::IndexType::TYPE_USHORT),
       indexCount_(0),
       indices_(nullptr),
-      drawMode_(shader::DrawMode::Triangles),
+      drawMode_(render::DrawMode::Triangles),
       dataSize_(0),
       data_(nullptr) {}
 
@@ -71,9 +71,9 @@ byte* Data::GetData() const { return data_; }
 
 gl_size_t Data::GetDataSize() const { return dataSize_; }
 
-shader::DrawMode Data::GetDrawMode() const { return drawMode_; }
+render::DrawMode Data::GetDrawMode() const { return drawMode_; }
 
-void Data::SetDrawMode(const shader::DrawMode drawMode) {
+void Data::SetDrawMode(const render::DrawMode drawMode) {
   drawMode_ = drawMode;
 }
 

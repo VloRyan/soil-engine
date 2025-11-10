@@ -19,14 +19,11 @@ Object::~Object() {
   if (!IsCreated()) {
     return;
   }
-
   PLOG_DEBUG << "Unload Object " << std::to_string(id_) << " with type "
              << std::to_string(static_cast<int>(bufferType_));
   glDeleteBuffers(1, &id_);
   delete cursor_;
   delete[] data_;
-  id_ = 0;
-  bufferSize_ = 0;
 }
 
 void Object::create() {
@@ -36,11 +33,11 @@ void Object::create() {
   glGenBuffers(1, &id_);
 }
 
-Cursor *Object::GetCursor() {
+Cursor &Object::GetCursor() {
   if (cursor_ == nullptr) {
     cursor_ = new Cursor(data_);
   }
-  return cursor_;
+  return *cursor_;
 }
 
 void Object::Reserve(const gl_size_t newBufferSize) {
@@ -71,9 +68,9 @@ void Object::Reserve(const gl_size_t newBufferSize) {
 void Object::SetData(const void *data, const gl_size_t dataSize) {
   Reserve(dataSize);
   if (data != nullptr) {
-    auto *cursor = GetCursor();
-    cursor->MoveTo(0);
-    cursor->Write(data, dataSize);
+    auto &cursor = GetCursor();
+    cursor.MoveTo(0);
+    cursor.Write(data, dataSize);
     Flush();
   }
 }
