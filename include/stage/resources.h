@@ -5,7 +5,7 @@
 #include "sound/manager.h"
 #include "video/manager.h"
 #include "video/mesh/data.h"
-#include "video/shader/instance_shader.h"
+#include "video/shader/shader.h"
 
 namespace soil::stage {
 class Resources {

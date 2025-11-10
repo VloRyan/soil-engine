@@ -5,7 +5,7 @@
 namespace soil::stage::scene::gui {
 class Overlay : public Rectangle {
  public:
-  explicit Overlay(Root* root, bool positionRelativeToRoot = false);
+  explicit Overlay(class Root* root, bool positionRelativeToRoot = false);
 
   ~Overlay() override = default;
 
@@ -19,7 +19,7 @@ class Overlay : public Rectangle {
   void UpdateTransform(const glm::mat4& parentTransform);
 
  private:
-  Root* root_;
+  class Root* root_;
   bool positionRelativeToRoot_;
 };
 }  // namespace soil::stage::scene::gui

@@ -86,11 +86,11 @@ class AbstractText : public MeshComponent {
 
   [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
 
-  float DistanceTo(const glm::vec3& point) override;
+  float DistanceTo(const glm::vec3& point);
 
   void Update() override;
 
-  void Render(video::render::State& state) override = 0;
+  virtual void Render(video::render::State& state) = 0;
 
   const std::vector<Line>& GetLines() const;
 

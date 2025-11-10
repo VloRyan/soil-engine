@@ -77,7 +77,7 @@ class Object {
 
   [[nodiscard]] AccessType GetAccess() const;
 
-  [[nodiscard]] Cursor* GetCursor();
+  [[nodiscard]] Cursor& GetCursor();
 
  protected:
   virtual void create();

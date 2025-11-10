@@ -12,20 +12,13 @@ class Cursor final {
 
   ~Cursor() = default;
 
-  void Write(const int& data);
-
-  void Write(const uint& data);
-
-  void Write(const float& data);
-
+  void Write(int data);
+  void Write(uint data);
+  void Write(float data);
   void Write(const glm::vec2& data);
-
   void Write(const glm::vec3& data);
-
   void Write(const glm::vec4& data);
-
   void Write(const glm::mat4& data);
-
   void Write(const void* data, size_t dataSize);
 
   void Move(size_t offset);

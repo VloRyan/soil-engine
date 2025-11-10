@@ -19,7 +19,7 @@ class WorldNode : public scene::Node,
   ~WorldNode() override;
   void Handle(const stage::event::Component& event) override;
   void OnEvent(const event::Node& event) override;
-  void OnTrigger(TriggerType trigger) override;
+  void OnTrigger(const TriggerPoint& point) override;
   void Activate(component::CollisionObjectComponent* comp);
   void UpdatePosition(component::CollisionObjectComponent* comp);
 

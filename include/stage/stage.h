@@ -73,15 +73,11 @@ class Stage : public input::EventHandler,
 
   IManager* Manager() const;
 
-  void AddEventHook(soil::stage::hook::EventHook<event::Node>* hook) {
-    nodeEventHooks_.push_back(hook);
-  }
-  void AddEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
-    inputEventHooks_.push_back(hook);
-  }
-  void AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
-    windowEventHooks_.push_back(hook);
-  }
+  void AddEventHook(scene::Node* root,
+                    soil::stage::hook::EventHook<event::Node>* hook);
+
+  void AddEventHook(soil::stage::hook::EventHook<input::Event>* hook);
+  void AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
 
   /*template <class T>
   void AddEventHook(soil::stage::hook::EventHook<T>* hook) {
@@ -99,15 +95,10 @@ class Stage : public input::EventHandler,
     }
   }*/
 
-  void RemoveEventHook(soil::stage::hook::EventHook<event::Node>* hook) {
-    _removeEventHook(hook, nodeEventHooks_);
-  }
-  void RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
-    _removeEventHook(hook, inputEventHooks_);
-  }
-  void RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
-    _removeEventHook(hook, windowEventHooks_);
-  }
+  void RemoveEventHook(scene::Node* root,
+                       soil::stage::hook::EventHook<event::Node>* hook);
+  void RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook);
+  void RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
   /*
     template <class T>
     void RemoveEventHook(soil::stage::hook::EventHook<T>* hook) {
@@ -122,18 +113,30 @@ class Stage : public input::EventHandler,
       }
     }
   */
-  void AddTriggerHook(soil::stage::hook::TriggerHook* trigger);
-  void RemoveTriggerHook(soil::stage::hook::TriggerHook* trigger);
+  void AddTriggerHook(soil::stage::hook::TriggerHook* trigger,
+                      const soil::stage::hook::TriggerHook::TriggerPoint& at);
+  void RemoveTriggerHook(
+      soil::stage::hook::TriggerHook* trigger,
+      const soil::stage::hook::TriggerHook::TriggerPoint& at);
 
  protected:
-  void triggerHooks(soil::stage::hook::TriggerHook::TriggerType type);
+  void triggerHooks(const soil::stage::hook::TriggerHook::TriggerPoint& at);
 
   template <class T>
-  void _removeEventHook(soil::stage::hook::EventHook<T>* eventHook,
-                        std::vector<soil::stage::hook::EventHook<T>*> vector) {
-    for (auto itr = vector.begin(); itr != vector.end(); ++itr) {
-      if (eventHook == *itr) {
-        vector.erase(itr);
+  void _removeEventHook(
+      scene::Node* root, soil::stage::hook::EventHook<T>* eventHook,
+      std::unordered_map<scene::Node*,
+                         std::vector<soil::stage::hook::EventHook<T>*>>& map) {
+    auto itr = map.find(root);
+    if (itr == map.end()) {
+      return;
+    }
+    for (auto vItr = itr->second.begin(); vItr != itr->second.end(); ++vItr) {
+      if (eventHook == *vItr) {
+        itr->second.erase(vItr);
+        if (itr->second.empty()) {
+          map.erase(itr);
+        }
         return;
       }
     }
@@ -142,15 +145,21 @@ class Stage : public input::EventHandler,
 
   [[nodiscard]] virtual std::vector<scene::Scene*> GetScenes() const;
 
- private:
-  IManager* manager_;
-  std::vector<soil::stage::hook::EventHook<event::Node>*> nodeEventHooks_;
+  std::unordered_map<scene::Node*,
+                     std::vector<soil::stage::hook::EventHook<event::Node>*>>
+      nodeEventHooks_;
+
   std::vector<soil::stage::hook::EventHook<input::Event>*> inputEventHooks_;
+
   std::vector<soil::stage::hook::EventHook<WindowEvent>*> windowEventHooks_;
 
-  std::unordered_map<soil::stage::hook::TriggerHook::TriggerType,
-                     std::vector<soil::stage::hook::TriggerHook*>>
+  std::unordered_map<soil::stage::hook::TriggerHook::TriggerPoint,
+                     std::vector<soil::stage::hook::TriggerHook*>,
+                     soil::stage::hook::TriggerHook::TriggerPointEquality>
       triggerHooks_;
+
+ private:
+  IManager* manager_;
 
   /*std::unordered_map<
       std::type_index,

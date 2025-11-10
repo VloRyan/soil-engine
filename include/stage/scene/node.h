@@ -12,6 +12,7 @@
 #include "stage/event/component.h"
 #include "stage/event/node.h"
 #include "stage/scene/component/transform_component.h"
+#include "video/render/state.h"
 #include "window_event.h"
 #include "world/entity/object_3d.h"
 namespace soil::stage {
@@ -120,6 +121,8 @@ class Node : public input::EventHandler,
   glm::vec3 GetLocalPosition() const;
   void SetLocalPosition(const glm::vec3& pos);
 
+  virtual void Render(video::render::State& state);
+
   // void SetDirection(const glm::vec3& direction) override;
 
   // void SetRight(const glm::vec3& right) override;
@@ -147,7 +150,7 @@ class Node : public input::EventHandler,
   virtual void RemoveChild(Node* node);
 
   component::TransformComponent& Transform() const;
-  scene::Scene* Scene() const;
+  scene::Scene* Root() const;
 
  protected:
   void MarkDirtyWith(DirtyImpact cause);
@@ -174,6 +177,7 @@ class Node : public input::EventHandler,
   void fire(const event::Node& event) override;
 
   component::TransformComponent* transform_;
+  void incorporateAddedComponents();
 
  private:
   Type type_;
@@ -182,10 +186,9 @@ class Node : public input::EventHandler,
   UpdateType updateType_;
   std::bitset<4> dirtyImpacts_;
   std::vector<Node*> children_;
-
+  std::vector<component::Component*> addedComponents_;
   std::unordered_map<std::int8_t, std::vector<component::Component*>>
       components_;
-  std::vector<component::Component*> addedComponents_;
   std::bitset<4> receiveTypeFlags_;
   std::vector<component::Component*> alwaysUpdateComponents_;
 };

@@ -28,11 +28,9 @@ add_library(${PROJECT_NAME}
         include/input/constants.hpp
         include/sound/event/event.hpp
         include/stage/scene/component/render/render_component.hpp
-        include/stage/scene/render/type.hpp
         include/util/pointer_cache.hpp
         include/video/render/data/writer.hpp
         include/video/render/state_identifier.hpp
-        include/video/render/step/context.hpp
         include/video/render/types.hpp
         src/engine.cc
         src/file/font.cc
@@ -55,20 +53,20 @@ add_library(${PROJECT_NAME}
         src/stage/resources.cc
         src/stage/scene/component/collision_object_component.cc
         src/stage/scene/component/component.cc
-        src/stage/scene/component/event/hook.cc
         src/stage/scene/component/event/event_component.cc
-        src/stage/scene/component/instance_data.cc
+        src/stage/scene/component/event/hook.cc
+        src/stage/scene/component/input/input_component.cc
         src/stage/scene/component/listener_component.cc
         src/stage/scene/component/mesh_component.cc
         src/stage/scene/component/render/mesh_instance_component.cc
         src/stage/scene/component/render/render_state_container_component.cc
         src/stage/scene/component/render/renderable_component.cc
+        src/stage/scene/component/render/update_matrices_ubo_component.cc
         src/stage/scene/component/sound.cc
         src/stage/scene/component/text/abstract_text.cc
         src/stage/scene/component/text/parser.cc
         src/stage/scene/component/transform_component.cc
         src/stage/scene/component/update_graph_component.cc
-        src/stage/scene/component/visual_component.cc
         src/stage/scene/gui/container/base.cc
         src/stage/scene/gui/container/h_box.cc
         src/stage/scene/gui/container/v_box.cc
@@ -77,9 +75,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/root.cc
         src/stage/scene/input.cc
         src/stage/scene/node.cc
-        src/stage/scene/render/instancing.cc
-        src/stage/scene/render/plain.cc
-        src/stage/scene/render/update_matrices_ubo.cc
         src/stage/scene/scene.cc
         src/stage/scene/text/parser.cc
         src/stage/scene/viewer/node.cc
@@ -103,30 +98,17 @@ add_library(${PROJECT_NAME}
         src/video/mesh/data.cc
         src/video/mesh/prefab.cc
         src/video/model/letter.cc
-        src/video/render/batch.cc
-        src/video/render/container.cc
         src/video/render/data/buffer_writer.cc
         src/video/render/data/buffer_writer.cc
-        src/video/render/instance/buffer.cc
-        src/video/render/instance/instance.cc
-        src/video/render/instance/sorted_buffer.cc
         src/video/render/mesh_instance.cc
         src/video/render/mesh_instance_pile.cc
         src/video/render/mesh_renderable.cc
-        src/video/render/pipeline.cc
         src/video/render/properties.cc
-        src/video/render/quad.cc
         src/video/render/renderable.cc
-        src/video/render/renderable_group.cc
         src/video/render/renderable_group_elements.cc
         src/video/render/renderable_group_instances.cc
         src/video/render/state.cc
         src/video/render/state_container.cc
-        src/video/render/step/base.cc
-        src/video/render/step/bind_buffer.cc
-        src/video/render/step/render.cc
-        src/video/render/step/set_renderables.cc
-        src/video/render/step/sort.cc
         src/video/shader/cache.cc
         src/video/shader/definition.cc
         src/video/shader/shader.cc
@@ -148,8 +130,6 @@ add_library(${PROJECT_NAME}
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
         src/world/world.cc
-        src/stage/scene/component/render/update_matrices_ubo_component.cc
-        src/stage/scene/component/input/input_component.cc
 
 )
 include_directories(include)
@@ -162,14 +142,13 @@ target_sources(
         TYPE HEADERS
         BASE_DIRS include
         FILES
+
         include/base.h
         include/engine.h
         include/event/event.hpp
         include/event/handler.hpp
         include/event/observable.hpp
         include/file/font.h
-        include/stage/scene/component/render/render_component.hpp
-        include/stage/scene/component/render/update_matrices_ubo_component.h
         include/file/sequence.hpp
         include/file/sprite_sheet.h
         include/input/constants.hpp
@@ -196,20 +175,21 @@ target_sources(
         include/stage/resources.h
         include/stage/scene/component/collision_object_component.h
         include/stage/scene/component/component.h
-        include/stage/scene/component/event/hook.h
         include/stage/scene/component/event/event_component.h
-        include/stage/scene/component/instance_data.h
+        include/stage/scene/component/event/hook.h
+        include/stage/scene/component/input/input_component.h
         include/stage/scene/component/listener_component.h
         include/stage/scene/component/mesh_component.h
         include/stage/scene/component/render/mesh_instance_component.h
+        include/stage/scene/component/render/render_component.hpp
         include/stage/scene/component/render/render_state_container_component.h
         include/stage/scene/component/render/renderable_component.h
+        include/stage/scene/component/render/update_matrices_ubo_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/text/abstract_text.h
         include/stage/scene/component/text/parser.h
         include/stage/scene/component/transform_component.h
         include/stage/scene/component/update_graph_component.h
-        include/stage/scene/component/visual_component.h
         include/stage/scene/gui/container/base.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
@@ -218,10 +198,6 @@ target_sources(
         include/stage/scene/gui/root.h
         include/stage/scene/input.h
         include/stage/scene/node.h
-        include/stage/scene/render/instancing.h
-        include/stage/scene/render/plain.h
-        include/stage/scene/render/type.hpp
-        include/stage/scene/render/update_matrices_ubo.h
         include/stage/scene/scene.h
         include/stage/scene/text/parser.h
         include/stage/scene/viewer/node.h
@@ -246,38 +222,22 @@ target_sources(
         include/video/mesh/cache.h
         include/video/mesh/data.h
         include/video/model/letter.h
-        include/video/render/batch.h
-        include/video/render/container.h
         include/video/render/data/buffer_writer.h
-        include/video/render/forward_rendering.h
-        include/video/render/instance/buffer.h
-        include/video/render/instance/instance.h
-        include/video/render/instance/sorted_buffer.h
+        include/video/render/data/writer.hpp
         include/video/render/mesh_instance.h
         include/video/render/mesh_instance_pile.h
         include/video/render/mesh_renderable.h
-        include/video/render/pipeline.h
         include/video/render/properties.h
-        include/video/render/quad.h
         include/video/render/renderable.h
         include/video/render/renderable_group.h
         include/video/render/renderable_group_elements.h
         include/video/render/renderable_group_instances.h
-        include/video/render/renderable_object.h
         include/video/render/state.h
         include/video/render/state_container.h
         include/video/render/state_identifier.hpp
-        include/video/render/step/base.h
-        include/video/render/step/bind_buffer.h
-        include/video/render/step/context.hpp
-        include/video/render/step/render.h
-        include/video/render/step/set_renderables.h
-        include/video/render/step/sort.h
-        include/video/render/technique.h
         include/video/render/types.hpp
         include/video/shader/cache.h
         include/video/shader/definition.h
-
         include/video/shader/shader.h
         include/video/shader/stage.h
         include/video/texture/animation.h
@@ -303,8 +263,6 @@ target_sources(
         include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
         include/world/world.h
-        include/video/render/data/writer.hpp
-        include/stage/scene/component/input/input_component.h
 )
 
 target_link_libraries(${PROJECT_NAME} gl3w::gl3w glfw DevIL::DevIL OpenAL::OpenAL glm::glm plog::plog Ogg::ogg vorbis::vorbis)

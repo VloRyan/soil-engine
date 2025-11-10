@@ -18,11 +18,15 @@ void FrustumCulling::OnEvent(const event::Node& event) {
 }
 
 void FrustumCulling::OnComponentAdded(component::Component* component) {
-  auto* vComp = component::VisualComponent::Cast(component);
-  if (vComp == nullptr) {
+  if (component == nullptr ||
+      component->GetType() != component::Component::Type::Visual) {
     return;
   }
-  addedVisualComponents_.push_back(vComp);
+  auto* renderable = dynamic_cast<component::RenderableComponent*>(component);
+  if (renderable == nullptr) {
+    return;
+  }
+  addedRenderables_.push_back(renderable);
 }
 
 void FrustumCulling::OnTrigger(const TriggerPoint& point) {
@@ -34,7 +38,7 @@ void FrustumCulling::OnTrigger(const TriggerPoint& point) {
     return;
   }
   updateVisibilityOnTreeNode(0, viewer_->GetFrustum());
-  for (auto* vComp : addedVisualComponents_) {
+  for (auto* vComp : addedRenderables_) {
     const auto* parent = vComp->GetParent();
     if (!parent->HasComponent(component::Component::Type::WorldEntity)) {
       continue;
@@ -54,7 +58,7 @@ void FrustumCulling::OnTrigger(const TriggerPoint& point) {
     }
     vComp->SetCulled(!visible);
   }
-  addedVisualComponents_.clear();
+  addedRenderables_.clear();
 }
 
 void FrustumCulling::updateVisibilityOnTreeNode(
@@ -74,7 +78,7 @@ void FrustumCulling::updateVisibilityOnTreeNode(
       const auto* node = objectComponent->GetParent();
       node->ForEachComponent(
           [isVisible](component::Component* comp) {
-            auto* vComp = dynamic_cast<component::VisualComponent*>(comp);
+            auto* vComp = dynamic_cast<component::RenderableComponent*>(comp);
             vComp->SetCulled(!isVisible);
           },
           component::Component::Type::Visual);

@@ -1,11 +1,10 @@
 #ifndef SOIL_STAGE_SCENE_COMPONENT_MESH_COMPONENT_H
 #define SOIL_STAGE_SCENE_COMPONENT_MESH_COMPONENT_H
-#include "video/render/vertex_array.h"
-#include "visual_component.h"
+#include "stage/scene/component/render/renderable_component.h"
+#include "video/render/mesh_renderable.h"
 
 namespace soil::stage::scene::component {
-class MeshComponent : public VisualComponent,
-                      public video::render::RenderableObject {
+class MeshComponent : public RenderableComponent {
  public:
   MeshComponent(const video::mesh::Data& mesh, video::shader::Shader* shader,
                 bool opaque);
@@ -14,21 +13,16 @@ class MeshComponent : public VisualComponent,
 
   [[nodiscard]] virtual video::shader::Shader* GetShader() const;
 
-  [[nodiscard]] RenderableObject* GetRenderable() override;
+  [[nodiscard]] video::render::Renderable* GetRenderable() override;
 
-  void Render(video::render::State& state) override;
+  virtual float DistanceTo(const glm::vec3& point);
 
-  float DistanceTo(const glm::vec3& point) override;
+  virtual void ApplyData(const video::render::data::IWriter& writer,
+                         soil::video::render::State& state) = 0;
+  void SetOpaque(bool opaque) override;
 
  protected:
-  virtual void BuildVaoFrom(const video::mesh::Data& mesh);
-
-  virtual void PrepareRender(video::render::State& state) {}
-
-  [[nodiscard]] virtual video::render::VertexArray* GetVertexArray() const;
-
- private:
-  video::render::VertexArray* vertexArray_;
+  video::render::MeshRenderable* mesh_;
   video::shader::Shader* shader_;
 };
 }  // namespace soil::stage::scene::component
