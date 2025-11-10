@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base.h"
-#include "instance_shader.h"
+#include "video/shader/shader.h"
 
 namespace soil::video::shader {
 class Cache final {
@@ -16,15 +16,11 @@ class Cache final {
 
   [[nodiscard]] Shader* GetByName(const std::string& name);
 
-  [[nodiscard]] InstanceShader* GetByName2(const std::string& name);
-
   [[nodiscard]] Shader* GetById(int id) const;
 
   void Prepare(const std::string& name, const std::string& path = "");
 
   void Prepare(const std::string& name, Shader* shader);
-
-  void PrepareInstanceShader(const std::string& name, InstanceShader* shader);
 
   [[nodiscard]] Shader* Create(const std::string& name,
                                const Definition& shaderDef);
@@ -37,7 +33,6 @@ class Cache final {
 
  private:
   HashMap<std::string, Shader*> shaders_;
-  HashMap<std::string, InstanceShader*> instanceShaders_;
 };
 }  // namespace soil::video::shader
 

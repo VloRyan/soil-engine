@@ -128,20 +128,12 @@ shader::Shader* Manager::GetShader(const std::string& name) {
   return shaderCache_.GetByName(name);
 }
 
-shader::InstanceShader* Manager::GetIShader(const std::string& name) {
-  return shaderCache_.GetByName2(name);
-}
-
 void Manager::PrepareShader(const std::string& name, const std::string& path) {
   shaderCache_.Prepare(name, path);
 }
 
 void Manager::PrepareShader(shader::Shader* shader) {
   shaderCache_.Prepare(shader->GetName(), shader);
-}
-
-void Manager::PrepareIShader(shader::InstanceShader* shader) {
-  shaderCache_.PrepareInstanceShader(shader->GetName(), shader);
 }
 
 texture::Manager& Manager::Texture() { return textureManager_; }

@@ -6,6 +6,7 @@
 #include "render/state.h"
 #include "shader/cache.h"
 #include "texture/manager.h"
+#include "video/render/mesh_instance_pile.h"
 #include "window.h"
 
 namespace soil::video {
@@ -27,11 +28,7 @@ class Manager final {
 
   shader::Shader* GetShader(const std::string& name);
 
-  shader::InstanceShader* GetIShader(const std::string& name);
-
   void PrepareShader(const std::string& name, const std::string& path);
-
-  void PrepareIShader(shader::InstanceShader* shader);
 
   void PrepareShader(shader::Shader* shader);
 
