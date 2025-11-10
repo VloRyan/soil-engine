@@ -4,7 +4,7 @@
 #include "plog/Log.h"
 
 namespace soil::video::vertex {
-Vao::Vao() : id_(0), ebo_(nullptr), vbo_(nullptr) {}
+Vao::Vao() : id_(0), ebo_(nullptr) {}
 
 Vao::~Vao() {
   Unload();
@@ -12,7 +12,9 @@ Vao::~Vao() {
     delete ptr;
   }
   delete ebo_;
-  delete vbo_;
+  for (auto* buffer : bufferObjects_) {
+    delete buffer;
+  }
 }
 
 void Vao::CreateWithEbo(const void* indices, const IndexType indexType,
@@ -50,21 +52,26 @@ void Vao::Unload() {
   this->id_ = 0;
 }
 
-size_t Vao::AddAttributePointer(buffer::Object* buffer,
+size_t Vao::AddAttributePointer(const std::string& bufferName,
                                 const AttributePointer::DataType dataType,
                                 const int elementSize,
                                 const GLsizei elementStride,
                                 const size_t offset, const bool perInstance) {
+  auto* buffer = GetBuffer(bufferName);
+  if (buffer == nullptr) {
+    throw std::runtime_error("buffer with name '" + bufferName + "' not found");
+  }
   const auto divisor = perInstance ? 1 : 0;
   auto* vPointer = new AttributePointer(buffer, dataType, elementSize,
                                         elementStride, divisor, offset);
   if (IsCreated()) {
     Bind();
+    buffer->Bind();
     vPointer->Set(attribPointer_.size());
     Unbind();
   }
   attribPointer_.push_back(vPointer);
-  return elementSize * AttributePointer::GetSizeOfDataType(dataType) + offset;
+  return offset + elementSize * AttributePointer::GetSizeOfDataType(dataType);
 }
 
 void Vao::Bind() const {
@@ -80,9 +87,20 @@ void Vao::Unbind() { glBindVertexArray(0); }
 
 buffer::Ebo* Vao::GetEbo() const { return ebo_; }
 
-buffer::Object* Vao::GetVbo() const { return vbo_; }
+buffer::Object* Vao::GetBuffer(const std::string& name) const {
+  auto itr = bufferNamesToIndex_.find(name);
+  if (itr == bufferNamesToIndex_.end()) {
+    return nullptr;
+  }
+  return bufferObjects_[itr->second];
+}
 
-void Vao::SetVbo(buffer::Object* const vbo) { vbo_ = vbo; }
+buffer::Object* Vao::SetBuffer(const std::string& name, buffer::Object* vbo) {
+  auto index = bufferObjects_.size();
+  bufferObjects_.push_back(vbo);
+  bufferNamesToIndex_.insert({name, index});
+  return vbo;
+}
 
 uint Vao::GetId() const { return id_; }
 

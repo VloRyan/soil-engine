@@ -1,5 +1,6 @@
 #ifndef SOIL_VIDEO_VERTEX_VAO_H_
 #define SOIL_VIDEO_VERTEX_VAO_H_
+#include <string>
 #include <vector>
 
 #include "video/buffer/ebo.h"
@@ -15,7 +16,7 @@ class Vao final {
 
   [[nodiscard]] uint GetId() const;
 
-  size_t AddAttributePointer(buffer::Object* buffer,
+  size_t AddAttributePointer(const std::string& bufferName,
                              AttributePointer::DataType dataType,
                              int elementSize, int elementStride = 0,
                              size_t offset = 0, bool perInstance = false);
@@ -34,14 +35,15 @@ class Vao final {
 
   [[nodiscard]] buffer::Ebo* GetEbo() const;
 
-  [[nodiscard]] buffer::Object* GetVbo() const;
+  [[nodiscard]] buffer::Object* GetBuffer(const std::string& name) const;
 
-  void SetVbo(buffer::Object* vbo);
+  buffer::Object* SetBuffer(const std::string& name, buffer::Object* vbo);
 
  private:
   uint id_;
   buffer::Ebo* ebo_;
-  buffer::Object* vbo_;
+  std::vector<buffer::Object*> bufferObjects_;
+  std::unordered_map<std::string, size_t> bufferNamesToIndex_;
   std::vector<AttributePointer*> attribPointer_;
 };
 }  // namespace soil::video::vertex
