@@ -16,6 +16,8 @@ Hook::Hook(
       triggerCallback_(nullptr),
       triggerRoot_(nullptr) {}
 
+Hook::~Hook() { SetStage(nullptr); }
+
 void Hook::OnEvent(const stage::event::Node &event) {
   if (nodeEventCallback_ != nullptr) {
     nodeEventCallback_(event);

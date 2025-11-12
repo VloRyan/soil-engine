@@ -4,7 +4,11 @@
 #include "stage/scene/scene.h"
 
 namespace soil::stage {
-Stage::Stage() : manager_(nullptr), loaded_(false), resources_(nullptr) {}
+Stage::Stage()
+    : manager_(nullptr),
+      loaded_(false),
+      resources_(nullptr),
+      triggering_(false) {}
 
 Stage::~Stage() {
   if (IsLoaded()) {
@@ -175,18 +179,24 @@ void Stage::AddTriggerHook(
     itr->second.push_back(trigger);
   }
 }
+
 void Stage::RemoveTriggerHook(
-    soil::stage::hook::TriggerHook* trigger,
+    soil::stage::hook::TriggerHook* hook,
     const soil::stage::hook::TriggerHook::TriggerPoint& at) {
   auto itr = triggerHooks_.find(at);
   if (itr == triggerHooks_.end()) {
     return;
   }
-  auto& triggers = itr->second;
-  for (auto triggerItr = triggers.begin(); triggerItr != triggers.end();
-       ++triggerItr) {
-    if (*triggerItr == trigger) {
-      triggers.erase(triggerItr);
+  auto& hooks = itr->second;
+  for (auto hookItr = hooks.begin(); hookItr != hooks.end(); ++hookItr) {
+    if (*hookItr == hook) {
+      hooks.erase(hookItr);
+      if (triggering_) {
+        invalidatedHooks_.push_back(hook);
+      }
+      if (hooks.empty()) {
+        triggerHooks_.erase(itr);
+      }
       break;
     }
   }
@@ -195,11 +205,26 @@ void Stage::RemoveTriggerHook(
 void Stage::triggerHooks(
     const soil::stage::hook::TriggerHook::TriggerPoint& at) {
   auto itr = triggerHooks_.find(at);
-  if (itr != triggerHooks_.end()) {
-    for (auto* hook : itr->second) {
-      hook->OnTrigger(at);
-    }
+  if (itr == triggerHooks_.end()) {
+    return;
   }
+  triggering_ = true;
+  auto triggers = itr->second;  // copy
+  for (auto* hook : triggers) {
+    bool isInvalid = false;
+    for (auto* invalidHook : invalidatedHooks_) {
+      if (hook == invalidHook) {
+        isInvalid = true;
+        break;
+      }
+    }
+    if (isInvalid) {
+      continue;
+    }
+    hook->OnTrigger(at);
+  }
+  triggering_ = false;
+  invalidatedHooks_.clear();
 }
 
 }  // namespace soil::stage

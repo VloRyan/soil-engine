@@ -4,6 +4,7 @@
 namespace soil::stage::scene::component::input {
 InputComponent::InputComponent()
     : Component(Type::Interaction), stage_(nullptr) {}
+
 InputComponent::~InputComponent() {
   if (stage_) {
     stage_->RemoveEventHook(this);

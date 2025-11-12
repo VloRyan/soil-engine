@@ -19,7 +19,7 @@ class Component : public soil::event::Observable<event::Component> {
   enum class Type : std::uint8_t {
     // TODO rename
     Transform = 0,
-    Visual,
+    Renderable,
     WorldEntity,
     Interaction,
     Sound,

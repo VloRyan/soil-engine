@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "stage/hook/event_hook.hpp"
 #include "stage/scene/node.h"
+#include "world/ray.h"
 #include "world/volume/frustum.h"
 
 namespace soil::stage::scene::viewer {
@@ -32,6 +33,9 @@ class Node : public scene::Node, public hook::EventHook<WindowEvent> {
   [[nodiscard]] glm::vec3 GetUp() const override;*/
 
   void OnEvent(const WindowEvent& event) override;
+  const glm::ivec2& WindowSize();
+
+  soil::world::Ray CalculateRay(glm::ivec2 cursorPos);
 
  protected:
   Node();

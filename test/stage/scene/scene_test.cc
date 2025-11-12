@@ -11,7 +11,7 @@ TEST_F(SceneTest, Contruct) {
   const auto scene = new Scene();
 
   EXPECT_EQ(scene->GetType(), Node::Type::Scene);
-  EXPECT_EQ(scene->GetStage(), nullptr);
+  EXPECT_EQ(scene->Stage(), nullptr);
 }
 /*
 TEST_F(SceneTest, Update) {

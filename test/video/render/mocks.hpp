@@ -21,4 +21,22 @@ class RenderableMock : public Renderable {
     int Render{0};
   } Calls;
 };
+
+class StateContainerMock : public StateContainer {
+ public:
+  std::vector<Renderable*> Inserted;
+  std::vector<Renderable*> Removed;
+
+  void Insert(Renderable* renderable) override {
+    Inserted.push_back(renderable);
+  }
+  bool Remove(Renderable* renderable) override {
+    Removed.push_back(renderable);
+    return true;
+  }
+  void ResetMocks() {
+    Inserted.clear();
+    Removed.clear();
+  }
+};
 }  // namespace soil::video::render

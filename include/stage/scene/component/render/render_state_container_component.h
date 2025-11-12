@@ -7,7 +7,8 @@
 namespace soil::stage::scene::component::render {
 class RenderStateContainerComponent : public RenderComponent {
  public:
-  RenderStateContainerComponent();
+  explicit RenderStateContainerComponent(
+      video::render::StateContainer* renderStateContainer);
   ~RenderStateContainerComponent() override;
 
   void Render(video::render::State& state) override;
@@ -19,6 +20,8 @@ class RenderStateContainerComponent : public RenderComponent {
  protected:
   void OnStageChanged(Stage* stage, Stage* prevStage) override;
   void SetParent(Node* parent) override;
+
+  void RemoveAllDependentRenderComponents(Node* parent);
 
  private:
   video::render::StateContainer* renderStateContainer_;

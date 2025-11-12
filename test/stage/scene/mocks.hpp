@@ -17,7 +17,7 @@ class NodeMock : public Node {
   std::function<void()> UpdateFunc = nullptr;
 
   void Reset() {
-    Calls.Reset();
+    Calls = Calls_t{};
     AddedChildren.clear();
     RemovedChildren.clear();
     UpdateDirtyImpacts = 0;
@@ -53,16 +53,6 @@ class NodeMock : public Node {
     Node::Handle(event);
   }
 
-  void Handle(const WindowEvent& event) override {
-    Calls.HandleWindowEvent++;
-    Node::Handle(event);
-  }
-
-  void Handle(const input::Event& event) override {
-    Calls.HandleInputEvent++;
-    Node::Handle(event);
-  }
-
   void SetReceiverType(const ReceiverType type,
                        const bool value = true) override {
     Node::SetReceiverType(type, value);
@@ -71,17 +61,13 @@ class NodeMock : public Node {
   void SetUpdateType(const UpdateType type) override {
     Node::SetUpdateType(type);
   }
-  struct {
+  struct Calls_t {
     int Update{0};
     int UpdateDirty{0};
     int HandleComponentEvent{0};
-    int HandleWindowEvent{0};
-    int HandleInputEvent{0};
     void Reset() {
       Update = 0;
       UpdateDirty = 0;
-      HandleInputEvent = 0;
-      HandleWindowEvent = 0;
       HandleComponentEvent = 0;
     }
   } Calls;

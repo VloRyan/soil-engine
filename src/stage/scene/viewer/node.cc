@@ -1,6 +1,5 @@
 #include "stage/scene/viewer/node.h"
 
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 #include "window.h"
 

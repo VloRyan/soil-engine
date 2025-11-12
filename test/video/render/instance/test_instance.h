@@ -1,5 +1,6 @@
 #ifndef TEST_INSTANCE_H
 #define TEST_INSTANCE_H
+
 #include "video/render/instance/instance.h"
 
 namespace soil::video::render::instance {

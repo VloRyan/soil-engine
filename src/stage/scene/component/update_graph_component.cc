@@ -1,7 +1,6 @@
 #include "stage/scene/component/update_graph_component.h"
 
 #include "stage/scene/node.h"
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 
 namespace soil::stage::scene::component {
@@ -103,7 +102,6 @@ void UpdateGraphComponent::OnNodeRemoved(Node* node) {
       break;
     }
   }
-  nodesToDelete_.push_back(node);
 }
 
 Node* UpdateGraphComponent::computeTopDirtyNode(Node* node) {

@@ -1,8 +1,6 @@
 
 #include "stage/scene/node.h"
 
-#include <plog/Log.h>
-
 #include <cstring>
 #include <debug/deque>
 #include <ranges>
@@ -11,7 +9,6 @@
 #include "stage/event/node.h"
 #include "stage/scene/component/render/render_component.hpp"
 #include "stage/scene/component/transform_component.h"
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 
 namespace soil::stage::scene {
@@ -28,9 +25,9 @@ Node::Node(const Type type)
 }
 
 Node::~Node() {
+  Node::fire(event::Node::MakeNodeDeletedEvent(this));
   for (auto* child : children_) {
-    Node::fire(event::Node::MakeChildRemovedEvent(this, child));
-    child->SetParent(nullptr);
+    child->SetParent(nullptr);  // prevent child events
     delete child;
   }
   children_.clear();
@@ -38,17 +35,20 @@ Node::~Node() {
   for (const auto& comps : components_ | std::views::values) {
     for (auto* comp : comps) {
       comp->SetParent(nullptr);
-      const auto removedEvent =
-          event::Component(comp, event::Component::TriggerType::Removed);
-      Node::fire(event::Node::MakeComponentEvent(this, removedEvent));
       delete comp;
     }
   }
   components_.clear();
   if (auto* parent = GetParent(); parent != nullptr) {
-    parent->RemoveChild(this);
+    for (auto itr = parent->children_.begin(); itr != parent->children_.end();
+         ++itr) {
+      if (*itr != this) {
+        continue;
+      }
+      parent->children_.erase(itr);
+      break;
+    }
   }
-  Node::fire(event::Node::MakeNodeDeletedEvent(this));
 }
 
 void Node::SetParent(Node* parent) {
@@ -56,21 +56,20 @@ void Node::SetParent(Node* parent) {
     return;
   }
   auto* prevScene = Root();
-  auto* prevStage = prevScene != nullptr ? prevScene->GetStage() : nullptr;
+  auto* prevStage = prevScene != nullptr ? prevScene->Stage() : nullptr;
   class Scene* scene = nullptr;
-  Stage* stage = nullptr;
+  class Stage* stage = nullptr;
   parent_ = parent;
   if (parent_ != nullptr) {
     transform_->UpdateTransform(parent_->transform_->GetMatrix());
-    scene = Root();
-    stage = scene != nullptr ? scene->GetStage() : nullptr;
+    stage = Stage();
   }
   if (prevStage != stage) {
     OnStageChanged(stage, prevStage);
   }
 }
 
-void Node::OnStageChanged(Stage* stage, Stage* prevStage) {
+void Node::OnStageChanged(class Stage* stage, class Stage* prevStage) {
   ForEachChild(this, [stage, prevStage](Node* node) {
     node->OnStageChanged(stage, prevStage);
   });
@@ -98,7 +97,6 @@ void Node::RemoveChild(Node* node) {
     children_.erase(itr);
     break;
   }
-  SetDirty(DirtyImpact::Self);
 }
 
 void Node::SetUpdateType(const UpdateType type) {
@@ -207,12 +205,12 @@ void Node::Update() {
 
 component::TransformComponent& Node::Transform() const { return *transform_; }
 
-Scene* Node::Root() const {
+Node* Node::Root() const {
   auto p = const_cast<Node*>(this);
   while (p->GetParent() != nullptr) {
     p = p->GetParent();
   }
-  return dynamic_cast<class Scene*>(p);
+  return p;
 }
 
 void Node::UpdateDirty() {
@@ -522,10 +520,9 @@ void Node::ForEachChild(const Node* node,
   delete[] buffer;
 }
 
-void Node::fire(const event::Node& event) {
+void Node::fire(const event::Node& event) const {
   Observable::fire(event);
-  auto* scene = Root();
-  auto* stage = scene != nullptr ? scene->GetStage() : nullptr;
+  auto* stage = Stage();
   if (stage != nullptr) {
     stage->Handle(event);
   }
@@ -538,5 +535,12 @@ void Node::Render(video::render::State& state) {
         rc->Render(state);
       },
       component::Component::Type::Render);
+}
+
+Stage* Node::Stage() const {
+  if (parent_ == nullptr) {
+    return nullptr;
+  }
+  return parent_->Stage();
 }
 }  // namespace soil::stage::scene

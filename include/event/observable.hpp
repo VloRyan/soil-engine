@@ -33,7 +33,7 @@ class Observable {
   }
 
  protected:
-  virtual void fire(const T& event) {
+  virtual void fire(const T& event) const {
     std::vector<Handler<T>*> listeners(listeners_);
     for (Handler<T>* listener : listeners) {
       listener->Handle(event);

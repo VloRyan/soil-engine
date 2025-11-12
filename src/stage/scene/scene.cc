@@ -1,8 +1,6 @@
 
 #include "stage/scene/scene.h"
 
-#include <deque>
-
 #include "stage/scene/component/render/render_state_container_component.h"
 #include "stage/scene/component/update_graph_component.h"
 #include "stage/scene/node.h"
@@ -11,17 +9,18 @@
 namespace soil::stage::scene {
 Scene::Scene() : Node(Type::Scene), stage_(nullptr) {
   AddComponent(new component::UpdateGraphComponent());
-  AddComponent(new component::render::RenderStateContainerComponent());
+  AddComponent(new component::render::RenderStateContainerComponent(
+      new video::render::StateContainer()));
   incorporateAddedComponents();
 }
 
 Scene::~Scene() {
-  if (const auto stage = GetStage(); stage != nullptr) {
-    stage->RemoveScene(this);
+  if (stage_ != nullptr) {
+    stage_->RemoveScene(this);
   }
 }
 
-void Scene::SetStage(Stage* stage) {
+void Scene::SetStage(class Stage* stage) {
   if (stage == stage_) {
     return;
   }
@@ -33,5 +32,5 @@ void Scene::SetStage(Stage* stage) {
   OnStageChanged(stage_, prevStage);
 }
 
-Stage* Scene::GetStage() const { return stage_; }
+Stage* Scene::Stage() const { return stage_; }
 }  // namespace soil::stage::scene

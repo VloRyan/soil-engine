@@ -38,14 +38,11 @@ class WorldNode : public scene::Node,
   const soil::world::volume::Container* Container() const;
 
  protected:
-  void LinkToScene(scene::Scene& scene);
   void Insert(component::CollisionObjectComponent* comp);
   void Remove(component::CollisionObjectComponent* comp);
+  void RemoveAllDependentWorldComponents(Node* node);
 
-  void SetParent(Node* parent) override;
-  void OnStageChanged(Stage* stage, Stage* prevStage) override;
-
-  scene::Scene* ClimbUpToScene();
+  void OnStageChanged(class Stage* stage, class Stage* prevStage) override;
   bool IsBelowMe(Node* node) const;
 
  private:

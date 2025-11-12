@@ -21,9 +21,7 @@ class Stage;
 namespace soil::stage::scene {
 class Scene;
 
-class Node : public input::EventHandler,
-             public WindowEventHandler,
-             public event::ComponentEventHandler,
+class Node : public event::ComponentEventHandler,
              public soil::event::Observable<event::Node> {
  public:
   enum class State : std::uint8_t {
@@ -131,10 +129,6 @@ class Node : public input::EventHandler,
 
   // void SetTransform(const glm::mat4& transform) override;
 
-  void Handle(const input::Event& event) override {}
-
-  void Handle(const WindowEvent& event) override {}
-
   template <class T>
   T AddChild(T node) {
     using type = std::remove_pointer_t<T>;
@@ -150,7 +144,8 @@ class Node : public input::EventHandler,
   virtual void RemoveChild(Node* node);
 
   component::TransformComponent& Transform() const;
-  scene::Scene* Root() const;
+  Node* Root() const;
+  [[nodiscard]] virtual class Stage* Stage() const;
 
  protected:
   void MarkDirtyWith(DirtyImpact cause);
@@ -172,9 +167,9 @@ class Node : public input::EventHandler,
 
   [[nodiscard]] virtual std::bitset<4> GetDirtyImpacts() const;
 
-  virtual void OnStageChanged(Stage* stage, Stage* prevStage);
+  virtual void OnStageChanged(class Stage* stage, class Stage* prevStage);
 
-  void fire(const event::Node& event) override;
+  void fire(const event::Node& event) const override;
 
   component::TransformComponent* transform_;
   void incorporateAddedComponents();

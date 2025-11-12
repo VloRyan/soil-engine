@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 #include "input/manager.h"
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 
 namespace soil::stage {

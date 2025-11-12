@@ -50,7 +50,6 @@ void Root::OnEvent(const input::Event& event) {
       default:;
     }
   }
-  Node::Handle(event);
 }
 
 void Root::OnEvent(const WindowEvent& event) {
@@ -63,7 +62,6 @@ void Root::OnEvent(const WindowEvent& event) {
   const auto parentHalfSize = size_ / glm::ivec2(2);
   SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
   SetDirty(DirtyImpact::Dependents);
-  Node::Handle(event);
 }
 
 }  // namespace soil::stage::scene::gui

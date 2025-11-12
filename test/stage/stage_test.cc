@@ -130,6 +130,27 @@ TEST_F(StageTest, AddRemoveRenderTriggerHooks) {
   EXPECT_TRUE(hook.TriggerReceived.empty());
 }
 
+TEST_F(StageTest, RemoveTriggerHookOnTrigger) {
+  auto stage = Stage();
+  auto root = stage.AddScene(new scene::Scene());
+  auto hook = hook::HookMock();
+  auto hook2 = hook::HookMock();
+  auto hookPoint = soil::stage::hook::TriggerHook::TriggerPoint{
+      .TriggerType =
+          soil::stage::hook::TriggerHook::TriggerType::BeforeUpdateScene};
+
+  hook.OnTriggerFunc = [&stage, &hook2, &hookPoint](auto point) {
+    stage.RemoveTriggerHook(&hook2, hookPoint);
+  };
+
+  stage.AddTriggerHook(&hook, hookPoint);
+  stage.AddTriggerHook(&hook2, hookPoint);
+  stage.Update();
+
+  EXPECT_THAT(hook.TriggerReceived, testing::ElementsAre(hookPoint));
+  EXPECT_TRUE(hook2.TriggerReceived.empty());
+}
+
 TEST_F(StageTest, AddRemoveNodeEventHook) {
   auto stage = Stage();
   auto root = stage.AddScene(new scene::Scene());

@@ -3,7 +3,6 @@
 
 #include "glm/glm.hpp"
 #include "stage/scene/component/component.h"
-#include "stage/scene/scene.h"
 
 namespace soil::stage::scene::component {
 class ComponentMock : public Component {

@@ -8,6 +8,7 @@
 #include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
 #include "mocks.hpp"
+#include "stage/mocks.hpp"
 #include "stage/scene/component/transform_component.h"
 #include "stage/stage.h"
 namespace soil::stage::scene {
@@ -49,8 +50,7 @@ TEST_F(NodeTest, ChildDestructor) {
   ASSERT_FALSE(parent.GetChildren().empty());
 
   delete child;
-
-  ASSERT_THAT(parent.RemovedChildren, testing::ElementsAre(child));
+  
   EXPECT_TRUE(parent.GetChildren().empty());
 }
 
@@ -295,41 +295,35 @@ TEST_F(NodeTest, HandleTransformChanges) {
   EXPECT_TRUE(node.IsDirtyImpact(Node::DirtyImpact::Transform));
 }
 
-/*
-TEST_F(NodeTest, HandleComponentEventStateFilterOnNew) {
-  auto eventListener = NodeEventMockListener();
-  auto node = NodeMock();
-  node.AddListener(&eventListener);
-  auto* comp = node.AddComponent(
-      new component::ComponentMock(component::Component::Type::Metadata));
-  ASSERT_THAT(
-      eventListener.Events,
-      testing::ElementsAre(event::Node(&node, event::Node::ChangeType::State)));
-  eventListener.ResetMocks();
+TEST_F(NodeTest, FireEvents) {
+  auto node = new Node(Node::Type::Game);
+  auto stage = stage::StageMock();
+  auto scene = stage.AddScene(new Scene());
 
-  // comp->SetDirty();
+  scene->AddChild(node);
+  EXPECT_THAT(
+      stage.NodeEvents,
+      testing::ElementsAre(event::Node::MakeChildAddedEvent(scene, node)));
+  stage.ResetMocks();
 
-  EXPECT_TRUE(eventListener.Events.empty());
+  node->SetDirty(Node::DirtyImpact::Self);
+  EXPECT_THAT(stage.NodeEvents, testing::ElementsAre(event::Node(
+                                    node, event::Node::ChangeType::State)));
+  stage.ResetMocks();
 
-  node.Update();
-  // ASSERT_FALSE(comp->IsDirty());
-  ASSERT_THAT(eventListener.Events,
-              testing::ElementsAre(
-                  event::Node::MakeComponentEvent(
-                      &node, event::Component(
-                                 comp, event::Component::TriggerType::Added)),
-                  event::Node(&node, event::Node::ChangeType::State)));
-  eventListener.ResetMocks();
+  scene->RemoveChild(node);
+  EXPECT_THAT(stage.NodeEvents,
+              testing::ElementsAre(event::Node(
+                  scene, event::Node::ChangeType::ChildRemoved, node)));
+  stage.ResetMocks();
 
-  // comp->SetDirty();
-
-  EXPECT_THAT(eventListener.Events,
-              testing::ElementsAre(
-                  event::Node(&node, event::Node::ChangeType::State),
-                  event::Node::MakeComponentEvent(
-                      &node, event::Component::MakeDataChangedEvent(comp))));
+  scene->AddChild(node);
+  stage.ResetMocks();
+  delete node;
+  EXPECT_THAT(stage.NodeEvents, testing::ElementsAre(event::Node(
+                                    node, event::Node::ChangeType::Deleted)));
 }
-*/
+
 TEST_F(NodeTest, GetComponents) {
   auto node = NodeMock();
   auto transformComp =

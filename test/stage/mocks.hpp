@@ -6,11 +6,19 @@
 namespace soil::stage {
 class StageMock : public Stage {
  public:
-  int HandleInputEventCalledCount = 0;
-  int HandleWindowEventCalledCount = 0;
-  int UpdateCalledCount = 0;
-  int RenderCalledCount = 0;
+  ;
+  struct Calls_t {
+    int HandleNodeEvent{0};
+    int HandleInputEvent{0};
+    int HandleWindowEvent{0};
+    int Update{0};
+    int Render{0};
+  } Calls;
+
   bool CallRealRender = false;
+  std::vector<event::Node> NodeEvents;
+  std::vector<input::Event> InputEvents;
+  std::vector<WindowEvent> WindowEvents;
 
   const std::unordered_map<
       scene::Node*, std::vector<soil::stage::hook::EventHook<event::Node>*>>&
@@ -37,27 +45,38 @@ class StageMock : public Stage {
   }
 
   void ResetMocks() {
-    HandleInputEventCalledCount = 0;
-    HandleWindowEventCalledCount = 0;
+    Calls = Calls_t{};
+    CallRealRender = false;
+    NodeEvents.clear();
+    InputEvents.clear();
+    WindowEvents.clear();
+  }
+
+  void Handle(const event::Node& event) override {
+    Calls.HandleNodeEvent++;
+    NodeEvents.push_back(event);
+    Stage::Handle(event);
   }
 
   void Handle(const input::Event& event) override {
-    HandleInputEventCalledCount++;
+    Calls.HandleInputEvent++;
+    InputEvents.push_back(event);
     Stage::Handle(event);
   }
 
   void Handle(const WindowEvent& event) override {
-    HandleWindowEventCalledCount++;
+    Calls.HandleWindowEvent++;
+    WindowEvents.push_back(event);
     Stage::Handle(event);
   }
 
   void Update() override {
-    UpdateCalledCount++;
+    Calls.Update++;
     Stage::Update();
   }
 
   void Render(video::render::State& state) override {
-    RenderCalledCount++;
+    Calls.Render++;
     if (CallRealRender) {
       Stage::Render(state);
     }

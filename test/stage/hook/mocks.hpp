@@ -17,6 +17,7 @@ class HookMock : public TriggerHook,
   std::vector<WindowEvent> WindowEventsReceived;
   std::vector<input::Event> InputEventsReceived;
   std::vector<TriggerPoint> TriggerReceived;
+  std::function<void(const TriggerPoint& point)> OnTriggerFunc{nullptr};
 
   void Reset() {
     NodeEventsReceived.clear();
@@ -36,6 +37,9 @@ class HookMock : public TriggerHook,
   }
 
   void OnTrigger(const TriggerPoint& point) override {
+    if (OnTriggerFunc != nullptr) {
+      OnTriggerFunc(point);
+    }
     TriggerReceived.push_back(point);
   }
 };

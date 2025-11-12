@@ -68,6 +68,9 @@ glm::vec3 CollisionObjectComponent::GetVelocity() const {
 }
 void CollisionObjectComponent::SetVelocity(const glm::vec3& velocity) {
   Object()->SetVelocity(velocity);
+  if (world_ == nullptr) {
+    return;
+  }
   if (velocity != glm::vec3(0.F)) {
     world_->Activate(this);
   }

@@ -1,6 +1,5 @@
 #include "stage/scene/component/render/update_matrices_ubo_component.h"
 
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 namespace soil::stage::scene::component::render {
 UpdateMatricesUboComponent::UpdateMatricesUboComponent(
@@ -10,6 +9,7 @@ UpdateMatricesUboComponent::UpdateMatricesUboComponent(
       renderState_(renderState),
       viewer_(viewer),
       uboMatricesBindingTarget_(uboMatricesBindingTarget) {}
+
 void UpdateMatricesUboComponent::OnTrigger(
     const hook::TriggerHook::TriggerPoint &point) {
   renderState_->WriteUbo(uboMatricesBindingTarget_,

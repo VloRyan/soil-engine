@@ -1,14 +1,10 @@
 #include "stage/scene/world/world_node.h"
 
-#include "stage/scene/scene.h"
 #include "stage/stage.h"
 namespace soil::stage::scene::world {
 
 WorldNode::WorldNode(soil::world::World *world)
-    : scene::Node(Node::Type::World),
-      hook::TriggerHook(),
-      world_(world),
-      linked_(false) {
+    : scene::Node(Node::Type::World), world_(world), linked_(false) {
   if (world_ == nullptr) {
     throw std::invalid_argument("world shall not be NULL");
   }
@@ -17,16 +13,24 @@ WorldNode::WorldNode(soil::world::World *world)
 WorldNode::~WorldNode() { delete world_; }
 
 void WorldNode::OnEvent(const event::Node &event) {
-  if (event.ChangeType != event::Node::ChangeType::Component) {
+  if (event.ChangeType == stage::event::Node::ChangeType::Component &&
+      event.ComponentEvent.Origin->GetType() ==
+          component::Component::Type::WorldEntity) {
+    Handle(event.ComponentEvent);
     return;
   }
-  Handle(event.ComponentEvent);
+
+  if (event.ChangeType == stage::event::Node::ChangeType::ChildRemoved) {
+    RemoveAllDependentWorldComponents(event.ChangedNode);
+    return;
+  }
+  if (event.ChangeType == stage::event::Node::ChangeType::Deleted) {
+    RemoveAllDependentWorldComponents(event.Origin);
+    return;
+  }
 }
 
 void WorldNode::Handle(const event::Component &event) {
-  if (event.Origin->GetType() != component::Component::Type::WorldEntity) {
-    return;
-  }
   switch (event.Trigger) {
     case event::Component::TriggerType::Added: {
       if (!IsBelowMe(event.Origin->GetParent())) {
@@ -55,20 +59,43 @@ void WorldNode::Handle(const event::Component &event) {
   }
 }
 
-void WorldNode::OnStageChanged(Stage *stage, Stage *prevStage) {
+void WorldNode::RemoveAllDependentWorldComponents(Node *node) {
+  const auto removeCollisionObjectComp = [this](auto *component) {
+    auto *colObj =
+        dynamic_cast<component::CollisionObjectComponent *>(component);
+    if (colObj == nullptr || colObj->GetWorld() != this) {
+      return;
+    }
+    Remove(colObj);
+    colObj->SetWorld(nullptr);
+  };
+  node->ForEachComponent(removeCollisionObjectComp,
+                         component::Component::Type::WorldEntity);
+  Node::ForEachChild(node, [removeCollisionObjectComp](Node *child) {
+    child->ForEachComponent(removeCollisionObjectComp,
+                            component::Component::Type::WorldEntity);
+  });
+}
+
+void WorldNode::OnStageChanged(class Stage *stage, class Stage *prevStage) {
   Node::OnStageChanged(stage, prevStage);
+  if (stage == prevStage) {
+    return;
+  }
   if (prevStage != nullptr) {
     prevStage->RemoveEventHook(Root(), this);
     prevStage->RemoveTriggerHook(
         this,
-        {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
+        {.Root = Root(),
+         .TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
     Clear();
   }
   if (stage != nullptr) {
     stage->AddEventHook(Root(), this);
     stage->AddTriggerHook(
         this,
-        {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
+        {.Root = Root(),
+         .TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
     std::vector<component::Component *> components;
     ForEachChild(this, [this, &components](Node *child) {
       components.clear();
@@ -97,23 +124,6 @@ void WorldNode::Activate(component::CollisionObjectComponent *comp) {
   world_->Activate(comp->Object());
 }
 
-void WorldNode::LinkToScene(scene::Scene &scene) {
-  // TODO unhook
-  std::vector<component::Component *> components;
-  ForEachChild(this, [this, &components](Node *child) {
-    components.clear();
-    child->GetComponents(components, component::Component::Type::WorldEntity);
-    for (auto *comp : components) {
-      auto *colObj = dynamic_cast<component::CollisionObjectComponent *>(comp);
-      if (colObj == nullptr) {
-        continue;
-      }
-      Insert(colObj);
-    }
-  });
-  linked_ = true;
-}
-
 void WorldNode::Insert(component::CollisionObjectComponent *comp) {
   world_->Insert(comp->Object());
   auto itr = objectToComponentMap_.find(comp->Object());
@@ -133,30 +143,6 @@ void WorldNode::Remove(component::CollisionObjectComponent *comp) {
 void WorldNode::UpdatePosition(component::CollisionObjectComponent *comp) {
   world_->Remove(comp->Object());
   world_->Insert(comp->Object());
-}
-
-void WorldNode::SetParent(Node *parent) {
-  Node::SetParent(parent);
-  /*if (parent != nullptr) {
-    auto scene = ClimbUpToScene();
-    if (scene != nullptr) {
-      LinkToScene(*scene);
-    }
-  }*/
-}
-
-Scene *WorldNode::ClimbUpToScene() {
-  /*Scene *scene = nullptr;
-  auto *current = GetParent();
-  while (current != nullptr) {
-    if (current->GetType() == Type::Scene) {
-      scene = dynamic_cast<Scene *>(current);
-      break;
-    }
-    current = current->GetParent();
-  }
-  return scene;*/
-  return Root();
 }
 
 bool WorldNode::IsBelowMe(Node *node) const {

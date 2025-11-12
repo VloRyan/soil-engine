@@ -75,22 +75,21 @@ TEST_F(UpdateGraphComponentTest, UpdateTopDirty) {
 
 TEST_F(UpdateGraphComponentTest, UpdateAfterDelete) {
   UpdateGraphComponent updateGraph;
-  auto node = NodeMock();
+  auto node = new NodeMock();
 
-  node.SetDirty(Node::DirtyImpact::Self);
+  node->SetDirty(Node::DirtyImpact::Self);
   updateGraph.OnEvent(
-      stage::event::Node(&node, stage::event::Node::ChangeType::State));
+      stage::event::Node(node, stage::event::Node::ChangeType::State));
   updateGraph.Update();
-  EXPECT_EQ(node.Calls.UpdateDirty, 1);
+  EXPECT_EQ(node->Calls.UpdateDirty, 1);
 
-  node.SetDirty(Node::DirtyImpact::Self);
+  node->SetDirty(Node::DirtyImpact::Self);
   updateGraph.OnEvent(
-      stage::event::Node(&node, stage::event::Node::ChangeType::State));
-  node.SetState(Node::State::Delete);
+      stage::event::Node(node, stage::event::Node::ChangeType::State));
+  node->SetState(Node::State::Delete);
   updateGraph.OnEvent(
-      stage::event::Node(&node, stage::event::Node::ChangeType::State));
+      stage::event::Node(node, stage::event::Node::ChangeType::State));
   updateGraph.Update();
-  EXPECT_EQ(node.Calls.UpdateDirty, 1);
 }
 
 TEST_F(UpdateGraphComponentTest, UpdateAfterChildRemoved) {

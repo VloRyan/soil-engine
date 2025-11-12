@@ -79,44 +79,15 @@ class Stage : public input::EventHandler,
   void AddEventHook(soil::stage::hook::EventHook<input::Event>* hook);
   void AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
 
-  /*template <class T>
-  void AddEventHook(soil::stage::hook::EventHook<T>* hook) {
-    if (typeid(T) == typeid(event::Node)) {
-      nodeEventHooks_.push_back(
-          static_cast<soil::stage::hook::EventHook<event::Node>*>(hook));
-    } else if (typeid(T) == typeid(input::Event)) {
-      inputEventHooks_.push_back(
-          static_cast<soil::stage::hook::EventHook<input::Event>*>(hook));
-    } else if (typeid(T) == typeid(WindowEvent)) {
-      windowEventHooks_.push_back(
-          static_cast<soil::stage::hook::EventHook<WindowEvent>*>(hook));
-    } else {
-      throw std::runtime_error("unknown event type");
-    }
-  }*/
-
   void RemoveEventHook(scene::Node* root,
                        soil::stage::hook::EventHook<event::Node>* hook);
   void RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook);
   void RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
-  /*
-    template <class T>
-    void RemoveEventHook(soil::stage::hook::EventHook<T>* hook) {
-      if (typeid(T) == typeid(event::Node)) {
-        _removeEventHook(hook, nodeEventHooks_);
-      } else if (typeid(T) == typeid(input::Event)) {
-        _removeEventHook(hook, inputEventHooks_);
-      } else if (typeid(T) == typeid(WindowEvent)) {
-        _removeEventHook(hook, windowEventHooks_);
-      } else {
-        throw std::runtime_error("unknown event type");
-      }
-    }
-  */
+
   void AddTriggerHook(soil::stage::hook::TriggerHook* trigger,
                       const soil::stage::hook::TriggerHook::TriggerPoint& at);
   void RemoveTriggerHook(
-      soil::stage::hook::TriggerHook* trigger,
+      soil::stage::hook::TriggerHook* hook,
       const soil::stage::hook::TriggerHook::TriggerPoint& at);
 
  protected:
@@ -157,15 +128,11 @@ class Stage : public input::EventHandler,
                      std::vector<soil::stage::hook::TriggerHook*>,
                      soil::stage::hook::TriggerHook::TriggerPointEquality>
       triggerHooks_;
+  std::vector<soil::stage::hook::TriggerHook*> invalidatedHooks_;
+  bool triggering_;
 
  private:
   IManager* manager_;
-
-  /*std::unordered_map<
-      std::type_index,
-      std::vector<soil::stage::scene::hook::EventHook<soil::event::Event>*>>
-      eventHooks_;*/
-
   bool loaded_;
   std::vector<scene::Scene*> scenes_;
   Resources* resources_;

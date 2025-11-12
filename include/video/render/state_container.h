@@ -14,8 +14,8 @@ class StateContainer {
                                                    const StateIdentifier& b)>&
                               stateCompFunc = std::less());
   ~StateContainer();
-  void Insert(Renderable* renderable);
-  bool Remove(Renderable* renderable);
+  virtual void Insert(Renderable* renderable);
+  virtual bool Remove(Renderable* renderable);
   const std::vector<StateIdentifier>& States();
   RenderableGroup* GroupByState(const StateIdentifier& id) const;
 

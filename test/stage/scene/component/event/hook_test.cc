@@ -8,9 +8,10 @@
 namespace soil::stage::scene::component::event {
 class HookSpy : public Hook {
  public:
-  HookSpy(const std::vector<EventType> &events = {},
-          const std::vector<soil::stage::hook::TriggerHook::TriggerPoint>
-              &points = {})
+  explicit HookSpy(
+      const std::vector<EventType> &events = {},
+      const std::vector<soil::stage::hook::TriggerHook::TriggerPoint> &points =
+          {})
       : Hook(events, points) {}
   soil::stage::Stage *Stage() { return stage_; };
   const std::vector<EventType> &ActiveEvents() { return activeEvents_; };
@@ -125,6 +126,8 @@ TEST_F(HookTest, ActivateStageNodeEvent) {
               scene::Node *,
               std::vector<soil::stage::hook::EventHook<stage::event::Node> *>>(
               nullptr, {&hook})));
+
+  hook.SetStage(nullptr);  // cleanup
 }
 
 TEST_F(HookTest, ActivateRootNodeEvent) {
@@ -145,6 +148,8 @@ TEST_F(HookTest, ActivateRootNodeEvent) {
               scene::Node *,
               std::vector<soil::stage::hook::EventHook<stage::event::Node> *>>(
               &anyNode, {&hook})));
+
+  hook.SetStage(nullptr);  // cleanup
 }
 
 TEST_F(HookTest, ActivateWindowEvent) {
@@ -157,6 +162,8 @@ TEST_F(HookTest, ActivateWindowEvent) {
 
   EXPECT_THAT(hook.ActiveEvents(), testing::ElementsAre(eventType));
   EXPECT_THAT(stageMock.WindowEventHooks(), testing::ElementsAre(&hook));
+
+  hook.SetStage(nullptr);  // cleanup
 }
 
 TEST_F(HookTest, UpdateTriggerRoot) {
@@ -183,5 +190,7 @@ TEST_F(HookTest, UpdateTriggerRoot) {
               scene::Node *,
               std::vector<soil::stage::hook::EventHook<stage::event::Node> *>>(
               &anyNode, {&hook})));
+
+  hook.SetStage(nullptr);  // cleanup
 }
 }  // namespace soil::stage::scene::component::event

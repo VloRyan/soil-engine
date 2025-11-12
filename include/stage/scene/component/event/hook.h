@@ -27,7 +27,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
                 const std::vector<soil::stage::hook::TriggerHook::TriggerPoint>
                     &points = {});
 
-  ~Hook() override = default;
+  ~Hook() override;
   void ActivateEvents(const std::vector<EventType> &events);
   void ActivateTrigger(const TriggerPoint &point);
   void RemoveTrigger(const TriggerPoint &point);

@@ -107,11 +107,11 @@ TEST_F(ManagerTest, Update) {
   manager.RegisterStage("stage", stage);
 
   manager.Update();
-  EXPECT_EQ(stage->UpdateCalledCount, 0);
+  EXPECT_EQ(stage->Calls.Update, 0);
 
   manager.SetCurrent("stage");
   manager.Update();
-  EXPECT_EQ(stage->UpdateCalledCount, 1);
+  EXPECT_EQ(stage->Calls.Update, 1);
 }
 
 TEST_F(ManagerTest, Render) {
@@ -122,10 +122,10 @@ TEST_F(ManagerTest, Render) {
   manager.RegisterStage("stage", stage);
 
   manager.Render(state);
-  EXPECT_EQ(stage->RenderCalledCount, 0);
+  EXPECT_EQ(stage->Calls.Render, 0);
 
   manager.SetCurrent("stage");
   manager.Render(state);
-  EXPECT_EQ(stage->RenderCalledCount, 1);
+  EXPECT_EQ(stage->Calls.Render, 1);
 }
 }  // namespace soil::stage

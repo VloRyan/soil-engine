@@ -2,7 +2,7 @@
 
 namespace soil::stage::scene::component {
 RenderableComponent::RenderableComponent(const bool opaque, const bool visible)
-    : Component(Type::Visual),
+    : Component(Type::Renderable),
       visible_(visible),
       opaque_(opaque),
       culled_(false) {}

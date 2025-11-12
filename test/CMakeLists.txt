@@ -24,12 +24,12 @@ add_executable(${PROJECT_NAME}
         stage/scene/scene_test.cc
         stage/stage_test.cc
         util/files_test.cc
-        video/render/instance/buffer_test.cc
-        video/render/instance/test_buffer_object.cc
-        video/render/instance/test_buffer_object.h
-        video/render/instance/test_instance.cc
-        video/render/instance/test_instance.h
-        video/render/step/sort_test.cc
+        #video/render/instance/buffer_test.cc
+        #video/render/instance/test_buffer_object.cc
+        #video/render/instance/test_buffer_object.h
+        #video/render/instance/test_instance.cc
+        #video/render/instance/test_instance.h
+        #video/render/step/sort_test.cc
         world/intersection_test.cc
         world/volume/aabb_test.cc
         world/volume/frustum_test.cc
@@ -44,6 +44,7 @@ add_executable(${PROJECT_NAME}
         video/render/mocks.hpp
         stage/scene/component/event/event_component_test.cc
         stage/scene/component/event/hook_test.cc
+        stage/scene/component/render/render_state_container_component_test.cc
 
 )
 

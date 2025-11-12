@@ -6,6 +6,32 @@
 #include "world/volume/aabb.h"
 
 namespace soil::world::volume {
+
+// TODO testing::UnorderedElementsAre is producing an undefined reference.
+static bool UnorderedElementsAre(
+    const std::vector<const entity::CollisionObject*>& actual,
+    const std::vector<const entity::CollisionObject*>& expected) {
+  if (expected.size() != actual.size()) {
+    return false;
+  }
+  auto exCopy = std::vector(actual);
+  std::vector<const entity::CollisionObject*> missingElements;
+  for (auto vol : expected) {
+    bool found = false;
+    for (auto itr = exCopy.begin(); itr != exCopy.end(); ++itr) {
+      if (*itr == vol) {
+        exCopy.erase(itr);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      missingElements.push_back(vol);
+    }
+  }
+  return exCopy.empty() && missingElements.empty();
+}
+
 class QuadTreeTest : public testing::Test {
  protected:
   [[nodiscard]] static entity::CollisionObject* NewObjectAt(
@@ -161,10 +187,14 @@ TEST_F(QuadTreeTest, QueryVolumesAt) {
   quadTree.Insert(e);
 
   ASSERT_THAT(quadTree.GetNodeCount(), 5);
-  EXPECT_THAT(ObjectsAt(quadTree, glm::vec3(0.F, 0.F, 8.F)),
+  /*EXPECT_THAT(ObjectsAt(quadTree, glm::vec3(0.F, 0.F, 8.F)),
               testing::ElementsAre(b));
   EXPECT_THAT(ObjectsAt(quadTree, glm::vec3(8.2F, 0.F, 0.2F)),
-              testing::ElementsAre(d, e));
+              testing::ElementsAre(d, e));*/
+  EXPECT_TRUE(
+      UnorderedElementsAre(ObjectsAt(quadTree, glm::vec3(0.F, 0.F, 8.F)), {b}));
+  EXPECT_TRUE(UnorderedElementsAre(
+      ObjectsAt(quadTree, glm::vec3(8.2F, 0.F, 0.2F)), {d, e}));
 }
 
 TEST_F(QuadTreeTest, DetermineLevel) {
@@ -202,31 +232,6 @@ TEST_F(QuadTreeTest, Remove) {
   ret = quadTree.Remove(topLeft);
   EXPECT_TRUE(ret);
   EXPECT_THAT(ObjectsAt(quadTree, 1), testing::ElementsAre(topLeft2));
-}
-
-// TODO testing::UnorderedElementsAre is producing an undefined reference.
-static bool UnorderedElementsAre(
-    const std::vector<const entity::CollisionObject*>& actual,
-    const std::vector<const entity::CollisionObject*>& expected) {
-  if (expected.size() != actual.size()) {
-    return false;
-  }
-  auto exCopy = std::vector(actual);
-  std::vector<const entity::CollisionObject*> missingElements;
-  for (auto vol : expected) {
-    bool found = false;
-    for (auto itr = exCopy.begin(); itr != exCopy.end(); ++itr) {
-      if (*itr == vol) {
-        exCopy.erase(itr);
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      missingElements.push_back(vol);
-    }
-  }
-  return exCopy.empty() && missingElements.empty();
 }
 
 TEST_F(QuadTreeTest, QueryVolumesInRange) {

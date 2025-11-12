@@ -2,12 +2,13 @@
 
 #include "stage/scene/component/render/renderable_component.h"
 #include "stage/scene/node.h"
-#include "stage/scene/scene.h"
+
 namespace soil::stage::scene::component::render {
-RenderStateContainerComponent::RenderStateContainerComponent()
+RenderStateContainerComponent::RenderStateContainerComponent(
+    video::render::StateContainer *renderStateContainer)
     : RenderComponent(),
       hook_({event::Hook::EventType::Node}),
-      renderStateContainer_(new video::render::StateContainer()) {
+      renderStateContainer_(renderStateContainer) {
   hook_.SetNodeEventCallback(
       [this](const soil::stage::event::Node &event) { OnEvent(event); });
 }
@@ -21,13 +22,37 @@ void RenderStateContainerComponent::Render(video::render::State &state) {
     renderStateContainer_->GroupByState(id)->Render(state);
   }
 }
+
 void RenderStateContainerComponent::OnEvent(
     const soil::stage::event::Node &event) {
-  if (event.ChangeType != stage::event::Node::ChangeType::Component ||
-      event.ComponentEvent.Origin->GetType() != Component::Type::Visual) {
+  if (event.ChangeType == stage::event::Node::ChangeType::Component &&
+      event.ComponentEvent.Origin->GetType() == Component::Type::Renderable) {
+    Handle(event.ComponentEvent);
     return;
   }
-  Handle(event.ComponentEvent);
+
+  if (event.ChangeType == stage::event::Node::ChangeType::ChildRemoved) {
+    RemoveAllDependentRenderComponents(event.ChangedNode);
+  }
+  if (event.ChangeType == stage::event::Node::ChangeType::Deleted) {
+    RemoveAllDependentRenderComponents(event.Origin);
+  }
+}
+
+void RenderStateContainerComponent::RemoveAllDependentRenderComponents(
+    Node *node) {
+  const auto removeVisualComp = [this](auto *component) {
+    auto *vComp = dynamic_cast<RenderableComponent *>(component);
+    auto *renderable = vComp != nullptr ? vComp->GetRenderable() : nullptr;
+    if (renderable == nullptr) {
+      return;
+    }
+    renderStateContainer_->Remove(renderable);
+  };
+  node->ForEachComponent(removeVisualComp, Component::Type::Renderable);
+  Node::ForEachChild(node, [removeVisualComp](Node *child) {
+    child->ForEachComponent(removeVisualComp, Component::Type::Renderable);
+  });
 }
 
 void RenderStateContainerComponent::Handle(

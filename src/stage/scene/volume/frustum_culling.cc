@@ -1,6 +1,5 @@
 #include "stage/scene/volume/frustum_culling.h"
 
-#include "stage/scene/scene.h"
 #include "util/strings.h"
 #include "world/volume/quad_tree.h"
 
@@ -19,7 +18,7 @@ void FrustumCulling::OnEvent(const event::Node& event) {
 
 void FrustumCulling::OnComponentAdded(component::Component* component) {
   if (component == nullptr ||
-      component->GetType() != component::Component::Type::Visual) {
+      component->GetType() != component::Component::Type::Renderable) {
     return;
   }
   auto* renderable = dynamic_cast<component::RenderableComponent*>(component);
@@ -81,7 +80,7 @@ void FrustumCulling::updateVisibilityOnTreeNode(
             auto* vComp = dynamic_cast<component::RenderableComponent*>(comp);
             vComp->SetCulled(!isVisible);
           },
-          component::Component::Type::Visual);
+          component::Component::Type::Renderable);
     }
     nodesVisibility_[index] = isVisible;
     if (!nodesVisibility_[index]) {
