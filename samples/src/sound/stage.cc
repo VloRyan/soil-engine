@@ -1,7 +1,6 @@
 #include "stage.h"
 
 #include <asset.h>
-#include <stage/scene/input.h>
 
 #include <string>
 

@@ -2,7 +2,6 @@
 
 #include <asset.h>
 #include <plog/Log.h>
-#include <stage/scene/input.h>
 
 #include <string>
 
@@ -10,7 +9,6 @@
 #include "glm/glm.hpp"
 #include "shader.h"
 #include "shape.h"
-#include "stage/scene/render/plain.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -20,11 +18,6 @@ Stage::Stage() : shapes_(), printStatistics_(false) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-
-  /*auto* plainRenderer =
-      new soil::stage::scene::render::Plain(scene->GetRenderContainer());
-  AddEventHook(plainRenderer);
-  AddTriggerHook(plainRenderer);*/
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));

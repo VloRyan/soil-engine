@@ -9,8 +9,6 @@
 #include "glm/glm.hpp"
 #include "shader.h"
 #include "shape_instance.h"
-#include "stage/scene/input.h"
-#include "stage/scene/render/instancing.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -21,7 +19,7 @@ Stage::Stage() : shapes_(), printStatistics_(false) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  
+
   auto* viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
   viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);

@@ -1,7 +1,6 @@
 #ifndef SOIL_ENGINE_STAGE_H
 #define SOIL_ENGINE_STAGE_H
 #include "input/event_map.h"
-#include "stage/scene/input.h"
 #include "stage/stage.h"
 
 namespace soil_samples::common {

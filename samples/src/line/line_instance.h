@@ -1,7 +1,5 @@
 #ifndef LINE_LINE_INSTANCE_H
 #define LINE_LINE_INSTANCE_H
-#include <stage/scene/component/instance_data.h>
-
 #include <vector>
 
 #include "stage/scene/component/render/mesh_instance_component.h"

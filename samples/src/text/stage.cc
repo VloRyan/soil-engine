@@ -1,7 +1,6 @@
 #include "stage.h"
 
 #include <asset.h>
-#include <stage/scene/input.h>
 
 #include <string>
 
@@ -11,7 +10,6 @@
 #include "gui/character_shader.h"
 #include "gui/component/text.h"
 #include "node.h"
-#include "stage/scene/render/plain.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -43,11 +41,6 @@ void Stage::OnLoad() {
   bgShader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
   initBackground(scene, 0);
-
-  /*auto* plainRenderer =
-      new soil::stage::scene::render::Plain(scene->GetRenderContainer());
-  AddEventHook(plainRenderer);
-  AddTriggerHook(plainRenderer);*/
 
   auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
   auto* fontTexture =

@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "stage/scene/input.h"
+#include "stage/scene/component/input/input_component.h"
 #include "stage/scene/scene.h"
 
 namespace soil_samples::common {
@@ -14,10 +14,11 @@ void Stage::Load() {
     throw std::runtime_error("expected one scene after OnLoad()");
   }
   auto* scene = GetScenes()[0];
-  auto* inputNode = scene->AddChild(new soil::stage::scene::Input());
-  auto& inputMap = inputNode->GetEventMap();
+  auto* inputComp = scene->AddComponent(
+      new soil::stage::scene::component::input::InputComponent());
+  auto& inputMap = inputComp->EventMap();
   if (backAction_ != nullptr) {
-    inputNode->GetEventMap().                                  //
+    inputMap.                                                  //
         AddKeyMapping(soil::input::Keys::Escape,               //
                       soil::input::Event::StateType::Release,  //
                       [this](const soil::input::Event&) {

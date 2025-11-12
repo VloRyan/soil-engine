@@ -81,7 +81,6 @@ void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {
   }
   localEndPoint_ = EndPoint;
   SignalChanged();
-  ;
 }
 
 glm::vec3 LineInstance::GetEndPoint() const { return localEndPoint_; }

@@ -4,11 +4,9 @@
 
 #include <string>
 
-#include "common/rotation_node.h"
 #include "glm/glm.hpp"
 #include "line_instance.h"
 #include "shader.h"
-#include "stage/scene/input.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -19,8 +17,6 @@ Stage::Stage() : lines_(), printStatistics_(false), offset_(0) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
-  /*scene->SetPipeline(soil::video::render::Pipeline::NewForwardRenderingPipeline(
-      scene->GetRenderContainer()));*/
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
@@ -28,17 +24,6 @@ void Stage::OnLoad() {
 
   auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
   shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
-
-  /*auto* instancing =
-      new soil::stage::scene::render::Instancing(scene->GetRenderContainer());
-  AddEventHook(instancing);
-  AddTriggerHook(instancing);
-
-  instancing->AddRenderBatch(
-      LineInstance::BATCH_NAME,
-      {.Mesh = mesh,
-       .Shader = shader,
-       .VertexAttribDescriptors = LineInstance::ATTRIBS});*/
 
   soil::video::render::MeshInstancePile::RegisterPile(
       LineInstance::BATCH_NAME,
