@@ -73,7 +73,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/overlay.cc
         src/stage/scene/gui/rectangle.cc
         src/stage/scene/gui/root.cc
-        src/stage/scene/input.cc
         src/stage/scene/node.cc
         src/stage/scene/scene.cc
         src/stage/scene/text/parser.cc
@@ -196,7 +195,6 @@ target_sources(
         include/stage/scene/gui/overlay.h
         include/stage/scene/gui/rectangle.h
         include/stage/scene/gui/root.h
-        include/stage/scene/input.h
         include/stage/scene/node.h
         include/stage/scene/scene.h
         include/stage/scene/text/parser.h
