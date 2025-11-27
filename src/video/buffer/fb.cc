@@ -11,13 +11,9 @@
 namespace soil::video::buffer {
 FrameBuffer::FrameBuffer(const glm::ivec2 size)
     : id_(0),
-      colorBufferId_(0),
-      depthBufferId_(0),
       stencilBufferId_(0),
-      m_DepthTexture(nullptr),
-      colorBufferParameter_(0),
+      depthTexture_(nullptr),
       size_(size),
-      depthType_(DepthBufferType::None),
       clearBufferBits_(0) {
   glGenFramebuffers(1, &id_);
 #ifdef DEBUG
@@ -36,31 +32,30 @@ FrameBuffer::~FrameBuffer() {
 
 void FrameBuffer::Unload() {
   PLOG_INFO << "Unload framebuffer " << std::to_string(id_);
-  if (depthBufferId_ != 0U) {
-    glDeleteRenderbuffers(1, &depthBufferId_);
-    depthBufferId_ = 0;
+  Bind();
+  if (depthBuffer_.Id != 0U) {
+    glDeleteRenderbuffers(1, &depthBuffer_.Id);
   }
   if (stencilBufferId_ != 0U) {
     glDeleteRenderbuffers(1, &stencilBufferId_);
-    stencilBufferId_ = 0;
   }
-  size_t textureCount = colorBufferVector_.size();
-  if (m_DepthTexture != nullptr) {
-    textureCount++;
-  }
-  std::vector<uint> ids(textureCount);
-  int idx = 0;
-  for (const auto* texture : colorBufferVector_) {
-    ids[idx++] = texture->GetId();
-  }
-  if (m_DepthTexture != nullptr) {
-    ids[textureCount - 1] = m_DepthTexture->GetId();
-  }
-  glDeleteTextures(static_cast<int>(colorBufferVector_.size()), ids.data());
 
-  colorBufferVector_.clear();
-  colorBufferParameter_.clear();
-  m_DepthTexture = nullptr;
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+
+  for (auto i = 0; i < colorAttachmentTextures_.size(); ++i) {
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                           GL_TEXTURE_2D, 0, 0);
+    delete colorAttachmentTextures_[i];
+  }
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 0, 0);
+  delete depthTexture_;
+
+  depthBuffer_.Id = 0U;
+  stencilBufferId_ = 0U;
+  colorAttachmentTextures_.clear();
+  depthTexture_ = nullptr;
 }
 
 void FrameBuffer::Resize(const glm::ivec2 newSize) {
@@ -69,33 +64,34 @@ void FrameBuffer::Resize(const glm::ivec2 newSize) {
       !sizeChanged) {
     return;
   }
-
-  // copy values
-  const DepthBufferType depthBufferType = depthType_;
-  std::vector<texture::Parameter> texParameterBuffer(
-      colorBufferParameter_.size());
-  for (auto i = 0; i < colorBufferVector_.size(); i++) {
-    texParameterBuffer[i] = colorBufferParameter_[i];
+  Bind();
+  if (depthBuffer_.Id != 0U) {
+    ResizeRenderBuffer(depthBuffer_, newSize);
   }
-
-  Unload();
-  size_ = newSize;
-  for (const auto& i : texParameterBuffer) {
-    CreateColorTexture(i);
+  if (depthTexture_ != nullptr) {
+    const texture::Data data(nullptr, size_, GL_DEPTH_COMPONENT, GL_FLOAT);
+    texture::Manager::ResizeTexture2D(depthTexture_->GetId(), data,
+                                      depthTexture_->GetFormat());
   }
-  CreateDepthBuffer(depthBufferType);
+  if (colorBuffer_.Id != 0U) {
+    ResizeRenderBuffer(colorBuffer_, newSize);
+  }
+  texture::Data data(nullptr, size_, 0, GL_UNSIGNED_BYTE);
+  for (auto* colorTexture : colorAttachmentTextures_) {
+    data.Format = toTexture2DDataFormat(colorTexture->GetFormat());
+    texture::Manager::ResizeTexture2D(colorTexture->GetId(), data,
+                                      colorTexture->GetFormat());
+  }
+  Unbind();
 }
 
 uint FrameBuffer::CreateDepthBuffer(const DepthBufferType depthType,
                                     const int samples) {
-  if (id_ == 0U) {
+  if (id_ == 0U || depthType == DepthBufferType::None) {
     return 0;
   }
-  if (depthType == DepthBufferType::None) {
-    return 0;
-  }
-  if (depthBufferId_ != 0U) {
-    throw std::runtime_error("depth buffer exists");
+  if (depthTexture_ != nullptr || depthBuffer_.Id != 0U) {
+    throw std::runtime_error("depth attachment already exists");
   }
 
   GLenum internalFormat = GL_DEPTH_COMPONENT;
@@ -105,32 +101,59 @@ uint FrameBuffer::CreateDepthBuffer(const DepthBufferType depthType,
     attachment = GL_DEPTH_STENCIL_ATTACHMENT;
   }
 
-  // Create depth buffer (renderbuffer)
-  glGenRenderbuffers(1, &depthBufferId_);
-  glBindRenderbuffer(GL_RENDERBUFFER, depthBufferId_);
-  if (samples > 1) {
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat,
-                                     size_.x, size_.y);
-  } else {
-    glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, size_.x, size_.y);
-  }
+  // Create depth buffer
+  glGenRenderbuffers(1, &depthBuffer_.Id);
+  depthBuffer_.InternalFormat = internalFormat;
+  depthBuffer_.Samples = samples;
+  ResizeRenderBuffer(depthBuffer_, size_);
 
   // attach buffers
   Bind();
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER,
-                            depthBufferId_);
+                            depthBuffer_.Id);
   CheckState();
-  depthType_ = depthType;
   clearBufferBits_ = clearBufferBits_ | GL_DEPTH_BUFFER_BIT;
-  return depthBufferId_;
+  Unbind();
+  return depthBuffer_.Id;
+}
+
+uint FrameBuffer::CreateColorBuffer(const int samples) {
+  if (id_ == 0U) {
+    return 0;
+  }
+  if (colorBuffer_.Id != 0U) {
+    throw std::runtime_error("ColorBuffer already exists");
+  }
+
+  constexpr GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+  glGenRenderbuffers(1, &colorBuffer_.Id);
+  colorBuffer_.InternalFormat = GL_RGBA16F;
+  colorBuffer_.Samples = samples;
+  ResizeRenderBuffer(colorBuffer_, size_);
+
+  // attach buffers
+  Bind();
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER,
+                            colorBuffer_.Id);
+  CheckState();
+  clearBufferBits_ = clearBufferBits_ | GL_COLOR_BUFFER_BIT;
+  return colorBuffer_.Id;
+}
+
+void FrameBuffer::ResizeRenderBuffer(const RenderBufferDefinition& depthBuffer,
+                                     glm::ivec2 size) {
+  glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer.Id);
+  glRenderbufferStorageMultisample(GL_RENDERBUFFER, depthBuffer.Samples,
+                                   depthBuffer.InternalFormat, size.x, size.y);
 }
 
 texture::Texture* FrameBuffer::CreateDepthTexture(const bool onlyDepth) {
   if (id_ == 0U) {
     return nullptr;
   }
-  if (depthBufferId_ != 0U) {
-    throw std::runtime_error("DepthBuffer exists");
+  if (depthTexture_ != nullptr || depthBuffer_.Id != 0U) {
+    throw std::runtime_error("depth attachment already exists");
   }
   PLOG_DEBUG.printf("createDepthTexture (%dx%d, %d)", size_.x, size_.y,
                     onlyDepth);
@@ -141,12 +164,10 @@ texture::Texture* FrameBuffer::CreateDepthTexture(const bool onlyDepth) {
   parameter.MagFilter = texture::Parameter::MagFilterType::NEAREST;
   parameter.Wrap = texture::Parameter::WrapType::CLAMP_TO_BORDER;
   parameter.Format = texture::Texture::Format::DepthComponent24;
-  m_DepthTexture = texture::Manager::GenerateTexture2D(
+  depthTexture_ = texture::Manager::GenerateTexture2D(
       data, "depthTexture_" + std::to_string(id_), parameter);
-  depthBufferId_ = m_DepthTexture->GetId();
-
   Bind();
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBufferId_, 0);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBuffer_.Id, 0);
 
   if (onlyDepth) {
     // No color output in the bound framebuffer, only depth.
@@ -154,44 +175,7 @@ texture::Texture* FrameBuffer::CreateDepthTexture(const bool onlyDepth) {
     glReadBuffer(GL_NONE);
   }
   CheckState();
-  return m_DepthTexture;
-}
-
-uint FrameBuffer::CreateColorBuffer(const int samples) {
-  if (id_ == 0U) {
-    return 0;
-  }
-  if (colorBufferId_ != 0U) {
-    throw std::runtime_error("ColorBuffer already exists");
-  }
-
-  constexpr GLenum internalFormat = GL_RGBA16F;
-  constexpr GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-  // Create depth buffer (renderbuffer)
-  glGenRenderbuffers(1, &colorBufferId_);
-  glBindRenderbuffer(GL_RENDERBUFFER, colorBufferId_);
-  if (samples > 1) {
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat,
-                                     size_.x, size_.y);
-  } else {
-    glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, size_.x, size_.y);
-  }
-  // attach buffers
-  Bind();
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER,
-                            colorBufferId_);
-  CheckState();
-  clearBufferBits_ = clearBufferBits_ | GL_COLOR_BUFFER_BIT;
-  return colorBufferId_;
-}
-
-texture::Texture* FrameBuffer::CreateColorTexture() {
-  texture::Parameter params;
-  params.MinFilter = texture::Parameter::MinFilterType::LINEAR;
-  params.MagFilter = texture::Parameter::MagFilterType::LINEAR;
-  params.Format = texture::Texture::Format::RGBA16F;
-  return CreateColorTexture(params);
+  return depthTexture_;
 }
 
 texture::Texture* FrameBuffer::CreateColorTexture(
@@ -199,33 +183,30 @@ texture::Texture* FrameBuffer::CreateColorTexture(
   if (id_ == 0U) {
     return nullptr;
   }
-  const texture::Data data(nullptr, size_, GL_RGB, GL_UNSIGNED_BYTE);
+
+  const texture::Data data(nullptr, size_,
+                           toTexture2DDataFormat(parameter.Format),
+                           GL_UNSIGNED_BYTE);
   auto* texture = texture::Manager::GenerateTexture2D(
       data, "colorTexture_" + std::to_string(id_), parameter);
   Bind();
   glFramebufferTexture2D(GL_FRAMEBUFFER,
-                         GL_COLOR_ATTACHMENT0 + colorBufferVector_.size(),
+                         GL_COLOR_ATTACHMENT0 + colorAttachmentTextures_.size(),
                          GL_TEXTURE_2D, texture->GetId(), 0);
   CheckState();
-  texture::Texture* sharedTexture(texture);
-  colorBufferVector_.push_back(sharedTexture);
-  colorBufferParameter_.push_back(parameter);
-  if (colorBufferVector_.size() > 1) {
-    // tell OpenGL which color attachments we'll Use (of this framebuffer) for
-    // rendering
-    std::vector<uint> attachments(colorBufferVector_.size());
-    for (auto i = 0; i < colorBufferVector_.size(); ++i) {
-      attachments[i] = GL_COLOR_ATTACHMENT0 + i;
-    }
-    glDrawBuffers(static_cast<int>(colorBufferVector_.size()),
-                  attachments.data());
-  } else {
-    constexpr GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(1, drawBuffers);
+  colorAttachmentTextures_.push_back(texture);
+  //  tell OpenGL which color attachments we'll use (of this framebuffer) for
+  //  rendering
+  std::vector<uint> attachments(colorAttachmentTextures_.size());
+  for (auto i = 0; i < colorAttachmentTextures_.size(); ++i) {
+    attachments[i] = GL_COLOR_ATTACHMENT0 + i;
   }
+  glDrawBuffers(static_cast<int>(colorAttachmentTextures_.size()),
+                attachments.data());
   CheckState();
   clearBufferBits_ = clearBufferBits_ | GL_COLOR_BUFFER_BIT;
-  return sharedTexture;
+  Unbind();
+  return texture;
 }
 
 void FrameBuffer::Bind() const { glBindFramebuffer(GL_FRAMEBUFFER, id_); }
@@ -234,20 +215,21 @@ void FrameBuffer::Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 void FrameBuffer::Clear() const { glClear(clearBufferBits_); }
 
-texture::Texture* FrameBuffer::GetColorBufferTexture(const int index) const {
-  if (index >= colorBufferVector_.size()) {
-    throw std::runtime_error("Index out of bounds: index(" +
-                             std::to_string(index) + ") size(" +
-                             std::to_string(colorBufferVector_.size()) + ")");
+texture::Texture* FrameBuffer::GetColorAttachmentTexture(
+    const int index) const {
+  if (index >= colorAttachmentTextures_.size()) {
+    throw std::runtime_error(
+        "Index out of bounds: index(" + std::to_string(index) + ") size(" +
+        std::to_string(colorAttachmentTextures_.size()) + ")");
   }
-  return colorBufferVector_.at(index);
+  return colorAttachmentTextures_.at(index);
 }
 
-texture::Texture* FrameBuffer::GetDepthTexture() const {
-  return m_DepthTexture;
-}
+texture::Texture* FrameBuffer::GetDepthTexture() const { return depthTexture_; }
 
-uint FrameBuffer::GetDepthBufferId() const { return depthBufferId_; }
+const FrameBuffer::RenderBufferDefinition& FrameBuffer::GetDepthBuffer() const {
+  return depthBuffer_;
+}
 
 uint FrameBuffer::GetId() const { return id_; }
 
@@ -282,4 +264,20 @@ void FrameBuffer::BlitTo(const FrameBuffer& otherFbo) const {
                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
   Unbind();
 }
+int FrameBuffer::toTexture2DDataFormat(texture::Texture::Format format) {
+  switch (format) {
+    case texture::Texture::RGB:
+    case texture::Texture::sRGB:
+      return GL_RGB;
+    case texture::Texture::RGBA:
+    case texture::Texture::RGBA8:
+    case texture::Texture::RGBA16F:
+    case texture::Texture::sRGBA:
+    case texture::Texture::sRGBA8:
+      return GL_RGBA;
+    default:
+      throw std::runtime_error("unknown format: " + std::to_string(format));
+  }
+}
+
 }  // namespace soil::video::buffer

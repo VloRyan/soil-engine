@@ -74,17 +74,9 @@ Texture* Manager::GenerateTexture2D(const Data& data, const std::string& name,
 
   // Open Gl stuff
   uint id = 0;
-  glActiveTexture(GL_TEXTURE0);
-  logGLError("Error after glActiveTexture");
   glGenTextures(1, &id);
-  logGLError("Error after glGenTextures");
-  glBindTexture(GL_TEXTURE_2D, id);
-  const auto internalFormat = static_cast<GLint>(parameter.Format);
-  // Load texture from file, and build all mipmap levels
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, data.Size.x, data.Size.y, 0,
-               data.Format, data.Type, data.Bytes);
+  ResizeTexture2D(id, data, parameter.Format);
 
-  logGLError("Error after glTexImage2D");
   const auto wrap = static_cast<GLint>(parameter.Wrap);
   const auto minFilter = static_cast<GLint>(parameter.MinFilter);
   const auto magFilter = static_cast<GLint>(parameter.MagFilter);
@@ -102,22 +94,39 @@ Texture* Manager::GenerateTexture2D(const Data& data, const std::string& name,
                      parameter.Format);
 }
 
-Texture* Manager::GenerateTextureStorage2D(glm::ivec2& size,
+void Manager::ResizeTexture2D(uint id, const Data& data,
+                              const Texture::Format internalFormat) {
+  logGLError("Error before ResizeTexture2D");
+  // Open Gl stuff
+  glActiveTexture(GL_TEXTURE0);
+  logGLError("Error after glActiveTexture");
+  glBindTexture(GL_TEXTURE_2D, id);
+  logGLError("Error after glBindTexture");
+  // Load texture from file, and build all mipmap levels
+  glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internalFormat),
+               data.Size.x, data.Size.y, 0, data.Format, data.Type, data.Bytes);
+  logGLError("Error after glTexImage2D");
+}
+
+Texture* Manager::GenerateTextureStorage2D(const glm::ivec2& size,
                                            const std::string& name,
                                            const Parameter& parameter) {
   logGLError("Error before GenerateTextureStorage2D");
 
   // Open Gl stuff
   uint id = 0;
-  glActiveTexture(GL_TEXTURE0);
-  logGLError("Error after glActiveTexture");
   glGenTextures(1, &id);
   logGLError("Error after glGenTextures");
+  // Open Gl stuff
+  glActiveTexture(GL_TEXTURE0);
+  logGLError("Error after glActiveTexture");
   glBindTexture(GL_TEXTURE_2D, id);
+  logGLError("Error after glBindTexture");
+  // Load texture from file, and build all mipmap levels
   const auto internalFormat = static_cast<GLint>(parameter.Format);
   glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, size.x, size.y);
+  logGLError("Error after glTexImage2D");
 
-  logGLError("Error after glTexStorage2D");
   const auto wrap = static_cast<GLint>(parameter.Wrap);
   const auto minFilter = static_cast<GLint>(parameter.MinFilter);
   const auto magFilter = static_cast<GLint>(parameter.MagFilter);
