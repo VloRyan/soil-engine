@@ -15,6 +15,10 @@ struct StateDef {
   std::optional<bool> StencilTest{};
   std::optional<bool> ScissorTest{};
   std::optional<render::DepthFunc> DepthFunc{DepthFunc::Less};
+  std::optional<glm::vec4> ClearColor{};
+  std::optional<buffer::FrameBuffer*> Framebuffer;
+  std::optional<Rect> ViewPort;
+  std::optional<Rect> Scissor;
   bool operator==(const StateDef& rhs) const;
   bool operator!=(const StateDef& rhs) const;
   bool operator<(const StateDef& rhs) const;
@@ -64,6 +68,7 @@ class State final {
   void SetViewPort(const Rect& rect);
 
   void Apply(const StateDef& def);
+  StateDef Pop();
 
   void WriteUbo(int target,
                 const std::function<void(buffer::Cursor& cursor)>& writeFunc);
@@ -86,9 +91,14 @@ class State final {
 
   void SetTexture(GLenum target, byte textureUnit, texture::Texture& texture);
 
+  texture::Texture* GetTexture(byte textureUnit);
+
   [[nodiscard]] virtual int GetMaxImageUnits() const;
 
   void Clear(BufferBitDescription bits);
+
+  const glm::vec4& GetClearColor() const;
+  void SetClearColor(const glm::vec4& clearColor);
 
  private:
   bool depthTest_;
@@ -96,6 +106,8 @@ class State final {
   bool stencilTest_;
   bool scissorTest_;
   bool blend_;
+  glm::vec4 clearColor_;
+
   int changes_;
   int maxImageUnits_;
 

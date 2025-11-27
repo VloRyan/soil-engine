@@ -76,9 +76,9 @@ void Manager::Update() { textureManager_.Update(); }
 
 void Manager::BeginRender() {
   GetState().SetScissorTest(false);
-  glClear(COLOR_AND_DEPTH_BUFFER_BIT);
   GetState().SetFramebuffer(nullptr);
   GetState().SetViewPort({.Size = window_->GetSize()});
+  glClear(COLOR_AND_DEPTH_BUFFER_BIT);
 }
 
 void Manager::EndRender() const { window_->SwapBuffers(); }
@@ -97,7 +97,6 @@ void Manager::NewUniformBufferObject(const std::string& name,
 }
 
 void Manager::initState() {
-  glClearColor(0.1F, 0.1F, 0.1F, 0.0f);
   glClearDepth(1.0F);
 
   glEnable(GL_CULL_FACE);
@@ -113,7 +112,8 @@ void Manager::initState() {
   state_.SetBlend(false);
   state_.SetStencilTest(false);
   state_.SetDepthFunc(render::DepthFunc::Less);
-
+  state_.SetClearColor(glm::vec4(0.1F, 0.1F, 0.1F, 0.0f));
+  
   PLOG_DEBUG << "Max. Textures: " << state_.GetMaxImageUnits();
 }
 

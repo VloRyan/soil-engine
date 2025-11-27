@@ -5,7 +5,6 @@
 #include <GL/glcorearb.h>
 #include <plog/Log.h>
 
-#include "video/mesh/data.h"
 #include "window.h"
 
 namespace soil::video::render {
@@ -31,6 +30,24 @@ void State::Apply(const StateDef& def) {
   }
   if (def.StencilTest.has_value()) {
     this->SetStencilTest(def.StencilTest.value());
+  }
+  if (def.ScissorTest.has_value()) {
+    this->SetScissorTest(def.ScissorTest.value());
+  }
+  if (def.DepthFunc.has_value()) {
+    this->SetDepthFunc(def.DepthFunc.value());
+  }
+  if (def.ClearColor.has_value()) {
+    this->SetClearColor(def.ClearColor.value());
+  }
+  if (def.Framebuffer.has_value()) {
+    this->SetFramebuffer(def.Framebuffer.value());
+  }
+  if (def.ViewPort.has_value()) {
+    this->SetViewPort(def.ViewPort.value());
+  }
+  if (def.Scissor.has_value()) {
+    this->SetScissor(def.Scissor.value());
   }
 }
 
@@ -234,6 +251,15 @@ void State::SetTexture(const GLenum target, const byte textureUnit,
 #endif
 }
 
+int State::GetChanges() const { return changes_; }
+
+texture::Texture* State::GetTexture(byte textureUnit) {
+  if (textureUnit >= maxImageUnits_) {
+    return nullptr;
+  }
+  return textureUnits_.at(textureUnit);
+}
+
 int State::GetMaxImageUnits() const { return maxImageUnits_; }
 
 void State::Clear(const BufferBitDescription bits) {
@@ -252,8 +278,31 @@ void State::Clear(const BufferBitDescription bits) {
 #endif
   glClear(bufferBits);
 }
+const glm::vec4& State::GetClearColor() const { return clearColor_; }
+void State::SetClearColor(const glm::vec4& clearColor) {
+  if (clearColor_ == clearColor) {
+    return;
+  }
+  clearColor_ = clearColor;
+#ifdef DEBUG
+  changes_++;
+#endif
+  glClearColor(clearColor_.r, clearColor_.g, clearColor_.b, clearColor_.a);
+}
 
-int State::GetChanges() const { return changes_; }
+StateDef State::Pop() {
+  return {
+      .Blend = blend_,
+      .DepthTest = depthTest_,
+      .StencilTest = stencilTest_,
+      .ScissorTest = scissorTest_,
+      .DepthFunc = depthFunc_,
+      .ClearColor = clearColor_,
+      .Framebuffer = framebuffer_,
+      .ViewPort = viewPort_,
+      .Scissor = scissor_,
+  };
+}
 
 bool StateDef::operator==(const StateDef& rhs) const {
   return Blend == rhs.Blend && DepthTest == rhs.DepthTest &&
