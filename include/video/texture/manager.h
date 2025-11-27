@@ -45,6 +45,10 @@ class Manager final {
   static Texture* GenerateTexture2D(const Data& data, const std::string& name,
                                     const Parameter& parameter = {});
 
+  static Texture* GenerateTextureStorage2D(glm::ivec2& size,
+                                           const std::string& name,
+                                           const Parameter& parameter = {});
+
   static Texture* GenerateTextureArray2D(const Data& data,
                                          const std::string& name,
                                          int tilesPerDim,

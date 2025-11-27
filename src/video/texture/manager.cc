@@ -70,7 +70,7 @@ Texture* Manager::GetTexture2D(const std::string& fileName,
 
 Texture* Manager::GenerateTexture2D(const Data& data, const std::string& name,
                                     const Parameter& parameter) {
-  logGLError("Error before loadTexture2D");
+  logGLError("Error before GenerateTexture2D");
 
   // Open Gl stuff
   uint id = 0;
@@ -99,6 +99,39 @@ Texture* Manager::GenerateTexture2D(const Data& data, const std::string& name,
   }
   glBindTexture(GL_TEXTURE_2D, 0);
   return new Texture(id, name, data.Size, Texture::Type::Texture2D,
+                     parameter.Format);
+}
+
+Texture* Manager::GenerateTextureStorage2D(glm::ivec2& size,
+                                           const std::string& name,
+                                           const Parameter& parameter) {
+  logGLError("Error before GenerateTextureStorage2D");
+
+  // Open Gl stuff
+  uint id = 0;
+  glActiveTexture(GL_TEXTURE0);
+  logGLError("Error after glActiveTexture");
+  glGenTextures(1, &id);
+  logGLError("Error after glGenTextures");
+  glBindTexture(GL_TEXTURE_2D, id);
+  const auto internalFormat = static_cast<GLint>(parameter.Format);
+  glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, size.x, size.y);
+
+  logGLError("Error after glTexStorage2D");
+  const auto wrap = static_cast<GLint>(parameter.Wrap);
+  const auto minFilter = static_cast<GLint>(parameter.MinFilter);
+  const auto magFilter = static_cast<GLint>(parameter.MagFilter);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+
+  if (isMipMapping(parameter.MinFilter)) {
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
+  return new Texture(id, name, size, Texture::Type::Texture2D,
                      parameter.Format);
 }
 

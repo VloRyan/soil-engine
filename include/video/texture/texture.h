@@ -21,9 +21,11 @@ class Texture final {
   enum Format : std::uint16_t {
     RGB = GL_RGB,
     RGBA = GL_RGBA,
+    RGBA8 = GL_RGBA8,
     RGBA16F = GL_RGBA16F,
     sRGB = GL_SRGB,
     sRGBA = GL_SRGB_ALPHA,
+    sRGBA8 = GL_SRGB8_ALPHA8,
     DepthComponent = GL_DEPTH_COMPONENT,
     DepthComponent16 = GL_DEPTH_COMPONENT16,
     DepthComponent24 = GL_DEPTH_COMPONENT24,

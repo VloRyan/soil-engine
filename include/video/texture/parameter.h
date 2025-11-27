@@ -28,8 +28,8 @@ struct Parameter final {
   };
 
   WrapType Wrap{WrapType::REPEAT};
-  MinFilterType MinFilter{MinFilterType::LINEAR_MIPMAP_LINEAR};
-  MagFilterType MagFilter{MagFilterType::LINEAR};
+  MinFilterType MinFilter{MinFilterType::NEAREST};
+  MagFilterType MagFilter{MagFilterType::NEAREST};
   Texture::Format Format{Texture::Format::sRGBA};
 };
 }  // namespace soil::video::texture
