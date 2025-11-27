@@ -13,6 +13,7 @@ Hook::Hook(
       nodeEventCallback_(nullptr),
       inputEventCallback_(nullptr),
       windowEventCallback_(nullptr),
+      gameEventCallback_(nullptr),
       triggerCallback_(nullptr),
       triggerRoot_(nullptr) {}
 
@@ -23,16 +24,25 @@ void Hook::OnEvent(const stage::event::Node &event) {
     nodeEventCallback_(event);
   }
 }
+
 void Hook::OnEvent(const input::Event &event) {
   if (inputEventCallback_ != nullptr) {
     inputEventCallback_(event);
   }
 }
+
 void Hook::OnEvent(const WindowEvent &event) {
   if (windowEventCallback_ != nullptr) {
     windowEventCallback_(event);
   }
 }
+
+void Hook::OnEvent(const stage::event::GameEvent &event) {
+  if (gameEventCallback_ != nullptr) {
+    gameEventCallback_(event);
+  }
+}
+
 void Hook::OnTrigger(const TriggerPoint &point) {
   if (triggerCallback_ != nullptr) {
     triggerCallback_(point);
@@ -59,6 +69,10 @@ void Hook::SetStage(soil::stage::Stage *stage) {
           stage_->RemoveEventHook(
               static_cast<hook::EventHook<WindowEvent> *>(this));
           break;
+        case EventType::Game:
+          stage_->RemoveEventHook(
+              static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+          break;
       }
     }
     for (auto point : activeTriggerPoints_) {
@@ -81,6 +95,10 @@ void Hook::SetStage(soil::stage::Stage *stage) {
         case EventType::Window:
           stage_->AddEventHook(
               static_cast<hook::EventHook<WindowEvent> *>(this));
+          break;
+        case EventType::Game:
+          stage_->AddEventHook(
+              static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
           break;
       }
     }
@@ -117,6 +135,10 @@ void Hook::ActivateEvents(const std::vector<EventType> &events) {
           stage_->RemoveEventHook(
               static_cast<hook::EventHook<WindowEvent> *>(this));
           break;
+        case EventType::Game:
+          stage_->RemoveEventHook(
+              static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+          break;
       }
     }
   }
@@ -136,6 +158,10 @@ void Hook::ActivateEvents(const std::vector<EventType> &events) {
         case EventType::Window:
           stage_->AddEventHook(
               static_cast<hook::EventHook<WindowEvent> *>(this));
+          break;
+        case EventType::Game:
+          stage_->AddEventHook(
+              static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
           break;
       }
     }
@@ -184,6 +210,13 @@ void Hook::SetTriggerCallback(
     const std::function<void(const TriggerPoint &point)> &triggerCallback) {
   triggerCallback_ = triggerCallback;
 }
+
+void Hook::SetGameEventCallback(
+    const std::function<void(const stage::event::GameEvent &)>
+        &gameEventCallback) {
+  gameEventCallback_ = gameEventCallback;
+}
+
 void Hook::SetTriggerRoot(Node *triggerRoot) {
   if (triggerRoot_ == triggerRoot) {
     return;

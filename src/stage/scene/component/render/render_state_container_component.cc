@@ -68,20 +68,15 @@ void RenderStateContainerComponent::Handle(
         return;
       }
       renderStateContainer_->Insert(renderable);
-      // OnAdded(vComp);
       break;
     case stage::event::Component::TriggerType::Removed:
       renderStateContainer_->Remove(renderable);
-      // OnRemoved(vComp);
       break;
     case stage::event::Component::TriggerType::Changed:
       renderStateContainer_->Remove(renderable);
       if (vComp->IsVisible() && !vComp->IsCulled()) {
         renderStateContainer_->Insert(renderable);
       }
-      /*if (event.Changed == event::Component::ChangeType::Data) {
-        // OnChanged(vComp);
-      }*/
       break;
     default:;
   }

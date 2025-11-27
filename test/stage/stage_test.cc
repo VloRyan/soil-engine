@@ -231,5 +231,23 @@ TEST_F(StageTest, AddRemoveInputEventHook) {
   stage.Handle(inputEvent);
   EXPECT_TRUE(hook.InputEventsReceived.empty());
 }
+class DummyGameEvent : public event::GameEvent {
+ public:
+  DummyGameEvent() = default;
+  ~DummyGameEvent() = default;
+};
+TEST_F(StageTest, AddRemoveGameEventHook) {
+  auto stage = Stage();
+  auto hook = hook::HookMock();
+  auto gameEvent = DummyGameEvent();
 
+  stage.AddEventHook(static_cast<hook::EventHook<event::GameEvent>*>(&hook));
+  stage.Handle(gameEvent);
+  EXPECT_THAT(hook.GameEventsReceived, testing::ElementsAre(gameEvent));
+  hook.Reset();
+
+  stage.RemoveEventHook(static_cast<hook::EventHook<event::GameEvent>*>(&hook));
+  stage.Handle(gameEvent);
+  EXPECT_TRUE(hook.GameEventsReceived.empty());
+}
 }  // namespace soil::stage

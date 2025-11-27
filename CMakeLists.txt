@@ -164,7 +164,7 @@ target_sources(
         include/sound/source.h
         include/sound/wave.h
         include/stage/event/component.h
-        include/stage/event/game_event.h
+        include/stage/event/game_event.hpp
         include/stage/event/node.h
         include/stage/event/stage_event.h
         include/stage/hook/event_hook.hpp

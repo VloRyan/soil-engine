@@ -2,6 +2,7 @@
 #define SOIL_STAGE_SCENE_COMPONENT_EVENT_HOOK_H
 
 #include "input/event.h"
+#include "stage/event/game_event.hpp"
 #include "stage/event/node.h"
 #include "stage/hook/event_hook.hpp"
 #include "stage/hook/trigger_hook.h"
@@ -16,12 +17,14 @@ namespace soil::stage::scene::component::event {
 class Hook : public hook::EventHook<stage::event::Node>,
              public hook::EventHook<input::Event>,
              public hook::EventHook<WindowEvent>,
+             public hook::EventHook<stage::event::GameEvent>,
              public hook::TriggerHook {
  public:
   enum class EventType {
     Node = 0,
     Window,
     Input,
+    Game,
   };
   explicit Hook(const std::vector<EventType> &events = {},
                 const std::vector<soil::stage::hook::TriggerHook::TriggerPoint>
@@ -35,6 +38,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
   void OnEvent(const stage::event::Node &event) override;
   void OnEvent(const input::Event &event) override;
   void OnEvent(const WindowEvent &event) override;
+  void OnEvent(const stage::event::GameEvent &event) override;
   void OnTrigger(const TriggerPoint &point) override;
 
   void SetStage(Stage *stage);
@@ -47,6 +51,9 @@ class Hook : public hook::EventHook<stage::event::Node>,
       const std::function<void(const WindowEvent &)> &windowEventCallback);
   void SetTriggerCallback(
       const std::function<void(const TriggerPoint &point)> &triggerCallback);
+  void SetGameEventCallback(
+      const std::function<void(const stage::event::GameEvent &)>
+          &gameEventCallback);
   void SetTriggerRoot(Node *triggerRoot);
 
  protected:
@@ -58,6 +65,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
   std::function<void(const input::Event &event)> inputEventCallback_;
   std::function<void(const WindowEvent &event)> windowEventCallback_;
   std::function<void(const TriggerPoint &point)> triggerCallback_;
+  std::function<void(const stage::event::GameEvent &event)> gameEventCallback_;
   stage::scene::Node *triggerRoot_;
 };
 }  // namespace soil::stage::scene::component::event

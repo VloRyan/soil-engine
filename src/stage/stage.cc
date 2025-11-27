@@ -76,6 +76,7 @@ void Stage::AddEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
   }
   inputEventHooks_.push_back(hook);
 }
+
 void Stage::AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
   for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
        ++itr) {
@@ -86,10 +87,21 @@ void Stage::AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
   windowEventHooks_.push_back(hook);
 }
 
+void Stage::AddEventHook(soil::stage::hook::EventHook<event::GameEvent>* hook) {
+  for (auto itr = gameEventHooks_.begin(); itr != gameEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      return;
+    }
+  }
+  gameEventHooks_.push_back(hook);
+}
+
 void Stage::RemoveEventHook(scene::Node* root,
                             soil::stage::hook::EventHook<event::Node>* hook) {
   _removeEventHook(root, hook, nodeEventHooks_);
 }
+
 void Stage::RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
   for (auto itr = inputEventHooks_.begin(); itr != inputEventHooks_.end();
        ++itr) {
@@ -99,11 +111,23 @@ void Stage::RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
     }
   }
 }
+
 void Stage::RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
   for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
        ++itr) {
     if (hook == *itr) {
       windowEventHooks_.erase(itr);
+      return;
+    }
+  }
+}
+
+void Stage::RemoveEventHook(
+    soil::stage::hook::EventHook<event::GameEvent>* hook) {
+  for (auto itr = gameEventHooks_.begin(); itr != gameEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      gameEventHooks_.erase(itr);
       return;
     }
   }
@@ -133,6 +157,12 @@ void Stage::Handle(const event::Node& event) {
     for (auto* hook : roots->second) {
       hook->OnEvent(event);
     }
+  }
+}
+
+void Stage::Handle(const event::GameEvent& event) {
+  for (auto* hook : gameEventHooks_) {
+    hook->OnEvent(event);
   }
 }
 
