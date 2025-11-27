@@ -11,13 +11,16 @@ UpdateGraphComponent::UpdateGraphComponent()
                           {
                               {.TriggerType = TriggerType::BeforeUpdateScene},
                           }}),
-      dirtyNodesPtr_{&dirtyNodesFront_} {}
+      dirtyNodesPtr_{&dirtyNodesFront_},
+      deletingNodes_(false) {}
 
 void UpdateGraphComponent::Update() {
+  deletingNodes_ = true;
   for (const auto* node : nodesToDelete_) {
     delete node;
   }
   nodesToDelete_.clear();
+  deletingNodes_ = false;
   auto* lastDirtyNodes = dirtyNodesPtr_;
   if (dirtyNodesPtr_ == &dirtyNodesFront_) {
     dirtyNodesPtr_ = &dirtyNodesBack_;
@@ -68,6 +71,11 @@ void UpdateGraphComponent::OnNodeStateChanged(Node* node) {
   if (node->IsDirty()) {
     dirtyNodesPtr_->push_back(node);
   } else if (node->IsState(Node::State::Delete)) {
+    for (const auto* deleteNode : nodesToDelete_) {
+      if (deleteNode == node) {
+        return;
+      }
+    }
     for (auto itr = dirtyNodesPtr_->begin(); itr != dirtyNodesPtr_->end();
          ++itr) {
       if (*itr == node) {
@@ -86,7 +94,7 @@ void UpdateGraphComponent::OnNodeAdded(Node* node) {
 }
 
 void UpdateGraphComponent::OnNodeRemoved(Node* node) {
-  if (node == nullptr) {
+  if (deletingNodes_ || node == nullptr) {
     return;
   }
   for (auto itr = dirtyNodesPtr_->begin(); itr != dirtyNodesPtr_->end();
@@ -115,5 +123,11 @@ Node* UpdateGraphComponent::computeTopDirtyNode(Node* node) {
     current = current->GetParent();
   }
   return mostTopDirtyNode;
+}
+const std::vector<Node*>& UpdateGraphComponent::NodesToDelete() {
+  return nodesToDelete_;
+}
+const std::vector<Node*>& UpdateGraphComponent::DirtyNodes() {
+  return *dirtyNodesPtr_;
 }
 }  // namespace soil::stage::scene::component

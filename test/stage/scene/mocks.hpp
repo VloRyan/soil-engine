@@ -2,6 +2,7 @@
 #define TEST_STAGE_SCENE_MOCKS
 
 #include "glm/glm.hpp"
+#include "stage/hook/event_hook.hpp"
 #include "stage/scene/node.h"
 #include "stage/scene/scene.h"
 
@@ -15,7 +16,8 @@ class NodeMock : public Node {
   std::vector<Node*> RemovedChildren;
   std::bitset<4> UpdateDirtyImpacts;
   std::function<void()> UpdateFunc = nullptr;
-
+  hook::EventHook<stage::event::Node>* NodeEventHook = nullptr;
+  class Stage* StageOverride = nullptr;
   void Reset() {
     Calls = Calls_t{};
     AddedChildren.clear();
@@ -61,6 +63,22 @@ class NodeMock : public Node {
   void SetUpdateType(const UpdateType type) override {
     Node::SetUpdateType(type);
   }
+  class Stage* Stage() const override {
+    if (StageOverride != nullptr) {
+      return StageOverride;
+    }
+    return Node::Stage();
+  }
+
+ protected:
+  void fire(const event::Node& event) const override {
+    Node::fire(event);
+    if (NodeEventHook != nullptr) {
+      NodeEventHook->OnEvent(event);
+    }
+  }
+
+ public:
   struct Calls_t {
     int Update{0};
     int UpdateDirty{0};
@@ -83,6 +101,7 @@ class NodeEventMockListener : public event::NodeEventHandler {
 };
 
 class SceneMock : public Scene {
+ public:
   int HandleComponentEventCalledCount = 0;
 
   void ResetMocks() { HandleComponentEventCalledCount = 0; }
@@ -91,6 +110,7 @@ class SceneMock : public Scene {
     HandleComponentEventCalledCount++;
     Scene::Handle(event);
   }
+  void SetStage(class Stage* stage) override { Scene::SetStage(stage); }
 };
 }  // namespace soil::stage::scene
 #endif

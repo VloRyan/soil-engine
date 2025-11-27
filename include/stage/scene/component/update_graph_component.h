@@ -11,6 +11,9 @@ class UpdateGraphComponent : public event::EventComponent {
   void Update() override;
   void OnTrigger(const TriggerPoint& point) override;
 
+  const std::vector<Node*>& DirtyNodes();
+  const std::vector<Node*>& NodesToDelete();
+
  private:
   void OnNodeStateChanged(Node* node);
   void OnNodeAdded(Node* node);
@@ -20,6 +23,7 @@ class UpdateGraphComponent : public event::EventComponent {
   std::vector<Node*> dirtyNodesBack_;
   std::vector<Node*>* dirtyNodesPtr_;
   std::vector<Node*> nodesToDelete_;
+  bool deletingNodes_;
 };
 }  // namespace soil::stage::scene::component
 #endif

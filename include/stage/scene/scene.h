@@ -16,11 +16,10 @@ class Scene : public Node {
 
   ~Scene() override;
   [[nodiscard]] class Stage* Stage() const override;
-  
+
  protected:
   virtual void SetStage(class Stage* stage);
 
- private:
   class Stage* stage_;
 };
 }  // namespace soil::stage::scene
