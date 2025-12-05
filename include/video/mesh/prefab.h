@@ -7,7 +7,7 @@
 namespace soil::video::mesh {
 class Prefab {
  public:
-  enum class Type : std::uint8_t { Line = 0, Quad, Box };
+  enum class Type : std::uint8_t { Line = 0, Quad, Cube };
 
   struct Definition {
     std::string Identifier{};

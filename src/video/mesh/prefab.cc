@@ -9,8 +9,8 @@ std::string Prefab::Definition::TypeString() const {
       return "Line";
     case Type::Quad:
       return "Quad";
-    case Type::Box:
-      return "Box";
+    case Type::Cube:
+      return "Cube";
   }
   return "";
 }
@@ -56,7 +56,7 @@ Data* Prefab::New(const Type type) {
                         {{2, vertex::AttributePointer::DataType::Float}});
       return meshData;
     }
-    case Type::Box: {
+    case Type::Cube: {
       constexpr GLushort indices[36]{0, 1, 2, 3, 4, 5, 5, 0, 2, 4, 6, 0,
                                      6, 3, 1, 2, 3, 5, 0, 6, 1, 3, 7, 4,
                                      5, 4, 0, 4, 7, 6, 6, 7, 3, 2, 1, 3};
@@ -64,9 +64,6 @@ Data* Prefab::New(const Type type) {
           1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0,  -1.0, -1.0, -1.0, 1.0, -1.0,
           1.0, 1.0,  1.0, 1.0,  1.0,  -1.0, -1.0, -1.0, 1.0,  -1.0, 1.0, 1.0,
       };
-      /*return new Data(id, indices, 36, shader::DrawMode::Triangles,
-                      reinterpret_cast<const byte *>(boxVertices), 24 *
-         sizeof(float), 3 * sizeof(float), vertex::VertexType::VERT_3D);*/
       auto* meshData = new Data();
       meshData->SetDrawMode(render::DrawMode::Triangles);
       meshData->SetIndices(indices, 36);
