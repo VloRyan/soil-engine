@@ -1,7 +1,7 @@
 #ifndef SOIL_STAGE_SCENE_COMPONENT_TEXT_ABSTRACT_TEXT_H
 #define SOIL_STAGE_SCENE_COMPONENT_TEXT_ABSTRACT_TEXT_H
 #include "file/font.h"
-#include "stage/scene/component/mesh_component.h"
+#include "stage/scene/component/render/mesh_component.h"
 #include "stage/scene/node.h"
 #include "video/manager.h"
 #include "video/model/letter.h"
@@ -28,9 +28,11 @@ struct Line {
   void Append(const Word& word);
 };
 
-class AbstractText : public MeshComponent {
+class AbstractText : public DrawableComponent,
+                     public video::render::draw::Drawable {
  public:
   struct PrefabData {
+    video::vertex::Vao* QuadVao{nullptr};
     video::mesh::Data* MeshData{nullptr};
     video::shader::Shader* Shader{nullptr};
     const file::Font* Font{nullptr};
@@ -86,20 +88,30 @@ class AbstractText : public MeshComponent {
 
   [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
 
-  float DistanceTo(const glm::vec3& point);
-
-  void Update() override;
-
-  virtual void Render(video::render::State& state) = 0;
-
   const std::vector<Line>& GetLines() const;
+
+  [[nodiscard]] const video::render::StateIdentifier& StateId() const override;
+  void Bind(video::render::State& state) override;
+  void Draw() override;
+  float DistanceTo(const glm::vec3& point) override;
+  bool IsSortable() override;
+  class Drawable* Drawable() override;
+
+  void UpdateState(const video::render::StateDef& state);
+
+  virtual void SetupCharacter(const file::Font::Character& character,
+                              const glm::vec3& worldPos) = 0;
+
+ protected:
+  const PrefabData& Data();
+
+  PrefabData* data_;
 
  private:
   static std::unordered_map<std::string, PrefabData> PREFABS;
 
   void updateText();
 
-  PrefabData* data_;
   glm::vec2 size_;
 
   glm::vec3 positionOffset_;
@@ -114,6 +126,7 @@ class AbstractText : public MeshComponent {
   glm::vec3 borderColor_;
 
   std::vector<Line> lines_;
+  video::render::StateIdentifier stateId_;
 };
 }  // namespace soil::stage::scene::component::text
 
