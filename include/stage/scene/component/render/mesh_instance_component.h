@@ -1,26 +1,29 @@
 #ifndef SOIL_STAGE_SCENE_COMPONENT_RENDER_MESH_INSTANCE_COMPONENT_H
 #define SOIL_STAGE_SCENE_COMPONENT_RENDER_MESH_INSTANCE_COMPONENT_H
-#include "renderable_component.h"
-#include "video/render/mesh_instance.h"
+#include "drawable_component.h"
+#include "video/render/draw/vao_elements_instanced.h"
+
 namespace soil::stage::scene::component::render {
-class MeshInstanceComponent : public RenderableComponent {
+class MeshInstanceComponent
+    : public DrawableComponent,
+      public video::render::draw::VaoElementsInstanced::Data {
  public:
-  MeshInstanceComponent(
-      const video::render::MeshInstancePile::PileDescriptor& pileDescriptor,
-      bool opaque);
-
+  explicit MeshInstanceComponent(
+      const video::render::draw::VaoElementsInstanced::PileDescriptor&
+          pileDescriptor);
+  explicit MeshInstanceComponent(const std::string& name);
   ~MeshInstanceComponent() override;
-
-  [[nodiscard]] video::render::Renderable* GetRenderable() override;
-
-  virtual float DistanceTo(const glm::vec3& point);
-
-  virtual void ApplyData(const video::render::data::IWriter& writer,
-                         soil::video::render::State& state) = 0;
+  [[nodiscard]] video::render::draw::Drawable* Drawable() override;
   void SetOpaque(bool opaque) override;
+  bool IsDrawablePile() override;
+  void SetVisible(bool visible) override;
+  void SetCulled(bool culled) override;
 
  protected:
-  video::render::MeshInstance* instance_;
+  void SignalChanged() override;
+
+ protected:
+  video::render::draw::VaoElementsInstanced* pile_;
 };
 }  // namespace soil::stage::scene::component::render
 

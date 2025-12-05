@@ -3,32 +3,72 @@
 #include "stage/scene/node.h"
 namespace soil::stage::scene::component::render {
 MeshInstanceComponent::MeshInstanceComponent(
-    const video::render::MeshInstancePile::PileDescriptor& pileDescriptor,
-    const bool opaque)
-    : RenderableComponent(opaque),
-      instance_(new video::render::MeshInstance(
-          pileDescriptor, [this](const video::render::data::IWriter& writer,
-                                 soil::video::render::State& state) {
-            ApplyData(writer, state);
-          })) {}
-
-MeshInstanceComponent::~MeshInstanceComponent() { delete instance_; }
-
-video::render::Renderable* MeshInstanceComponent::GetRenderable() {
-  return instance_;
+    const video::render::draw::VaoElementsInstanced::PileDescriptor&
+        pileDescriptor)
+    : DrawableComponent(true),
+      pile_(video::render::draw::VaoElementsInstanced::GetPile(
+          pileDescriptor.Name)) {
+  if (pile_ == nullptr) {
+    // TODO pile is not scene related -> global
+    pile_ = video::render::draw::VaoElementsInstanced::Prepare(
+        pileDescriptor, {
+                            .Blend = false,
+                            .DepthFunc = video::render::DepthFunc::Less,
+                        });
+  }
+  pile_->Insert(this);
+}
+MeshInstanceComponent::MeshInstanceComponent(const std::string& name)
+    : DrawableComponent(true),
+      pile_(video::render::draw::VaoElementsInstanced::GetPile(name)) {
+  if (pile_ == nullptr) {
+    throw std::runtime_error("pile " + name + " is not prepared");
+  }
+  pile_->Insert(this);
 }
 
-float MeshInstanceComponent::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetPosition(), point);
+MeshInstanceComponent::~MeshInstanceComponent() { pile_->Remove(this); }
+
+video::render::draw::Drawable* MeshInstanceComponent::Drawable() {
+  return pile_;
 }
 
-void MeshInstanceComponent::SetOpaque(bool opaque) {
-  if (opaque == IsOpaque()) {
+void MeshInstanceComponent::SetOpaque(bool opaque) { /*NOOP*/ }
+void MeshInstanceComponent::SetVisible(bool visible) {
+  if (visible_ == visible) {
     return;
   }
-  auto stateId = instance_->StateId();
-  stateId.State.Blend = !opaque;
-  instance_->SetStateId(stateId);
-  RenderableComponent::SetOpaque(opaque);
+  visible_ = visible;
+  if (visible_ && !IsCulled()) {
+    pile_->Insert(this);
+    if (pile_->Container() == nullptr) {
+      DrawableComponent::SignalChanged();
+    }
+  } else {
+    pile_->Remove(this);
+  }
+}
+void MeshInstanceComponent::SetCulled(bool culled) {
+  if (culled_ == culled) {
+    return;
+  }
+  culled_ = culled;
+  if (culled_ || !IsVisible()) {
+    pile_->Remove(this);
+  } else {
+    pile_->Insert(this);
+    if (pile_->Container() == nullptr) {
+      DrawableComponent::SignalChanged();
+    }
+  }
+}
+
+bool MeshInstanceComponent::IsDrawablePile() { return true; }
+void MeshInstanceComponent::SignalChanged() {
+  // Component::SignalChanged();
+  if (IsVisible() && !IsCulled()) {
+    pile_->SetDirty(this);
+  }
+  //}
 }
 }  // namespace soil::stage::scene::component::render

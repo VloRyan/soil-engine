@@ -7,7 +7,11 @@
 #include <optional>
 
 #include "types.hpp"
-
+#include "video/context.hpp"
+#include "video/vertex/vao.h"
+namespace soil::video::shader {
+class Shader;
+}
 namespace soil::video::render {
 struct StateDef {
   std::optional<bool> Blend{};
@@ -27,44 +31,34 @@ struct StateDef {
   bool operator>=(const StateDef& rhs) const;
 };
 
-class State final {
+class State {
  public:
-  State();
+  explicit State(Context& context);
 
   virtual ~State() = default;
 
-  void Init();
-
   void SetDepthTest(bool depthTest);
-
   [[nodiscard]] bool GetDepthTest() const;
 
   void SetDepthFunc(DepthFunc depthFunc);
-
   [[nodiscard]] DepthFunc GetDepthFunc() const;
 
   [[nodiscard]] bool GetBlend() const;
-
   void SetBlend(bool blend);
 
   [[nodiscard]] bool IsStencilTest() const;
-
   void SetStencilTest(bool stencilTest);
 
   [[nodiscard]] bool IsScissorTest() const;
-
   void SetScissorTest(bool scissorTest);
 
   void SetScissor(const Rect& rect);
-
   Rect GetScissor() const;
 
   [[nodiscard]] buffer::FrameBuffer* GetFramebuffer() const;
-
   void SetFramebuffer(buffer::FrameBuffer* framebuffer);
 
   [[nodiscard]] Rect GetViewPort() const;
-
   void SetViewPort(const Rect& rect);
 
   void Apply(const StateDef& def);
@@ -86,10 +80,10 @@ class State final {
    * @return OpenGL texture slot (1 ... GL_MAX_TEXTURE_IMAGE_UNITS)
    */
   char SetTexture(texture::Texture& texture);
-
   void SetTexture(byte textureUnit, texture::Texture& texture);
-
   void SetTexture(GLenum target, byte textureUnit, texture::Texture& texture);
+
+  void SetShader(const shader::Shader* shader);
 
   texture::Texture* GetTexture(byte textureUnit);
 
@@ -100,13 +94,19 @@ class State final {
   const glm::vec4& GetClearColor() const;
   void SetClearColor(const glm::vec4& clearColor);
 
+  void BindVao(const vertex::Vao* vao);
+  const vertex::Vao* GetVao() const;
+
  private:
+  Context& context_;
   bool depthTest_;
   DepthFunc depthFunc_;
   bool stencilTest_;
   bool scissorTest_;
   bool blend_;
   glm::vec4 clearColor_;
+  const vertex::Vao* vao_;
+  uint shaderProgramId_;
 
   int changes_;
   int maxImageUnits_;

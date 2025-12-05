@@ -2,6 +2,8 @@
 
 #include "GL/gl3w.h"
 #include "plog/Log.h"
+#include "video/buffer/vbo.h"
+#include "video/mesh/data.h"
 
 namespace soil::video::vertex {
 Vao::Vao() : id_(0), ebo_(nullptr) {}
@@ -23,7 +25,7 @@ void Vao::CreateWithEbo(const void* indices, const IndexType indexType,
     return;
   }
   glGenVertexArrays(1, &this->id_);
-  this->Bind();
+  glBindVertexArray(this->id_);
   const auto indexSize = IndexSize(indexType) * indexCount;
   // Element buffer
   if (indexCount > 0) {
@@ -38,7 +40,7 @@ void Vao::CreateWithEbo(const void* indices, const IndexType indexType,
   for (const AttributePointer* pointer : GetAttribPointer()) {
     pointer->Set(index++);
   }
-  Unbind();
+  glBindVertexArray(0);
 }
 
 void Vao::Unload() {
@@ -65,25 +67,14 @@ size_t Vao::AddAttributePointer(const std::string& bufferName,
   auto* vPointer = new AttributePointer(buffer, dataType, elementSize,
                                         elementStride, divisor, offset);
   if (IsCreated()) {
-    Bind();
+    glBindVertexArray(this->id_);
     buffer->Bind();
     vPointer->Set(attribPointer_.size());
-    Unbind();
+    glBindVertexArray(0);
   }
   attribPointer_.push_back(vPointer);
   return offset + elementSize * AttributePointer::GetSizeOfDataType(dataType);
 }
-
-void Vao::Bind() const {
-#ifdef DEBUG
-  if (this->id_ == 0) {
-    PLOG_DEBUG << "Id == 0";
-  }
-#endif
-  glBindVertexArray(this->id_);
-}
-
-void Vao::Unbind() { glBindVertexArray(0); }
 
 buffer::Ebo* Vao::GetEbo() const { return ebo_; }
 
@@ -109,4 +100,23 @@ const std::vector<AttributePointer*>& Vao::GetAttribPointer() const {
 }
 
 bool Vao::IsCreated() const { return id_ > 0; }
+
+Vao* Vao::NewFrom(const mesh::Data& mesh) {
+  auto vao = new vertex::Vao();
+  auto usage = buffer::Object::UsageType::Static;
+  if (mesh.GetData() == nullptr) {
+    usage = buffer::Object::UsageType::Dynamic;
+  }
+  auto vbo = vao->SetBuffer("data", new buffer::Vbo(usage));
+  vbo->SetData(mesh.GetData(), mesh.GetDataSize());
+  size_t offset = 0;
+  const auto vertexSize = mesh.GetVertexSize();
+  for (const auto [Elements, Type] : mesh.GetVertexAttribs()) {
+    offset =
+        vao->AddAttributePointer("data", Type, Elements, vertexSize, offset);
+  }
+  vao->CreateWithEbo(mesh.GetIndices(), mesh.GetIndexType(),
+                     mesh.GetIndexCount());
+  return vao;
+}
 }  // namespace soil::video::vertex

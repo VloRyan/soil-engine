@@ -1,42 +1,7 @@
-#include "video/render/renderable.h"
-#include "video/render/renderable_group_elements.h"
+#ifndef SOIL_ENGINE_VIDEO_RENDER_MOCKS_HPP
+#define SOIL_ENGINE_VIDEO_RENDER_MOCKS_HPP
 namespace soil::video::render {
-class RenderableMock : public Renderable {
- public:
-  explicit RenderableMock(const StateIdentifier& stateId)
-      : Renderable(stateId) {}
-  ~RenderableMock() override = default;
-  void Render(State& state, int count) override {}
-  [[nodiscard]] const vertex::Vao* Vao() const override { return nullptr; }
-  [[nodiscard]] enum DrawMode DrawMode() const override {
-    return DrawMode::Quads;
-  }
 
-  [[nodiscard]] RenderableGroup* NewGroup() const override {
-    return new RenderableGroupElements();
-  }
-  void ApplyData(const data::IWriter& writer,
-                 soil::video::render::State& state) const override {}
-  struct {
-    int Render{0};
-  } Calls;
-};
-
-class StateContainerMock : public StateContainer {
- public:
-  std::vector<Renderable*> Inserted;
-  std::vector<Renderable*> Removed;
-
-  void Insert(Renderable* renderable) override {
-    Inserted.push_back(renderable);
-  }
-  bool Remove(Renderable* renderable) override {
-    Removed.push_back(renderable);
-    return true;
-  }
-  void ResetMocks() {
-    Inserted.clear();
-    Removed.clear();
-  }
-};
+class StateMock : public State {};
 }  // namespace soil::video::render
+#endif

@@ -17,7 +17,8 @@ namespace soil::video::render {
 
 struct StateIdentifier final {
   video::shader::Shader* Shader{nullptr};
-  int VAOId{0};
+  uint VAOId{0};
+  const vertex::Vao* Vao{nullptr};
   enum DrawMode DrawMode { DrawMode::Points };
   StateDef State;
 

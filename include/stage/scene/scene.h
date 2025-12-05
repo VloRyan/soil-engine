@@ -2,6 +2,7 @@
 #ifndef SOIL_STAGE_SCENE_SCENE_H
 #define SOIL_STAGE_SCENE_SCENE_H
 #include "node.h"
+#include "video/render/algorithm.hpp"
 
 namespace soil::stage {
 class Stage;

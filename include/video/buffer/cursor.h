@@ -4,7 +4,7 @@
 #include "glm/glm.hpp"
 
 namespace soil::video::buffer {
-class Cursor final {
+class Cursor {
  public:
   explicit Cursor(byte* data);
 
@@ -19,7 +19,8 @@ class Cursor final {
   void Write(const glm::vec3& data);
   void Write(const glm::vec4& data);
   void Write(const glm::mat4& data);
-  void Write(const void* data, size_t dataSize);
+  
+  virtual void Write(const void* data, size_t dataSize);
 
   void Move(size_t offset);
 

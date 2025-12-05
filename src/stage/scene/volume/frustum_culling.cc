@@ -18,10 +18,10 @@ void FrustumCulling::OnEvent(const event::Node& event) {
 
 void FrustumCulling::OnComponentAdded(component::Component* component) {
   if (component == nullptr ||
-      component->GetType() != component::Component::Type::Renderable) {
+      component->GetType() != component::Component::Type::Drawable) {
     return;
   }
-  auto* renderable = dynamic_cast<component::RenderableComponent*>(component);
+  auto* renderable = dynamic_cast<component::DrawableComponent*>(component);
   if (renderable == nullptr) {
     return;
   }
@@ -77,10 +77,10 @@ void FrustumCulling::updateVisibilityOnTreeNode(
       const auto* node = objectComponent->GetParent();
       node->ForEachComponent(
           [isVisible](component::Component* comp) {
-            auto* vComp = dynamic_cast<component::RenderableComponent*>(comp);
+            auto* vComp = dynamic_cast<component::DrawableComponent*>(comp);
             vComp->SetCulled(!isVisible);
           },
-          component::Component::Type::Renderable);
+          component::Component::Type::Drawable);
     }
     nodesVisibility_[index] = isVisible;
     if (!nodesVisibility_[index]) {

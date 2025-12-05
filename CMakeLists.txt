@@ -22,17 +22,8 @@ find_package(Vorbis REQUIRED)
 include_directories(include)
 
 add_library(${PROJECT_NAME}
-        include/event/handler.hpp
-        include/event/observable.hpp
-        include/file/sequence.hpp
-        include/input/constants.hpp
-        include/sound/event/event.hpp
-        include/stage/scene/component/render/render_component.hpp
-        include/util/pointer_cache.hpp
-        include/video/render/data/writer.hpp
-        include/video/render/state_identifier.hpp
-        include/video/render/types.hpp
         src/engine.cc
+        src/event/engine_event.cc
         src/file/font.cc
         src/file/sprite_sheet.cc
         src/input/event.cc
@@ -57,10 +48,10 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/event/hook.cc
         src/stage/scene/component/input/input_component.cc
         src/stage/scene/component/listener_component.cc
-        src/stage/scene/component/mesh_component.cc
+        src/stage/scene/component/render/drawable_component.cc
+        src/stage/scene/component/render/drawable_container_component.cc
+        src/stage/scene/component/render/mesh_component.cc
         src/stage/scene/component/render/mesh_instance_component.cc
-        src/stage/scene/component/render/render_state_container_component.cc
-        src/stage/scene/component/render/renderable_component.cc
         src/stage/scene/component/render/update_matrices_ubo_component.cc
         src/stage/scene/component/sound.cc
         src/stage/scene/component/text/abstract_text.cc
@@ -92,22 +83,24 @@ add_library(${PROJECT_NAME}
         src/video/buffer/object.cc
         src/video/buffer/ubo.cc
         src/video/buffer/vbo.cc
+        src/video/event/drawable_event.cc
+        src/video/event/window_event.cc
+        src/video/glfw_window.cc
         src/video/manager.cc
         src/video/mesh/cache.cc
         src/video/mesh/data.cc
         src/video/mesh/prefab.cc
         src/video/model/letter.cc
+        src/video/open_gl_context.cc
         src/video/render/data/buffer_writer.cc
         src/video/render/data/buffer_writer.cc
-        src/video/render/mesh_instance.cc
-        src/video/render/mesh_instance_pile.cc
-        src/video/render/mesh_renderable.cc
+        src/video/render/draw/drawable_container.cc
+        src/video/render/draw/instance_data_buffer.cc
+        src/video/render/draw/vao_elements.cc
+        src/video/render/draw/vao_elements_instanced.cc
+        src/video/render/forward/forward_rendering.cc
         src/video/render/properties.cc
-        src/video/render/renderable.cc
-        src/video/render/renderable_group_elements.cc
-        src/video/render/renderable_group_instances.cc
         src/video/render/state.cc
-        src/video/render/state_container.cc
         src/video/shader/cache.cc
         src/video/shader/definition.cc
         src/video/shader/shader.cc
@@ -118,8 +111,7 @@ add_library(${PROJECT_NAME}
         src/video/texture/texture.cc
         src/video/vertex/attribute_pointer.cc
         src/video/vertex/vao.cc
-        src/window.cc
-        src/window_event.cc
+        src/video/window.cc
         src/world/entity/collision_object.cc
         src/world/entity/object_3d.cc
         src/world/entity/transform_3d.cc
@@ -129,7 +121,6 @@ add_library(${PROJECT_NAME}
         src/world/volume/frustum.cc
         src/world/volume/quad_tree.cc
         src/world/world.cc
-
 )
 include_directories(include)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
@@ -141,9 +132,9 @@ target_sources(
         TYPE HEADERS
         BASE_DIRS include
         FILES
-
         include/base.h
         include/engine.h
+        include/event/engine_event.h
         include/event/event.hpp
         include/event/handler.hpp
         include/event/observable.hpp
@@ -178,11 +169,11 @@ target_sources(
         include/stage/scene/component/event/hook.h
         include/stage/scene/component/input/input_component.h
         include/stage/scene/component/listener_component.h
-        include/stage/scene/component/mesh_component.h
+        include/stage/scene/component/render/drawable_component.h
+        include/stage/scene/component/render/drawable_container_component.h
+        include/stage/scene/component/render/mesh_component.h
         include/stage/scene/component/render/mesh_instance_component.h
         include/stage/scene/component/render/render_component.hpp
-        include/stage/scene/component/render/render_state_container_component.h
-        include/stage/scene/component/render/renderable_component.h
         include/stage/scene/component/render/update_matrices_ubo_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/text/abstract_text.h
@@ -204,7 +195,7 @@ target_sources(
         include/stage/scene/volume/frustum_culling.h
         include/stage/scene/world/world_node.h
         include/stage/stage.h
-        include/util/deque.hpp
+        include/util/cache.hpp
         include/util/files.h
         include/util/pointer_cache.hpp
         include/util/strings.h
@@ -215,24 +206,30 @@ target_sources(
         include/video/buffer/object.h
         include/video/buffer/ubo.h
         include/video/buffer/vbo.h
+        include/video/context.hpp
+        include/video/context.hpp
+        include/video/event/drawable_event.h
+        include/video/event/window_event.h
+        include/video/glfw_window.h
         include/video/manager.h
-        include/video/mesh
         include/video/mesh/cache.h
         include/video/mesh/data.h
+        include/video/mesh/prefab.h
         include/video/model/letter.h
+        include/video/open_gl_context.h
+        include/video/render/algorithm.hpp
         include/video/render/data/buffer_writer.h
         include/video/render/data/writer.hpp
-        include/video/render/mesh_instance.h
-        include/video/render/mesh_instance_pile.h
-        include/video/render/mesh_renderable.h
+        include/video/render/draw/drawable.hpp
+        include/video/render/draw/drawable_container.h
+        include/video/render/draw/instance_data_buffer.h
+        include/video/render/draw/vao_elements.h
+        include/video/render/draw/vao_elements_instanced.h
+        include/video/render/forward/forward_rendering.h
         include/video/render/properties.h
-        include/video/render/renderable.h
-        include/video/render/renderable_group.h
-        include/video/render/renderable_group_elements.h
-        include/video/render/renderable_group_instances.h
         include/video/render/state.h
-        include/video/render/state_container.h
         include/video/render/state_identifier.hpp
+        include/video/render/types.hpp
         include/video/render/types.hpp
         include/video/shader/cache.h
         include/video/shader/definition.h
@@ -246,8 +243,7 @@ target_sources(
         include/video/vertex/attribute_pointer.h
         include/video/vertex/vao.h
         include/video/vertex/vertex.h
-        include/window.h
-        include/window_event.h
+        include/video/window.hpp
         include/world/entity/collision_object.h
         include/world/entity/object_3d.h
         include/world/entity/transform_3d.h
@@ -255,9 +251,7 @@ target_sources(
         include/world/ray.h
         include/world/volume/aabb.h
         include/world/volume/container.h
-        include/world/volume/container.h
         include/world/volume/frustum.h
-        include/world/volume/quad_tree.h
         include/world/volume/quad_tree.h
         include/world/volume/volume.hpp
         include/world/world.h

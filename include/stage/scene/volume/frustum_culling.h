@@ -3,7 +3,7 @@
 #include "stage/event/node.h"
 #include "stage/hook/event_hook.hpp"
 #include "stage/hook/trigger_hook.h"
-#include "stage/scene/component/render/renderable_component.h"
+#include "stage/scene/component/render/drawable_component.h"
 #include "stage/scene/viewer/node.h"
 #include "stage/scene/world/world_node.h"
 #include "world/volume/container.h"
@@ -29,7 +29,7 @@ class FrustumCulling : public hook::EventHook<event::Node>,
   const world::WorldNode* world_;
   viewer::Node* viewer_;
   std::vector<bool> nodesVisibility_;
-  std::vector<component::RenderableComponent*> addedRenderables_;
+  std::vector<component::DrawableComponent*> addedRenderables_;
 };
 }  // namespace soil::stage::scene::volume
 

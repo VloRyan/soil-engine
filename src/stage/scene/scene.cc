@@ -1,16 +1,18 @@
 
 #include "stage/scene/scene.h"
 
-#include "stage/scene/component/render/render_state_container_component.h"
+#include "stage/scene/component/render/drawable_container_component.h"
 #include "stage/scene/component/update_graph_component.h"
 #include "stage/scene/node.h"
 #include "stage/stage.h"
+#include "video/render/forward/forward_rendering.h"
 
 namespace soil::stage::scene {
 Scene::Scene() : Node(Type::Scene), stage_(nullptr) {
+  video::render::Algorythm* rendering =
+      new video::render::forward::ForwardRendering();
   AddComponent(new component::UpdateGraphComponent());
-  AddComponent(new component::render::RenderStateContainerComponent(
-      new video::render::StateContainer()));
+  AddComponent(new component::render::DrawableContainerComponent(rendering));
   incorporateAddedComponents();
 }
 

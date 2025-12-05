@@ -5,11 +5,13 @@
 #include <GL/glcorearb.h>
 #include <plog/Log.h>
 
-#include "window.h"
+#include "video/glfw_window.h"
+#include "video/shader/shader.h"
 
 namespace soil::video::render {
-State::State()
-    : depthTest_(false),
+State::State(Context& context)
+    : context_(context),
+      depthTest_(false),
       depthFunc_(DepthFunc::Less),
       stencilTest_(false),
       scissorTest_(false),
@@ -19,7 +21,18 @@ State::State()
       uboMatrices_(nullptr),
       framebuffer_(nullptr),
       viewPort_({}),
-      scissor_({}) {}
+      scissor_({}),
+      vao_(nullptr),
+      clearColor_(),
+      shaderProgramId_(0) {
+  blend_ = context_.IsEnabled(GL_BLEND);
+  depthTest_ = context_.IsEnabled(GL_DEPTH_TEST);
+  depthFunc_ = static_cast<DepthFunc>(context_.GetInteger(GL_DEPTH_FUNC));
+  stencilTest_ = context_.IsEnabled(GL_STENCIL_TEST);
+  scissorTest_ = context_.IsEnabled(GL_SCISSOR_TEST);
+  maxImageUnits_ = context_.GetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
+  textureUnits_.resize(maxImageUnits_, nullptr);
+}
 
 void State::Apply(const StateDef& def) {
   if (def.Blend.has_value()) {
@@ -67,18 +80,6 @@ void State::WriteUbo(
 #endif
 }
 
-void State::Init() {
-  blend_ = glIsEnabled(GL_BLEND);
-  depthTest_ = glIsEnabled(GL_DEPTH_TEST);
-  auto value = 0;
-  glGetIntegerv(GL_DEPTH_FUNC, &value);
-  depthFunc_ = static_cast<DepthFunc>(value);
-  stencilTest_ = glIsEnabled(GL_STENCIL_TEST);
-  scissorTest_ = glIsEnabled(GL_SCISSOR_TEST);
-  glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxImageUnits_);
-  textureUnits_.resize(maxImageUnits_, nullptr);
-}
-
 bool State::GetBlend() const { return blend_; }
 
 bool State::GetDepthTest() const { return depthTest_; }
@@ -87,7 +88,7 @@ void State::SetDepthFunc(DepthFunc depthFunc) {
   if (depthFunc == depthFunc_) {
     return;
   }
-  glDepthFunc(static_cast<GLenum>(depthFunc));
+  context_.SetDepthFunc(depthFunc);
   depthFunc_ = depthFunc;
 #ifdef DEBUG
   changes_++;
@@ -101,9 +102,9 @@ void State::SetBlend(const bool blend) {
     return;
   }
   if (blend) {
-    glEnable(GL_BLEND);
+    context_.Enable(GL_BLEND);
   } else {
-    glDisable(GL_BLEND);
+    context_.Disable(GL_BLEND);
   }
   blend_ = blend;
 #ifdef DEBUG
@@ -116,9 +117,9 @@ void State::SetDepthTest(const bool depthTest) {
     return;
   }
   if (depthTest) {
-    glEnable(GL_DEPTH_TEST);
+    context_.Enable(GL_DEPTH_TEST);
   } else {
-    glDisable(GL_DEPTH_TEST);
+    context_.Disable(GL_DEPTH_TEST);
   }
   depthTest_ = depthTest;
 #ifdef DEBUG
@@ -133,9 +134,9 @@ void State::SetStencilTest(const bool stencilTest) {
     return;
   }
   if (stencilTest) {
-    glEnable(GL_STENCIL_TEST);
+    context_.Enable(GL_STENCIL_TEST);
   } else {
-    glDisable(GL_STENCIL_TEST);
+    context_.Disable(GL_STENCIL_TEST);
   }
   stencilTest_ = stencilTest;
 #ifdef DEBUG
@@ -150,9 +151,9 @@ void State::SetScissorTest(const bool scissorTest) {
     return;
   }
   if (scissorTest) {
-    glEnable(GL_SCISSOR_TEST);
+    context_.Enable(GL_SCISSOR_TEST);
   } else {
-    glDisable(GL_SCISSOR_TEST);
+    context_.Disable(GL_SCISSOR_TEST);
   }
   scissorTest_ = scissorTest;
 #ifdef DEBUG
@@ -191,7 +192,7 @@ void State::SetFramebuffer(buffer::FrameBuffer* const framebuffer) {
   if (framebuffer_ != nullptr) {
     framebuffer_->Bind();
   } else {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    context_.BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 #ifdef DEBUG
   changes_++;
@@ -205,8 +206,8 @@ void State::SetViewPort(const Rect& rect) {
     return;
   }
   viewPort_ = rect;
-  glViewport(rect.LowerLeftPosition.x, rect.LowerLeftPosition.y, rect.Size.x,
-             rect.Size.y);
+  context_.Viewport(rect.LowerLeftPosition.x, rect.LowerLeftPosition.y,
+                    rect.Size.x, rect.Size.y);
 #ifdef DEBUG
   changes_++;
 #endif
@@ -242,8 +243,8 @@ void State::SetTexture(const GLenum target, const byte textureUnit,
   if (textureUnits_[textureUnit] != nullptr) {
     textureUnits_[textureUnit]->unit_ = -1;
   }
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(target, texture.GetId());
+  context_.ActiveTexture(GL_TEXTURE0 + textureUnit);
+  context_.BindTexture(target, texture.GetId());
   textureUnits_[textureUnit] = &texture;
   texture.unit_ = static_cast<char>(textureUnit);
 #ifdef DEBUG
@@ -276,7 +277,7 @@ void State::Clear(const BufferBitDescription bits) {
 #ifdef DEBUG
   changes_++;
 #endif
-  glClear(bufferBits);
+  context_.Clear(bufferBits);
 }
 const glm::vec4& State::GetClearColor() const { return clearColor_; }
 void State::SetClearColor(const glm::vec4& clearColor) {
@@ -287,7 +288,8 @@ void State::SetClearColor(const glm::vec4& clearColor) {
 #ifdef DEBUG
   changes_++;
 #endif
-  glClearColor(clearColor_.r, clearColor_.g, clearColor_.b, clearColor_.a);
+  context_.ClearColor(clearColor_.r, clearColor_.g, clearColor_.b,
+                      clearColor_.a);
 }
 
 StateDef State::Pop() {
@@ -302,6 +304,41 @@ StateDef State::Pop() {
       .ViewPort = viewPort_,
       .Scissor = scissor_,
   };
+}
+void State::BindVao(const vertex::Vao* vao) {
+  if (vao == vao_) {
+    return;
+  }
+#ifdef DEBUG
+  changes_++;
+#endif
+  if (vao != nullptr) {
+    context_.BindVertexArray(vao->GetId());
+  } else {
+    context_.BindVertexArray(0);
+  }
+  vao_ = vao;
+}
+const vertex::Vao* State::GetVao() const { return vao_; }
+
+void State::SetShader(const shader::Shader* shader) {
+  if (shader == nullptr) {
+    if (shaderProgramId_ == 0) {
+      return;
+    }
+#ifdef DEBUG
+    changes_++;
+#endif
+    context_.UseProgram(0);
+    return;
+  }
+  if (shaderProgramId_ == shader->GetId()) {
+    return;
+  }
+#ifdef DEBUG
+  changes_++;
+#endif
+  context_.UseProgram(shader->GetId());
 }
 
 bool StateDef::operator==(const StateDef& rhs) const {
