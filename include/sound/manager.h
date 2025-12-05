@@ -23,8 +23,6 @@ class Manager {
 
   virtual ~Manager() = default;
 
-  virtual void Init() = 0;
-
   virtual void Update() = 0;
 
   [[nodiscard]] virtual Source* GetSource(const std::string& fileName,

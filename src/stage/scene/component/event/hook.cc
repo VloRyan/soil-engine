@@ -31,7 +31,7 @@ void Hook::OnEvent(const input::Event &event) {
   }
 }
 
-void Hook::OnEvent(const WindowEvent &event) {
+void Hook::OnEvent(const soil::video::event::WindowEvent &event) {
   if (windowEventCallback_ != nullptr) {
     windowEventCallback_(event);
   }
@@ -40,6 +40,11 @@ void Hook::OnEvent(const WindowEvent &event) {
 void Hook::OnEvent(const stage::event::GameEvent &event) {
   if (gameEventCallback_ != nullptr) {
     gameEventCallback_(event);
+  }
+}
+void Hook::OnEvent(const soil::event::EngineEvent &event) {
+  if (engineEventCallback_ != nullptr) {
+    engineEventCallback_(event);
   }
 }
 
@@ -67,11 +72,15 @@ void Hook::SetStage(soil::stage::Stage *stage) {
           break;
         case EventType::Window:
           stage_->RemoveEventHook(
-              static_cast<hook::EventHook<WindowEvent> *>(this));
+              static_cast<hook::EventHook<soil::video::event::WindowEvent> *>(
+                  this));
           break;
         case EventType::Game:
           stage_->RemoveEventHook(
               static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+        case EventType::Engine:
+          stage_->RemoveEventHook(
+              static_cast<hook::EventHook<soil::event::EngineEvent> *>(this));
           break;
       }
     }
@@ -94,11 +103,16 @@ void Hook::SetStage(soil::stage::Stage *stage) {
           break;
         case EventType::Window:
           stage_->AddEventHook(
-              static_cast<hook::EventHook<WindowEvent> *>(this));
+              static_cast<hook::EventHook<soil::video::event::WindowEvent> *>(
+                  this));
           break;
         case EventType::Game:
           stage_->AddEventHook(
               static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+          break;
+        case EventType::Engine:
+          stage_->AddEventHook(
+              static_cast<hook::EventHook<soil::event::EngineEvent> *>(this));
           break;
       }
     }
@@ -133,11 +147,16 @@ void Hook::ActivateEvents(const std::vector<EventType> &events) {
           break;
         case EventType::Window:
           stage_->RemoveEventHook(
-              static_cast<hook::EventHook<WindowEvent> *>(this));
+              static_cast<hook::EventHook<soil::video::event::WindowEvent> *>(
+                  this));
           break;
         case EventType::Game:
           stage_->RemoveEventHook(
               static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+          break;
+        case EventType::Engine:
+          stage_->RemoveEventHook(
+              static_cast<hook::EventHook<soil::event::EngineEvent> *>(this));
           break;
       }
     }
@@ -157,11 +176,16 @@ void Hook::ActivateEvents(const std::vector<EventType> &events) {
           break;
         case EventType::Window:
           stage_->AddEventHook(
-              static_cast<hook::EventHook<WindowEvent> *>(this));
+              static_cast<hook::EventHook<soil::video::event::WindowEvent> *>(
+                  this));
           break;
         case EventType::Game:
           stage_->AddEventHook(
               static_cast<hook::EventHook<stage::event::GameEvent> *>(this));
+          break;
+        case EventType::Engine:
+          stage_->AddEventHook(
+              static_cast<hook::EventHook<soil::event::EngineEvent> *>(this));
           break;
       }
     }
@@ -202,7 +226,8 @@ void Hook::SetInputEventCallback(
 }
 
 void Hook::SetWindowEventCallback(
-    const std::function<void(const WindowEvent &)> &windowEventCallback) {
+    const std::function<void(const soil::video::event::WindowEvent &)>
+        &windowEventCallback) {
   windowEventCallback_ = windowEventCallback;
 }
 
@@ -215,6 +240,12 @@ void Hook::SetGameEventCallback(
     const std::function<void(const stage::event::GameEvent &)>
         &gameEventCallback) {
   gameEventCallback_ = gameEventCallback;
+}
+
+void Hook::SetEngineEventCallback(
+    const std::function<void(const soil::event::EngineEvent &)>
+        &engineEventCallback) {
+  engineEventCallback_ = engineEventCallback;
 }
 
 void Hook::SetTriggerRoot(Node *triggerRoot) {
@@ -254,4 +285,5 @@ void Hook::SetTriggerRoot(Node *triggerRoot) {
     stage_->AddTriggerHook(this, point);
   }
 }
+
 }  // namespace soil::stage::scene::component::event

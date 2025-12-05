@@ -25,7 +25,8 @@ class HookSpy : public Hook {
   std::function<void(const input::Event &event)> InputEventCallback() {
     return inputEventCallback_;
   };
-  std::function<void(const WindowEvent &event)> WindowEventCallback() {
+  std::function<void(const video::event::WindowEvent &event)>
+  WindowEventCallback() {
     return windowEventCallback_;
   };
   std::function<void(const TriggerPoint &point)> TriggerCallback() {

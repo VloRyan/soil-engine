@@ -12,8 +12,8 @@
 #include "stage/event/component.h"
 #include "stage/event/node.h"
 #include "stage/scene/component/transform_component.h"
+#include "video/event/window_event.h"
 #include "video/render/state.h"
-#include "window_event.h"
 #include "world/entity/object_3d.h"
 namespace soil::stage {
 class Stage;

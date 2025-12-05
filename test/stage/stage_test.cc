@@ -104,7 +104,8 @@ TEST_F(StageTest, AddRemoveRenderTriggerHooks) {
   auto rootBeforeRenderPoint = soil::stage::hook::TriggerHook::TriggerPoint{
       .Root = root,
       .TriggerType = soil::stage::hook::TriggerHook::TriggerType::BeforeRender};
-  auto state = video::render::State{};
+  auto emptyContext = video::EmptyContext();
+  auto state = video::render::State(emptyContext);
 
   stage.AddTriggerHook(&hook, globalBeforeRenderPoint);
   stage.Render(state);
@@ -203,15 +204,17 @@ TEST_F(StageTest, AddRemoveNodeEventHook) {
 TEST_F(StageTest, AddRemoveWindowEventHook) {
   auto stage = Stage();
   auto hook = hook::HookMock();
-  auto windowEvent =
-      WindowEvent(nullptr, WindowEvent::CauseType::StatisticsChanged);
+  auto windowEvent = video::event::WindowEvent(
+      nullptr, video::event::WindowEvent::CauseType::SizeChanged);
 
-  stage.AddEventHook(static_cast<hook::EventHook<WindowEvent>*>(&hook));
+  stage.AddEventHook(
+      static_cast<hook::EventHook<video::event::WindowEvent>*>(&hook));
   stage.Handle(windowEvent);
   EXPECT_THAT(hook.WindowEventsReceived, testing::ElementsAre(windowEvent));
   hook.Reset();
 
-  stage.RemoveEventHook(static_cast<hook::EventHook<WindowEvent>*>(&hook));
+  stage.RemoveEventHook(
+      static_cast<hook::EventHook<video::event::WindowEvent>*>(&hook));
   stage.Handle(windowEvent);
   EXPECT_TRUE(hook.WindowEventsReceived.empty());
 }

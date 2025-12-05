@@ -1,7 +1,7 @@
 #include "stage/scene/viewer/node.h"
 
 #include "stage/stage.h"
-#include "window.h"
+#include "video/glfw_window.h"
 
 namespace soil::stage::scene::viewer {
 Node::Node()
@@ -47,8 +47,8 @@ glm::vec3 Node::GetRight() const { return right_; }
 
 glm::vec3 Node::GetUp() const { return up_; }
 */
-void Node::OnEvent(const WindowEvent& event) {
-  if (event.Cause == WindowEvent::SizeChanged) {
+void Node::OnEvent(const soil::video::event::WindowEvent& event) {
+  if (event.Cause == soil::video::event::WindowEvent::SizeChanged) {
     windowSize_ = event.Window->GetSize();
     UpdateProjection(windowSize_);
   }

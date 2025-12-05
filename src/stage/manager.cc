@@ -3,11 +3,11 @@
 #include <ranges>
 #include <stdexcept>
 
+#include "engine.h"
 #include "input/manager.h"
 #include "stage/stage.h"
-
 namespace soil::stage {
-Manager::Manager(Resources* resources)
+Manager::Manager(Resources& resources)
     : currentStage_(nullptr), nextStage_(nullptr), resources_(resources) {}
 
 Manager::~Manager() {
@@ -53,7 +53,7 @@ void Manager::RegisterStage(const std::string& name, Stage* stage) {
   if (stages_.contains(name)) {
     throw std::runtime_error("Stage with name " + name + " already registered");
   }
-  stage->resources_ = resources_;
+  stage->resources_ = &resources_;
   stage->manager_ = this;
   stages_.insert({name, stage});
 }
@@ -102,14 +102,19 @@ void Manager::Handle(const input::Event& event) {
   currentStage_->Handle(event);
 }
 
-void Manager::Handle(const WindowEvent& event) {
+void Manager::Handle(const video::event::WindowEvent& event) {
   if (currentStage_ == nullptr) {
     return;
   }
   currentStage_->Handle(event);
 }
-
-Resources& Manager::GetResources() const { return *resources_; }
+void Manager::Handle(const soil::event::EngineEvent& event) {
+  if (currentStage_ == nullptr) {
+    return;
+  }
+  currentStage_->Handle(event);
+}
+Resources& Manager::GetResources() const { return resources_; }
 
 Stage* Manager::GetStage(const std::string& name) const {
   const auto itr = stages_.find(name);
@@ -118,4 +123,13 @@ Stage* Manager::GetStage(const std::string& name) const {
   }
   return itr->second;
 }
+void Manager::HookTo(
+    soil::event::Observable<soil::event::EngineEvent>& engineEventObservable,
+    soil::event::Observable<input::Event>& inputEventObservable,
+    soil::event::Observable<video::event::WindowEvent>& windowEventObservable) {
+  engineEventObservable.AddListener(this);
+  inputEventObservable.AddListener(this);
+  windowEventObservable.AddListener(this);
+}
+
 }  // namespace soil::stage

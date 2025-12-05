@@ -5,20 +5,18 @@
 
 #include "event.h"
 #include "event/observable.hpp"
-#include "window.h"
+#include "video/window.hpp"
 
 namespace soil::input {
 using EventQueue = std::vector<Event>;
 
 class Manager final : public event::Observable<Event> {
  public:
-  Manager();
+  Manager(video::Window& window);
 
   ~Manager() override;
 
   void Update();
-
-  void Init(Window* window);
 
  protected:
   void processEvents(EventQueue* queue);
@@ -27,11 +25,10 @@ class Manager final : public event::Observable<Event> {
 
   static Keys getKey(int key);
 
-  static glm::ivec2 GetCursorPosition(GLFWwindow* window);
-
  private:
+  void RegisterCallbacks();
   static std::mutex mutex_;
-  Window* window_;
+  video::Window& window_;
   EventQueue* eventQueue_;
   EventQueue eventQueueBack1_;
   EventQueue eventQueueBack2_;

@@ -1,6 +1,7 @@
 #include "video/manager.h"
 
 #include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
 #include <plog/Log.h>
 
 #include <vector>
@@ -8,20 +9,28 @@
 #include "util/strings.h"
 #include "video/adapter.h"
 #include "video/buffer/fb.h"
+#include "video/glfw_window.h"
 #include "video/mesh/cache.h"
+#include "video/open_gl_context.h"
 #include "video/render/state.h"
 #include "video/shader/cache.h"
 #include "video/texture/manager.h"
-#include "window.h"
 
 namespace soil::video {
-Manager::Manager() : window_(nullptr), adapter(OTHER, ""), nextMeshId(1) {}
+Manager::Manager(const Context::CreateParameter& contextParameter)
+    : window_(nullptr),
+      adapter(OTHER, ""),
+      nextMeshId(1),
+      state_(nullptr),
+      context_(nullptr) {
+  InitOpenGL(contextParameter);
+}
 
-void Manager::Init(Window* window) {
-  window_ = window;
-  if (!window_->HasState(WindowState::Open)) {
-    window_->Open();
-  }
+void Manager::InitOpenGL(const Context::CreateParameter& contextParameter) {
+  context_ = new OpenGLContext(contextParameter);
+  glfwMakeContextCurrent(context_->Window());
+  glfwSwapInterval(0);
+
   if (const int retVal = gl3wInit(); retVal != GL3W_OK) {
     throw std::runtime_error("failed to initialize GL3W with code " +
                              std::to_string(retVal));
@@ -47,8 +56,7 @@ void Manager::Init(Window* window) {
   PLOG_DEBUG.printf("OpenGL %s, GLSL %s", glGetString(GL_VERSION),
                     glGetString(GL_SHADING_LANGUAGE_VERSION));
   Vendor vendor = OTHER;
-  const std::string vendorStr(
-      reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+  const auto vendorStr = context_->GetString(GL_VENDOR);
   if (util::Strings::startsWith(vendorStr, "ATI")) {
     vendor = ATI;
   }
@@ -58,18 +66,13 @@ void Manager::Init(Window* window) {
   if (util::Strings::startsWith(vendorStr, "INTEL")) {
     vendor = INTEL;
   }
-  adapter =
-      Adapter(vendor, reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+  adapter = Adapter(vendor, context_->GetString(GL_RENDERER));
   PLOG_DEBUG.printf("Vendor %s: %s", vendorStr.c_str(),
                     adapter.GetModel().c_str());
-#ifdef DEBUG
-  /*int numExtensions = 0;
-  glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
-  for (uint i = 0; i < numExtensions; i++) {
-      PLOG_DEBUG.printf("Extension(%d): %s", i, glGetStringi(GL_EXTENSIONS, i));
-  }*/
-#endif
+
   initState();
+  window_ = new GLFWWindow(context_->Window());
+  InitCache();
 }
 
 void Manager::Update() { textureManager_.Update(); }
@@ -78,10 +81,10 @@ void Manager::BeginRender() {
   GetState().SetScissorTest(false);
   GetState().SetFramebuffer(nullptr);
   GetState().SetViewPort({.Size = window_->GetSize()});
-  glClear(COLOR_AND_DEPTH_BUFFER_BIT);
+  GetState().Clear({.Color = true, .Depth = true, .Stencil = true});
 }
 
-void Manager::EndRender() const { window_->SwapBuffers(); }
+void Manager::EndRender() const { glfwSwapBuffers(context_->Window()); }
 
 void Manager::NewUniformBufferObject(const std::string& name,
                                      const gl_size_t size, const int target) {
@@ -93,7 +96,7 @@ void Manager::NewUniformBufferObject(const std::string& name,
     shader->BindUniformBlock(name, target);
   });
   glBindBufferBase(GL_UNIFORM_BUFFER, target, ubo->GetId());
-  state_.RegisterUbo(target, ubo);
+  state_->RegisterUbo(target, ubo);
 }
 
 void Manager::initState() {
@@ -107,14 +110,14 @@ void Manager::initState() {
   glDepthRange(0.0F, 1.0F);
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  state_.Init();
-  state_.SetDepthTest(true);
-  state_.SetBlend(false);
-  state_.SetStencilTest(false);
-  state_.SetDepthFunc(render::DepthFunc::Less);
-  state_.SetClearColor(glm::vec4(0.1F, 0.1F, 0.1F, 0.0f));
-  
-  PLOG_DEBUG << "Max. Textures: " << state_.GetMaxImageUnits();
+  state_ = new render::State(*context_);
+  state_->SetDepthTest(true);
+  state_->SetBlend(false);
+  state_->SetStencilTest(false);
+  state_->SetDepthFunc(render::DepthFunc::Less);
+  state_->SetClearColor(glm::vec4(0.1F, 0.1F, 0.1F, 0.0f));
+
+  PLOG_DEBUG << "Max. Textures: " << state_->GetMaxImageUnits();
 }
 
 mesh::Data* Manager::GetMesh(const mesh::Prefab::Definition& definition) {
@@ -138,7 +141,7 @@ void Manager::PrepareShader(shader::Shader* shader) {
 
 texture::Manager& Manager::Texture() { return textureManager_; }
 
-render::State& Manager::GetState() { return state_; }
+render::State& Manager::GetState() { return *state_; }
 
 void APIENTRY Manager::debugOutput(const GLenum source, const GLenum type,
                                    const GLuint id, const GLenum severity,
@@ -235,5 +238,27 @@ void APIENTRY Manager::debugOutput(const GLenum source, const GLenum type,
     debugMessage += ")";
   }
   PLOG_DEBUG << debugMessage;
+}
+class Window* Manager::GetWindow() {
+#ifdef DEBUG
+  if (window_ == nullptr) {
+    throw std::runtime_error("window not initialized");
+  }
+#endif
+  return window_;
+}
+Context* Manager::GetContext() const { return context_; }
+bool Manager::WindowIsOpen() { return !window_->IsClosed(); }
+
+util::Cache<vertex::Vao>& Manager::VaoCache() { return vaoCache_; }
+
+void Manager::InitCache() {
+  auto* mesh = GetMesh({.Type = mesh::Prefab::Type::Line});
+  auto* vao = vertex::Vao::NewFrom(*mesh);
+  vaoCache_.Put("line", vao);
+
+  mesh = GetMesh({.Type = mesh::Prefab::Type::Quad});
+  vao = vertex::Vao::NewFrom(*mesh);
+  vaoCache_.Put("quad", vao);
 }
 }  // namespace soil::video

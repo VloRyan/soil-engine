@@ -1,5 +1,6 @@
 #include "input/manager.h"
 
+#include <GLFW/glfw3.h>
 #include <plog/Log.h>
 
 #include <cmath>
@@ -7,56 +8,53 @@
 namespace soil::input {
 std::mutex Manager::mutex_;
 
-Manager::Manager()
-    : window_(nullptr), eventQueue_(&eventQueueBack1_), cursorPosition_(0) {}
-
-Manager::~Manager() {
-  glfwSetKeyCallback(window_->GetGLFWWindow(), nullptr);
-  glfwSetCharCallback(window_->GetGLFWWindow(), nullptr);
-  glfwSetMouseButtonCallback(window_->GetGLFWWindow(), nullptr);
-  glfwSetScrollCallback(window_->GetGLFWWindow(), nullptr);
+Manager::Manager(video::Window &window)
+    : window_(window), eventQueue_(&eventQueueBack1_), cursorPosition_(0) {
+  RegisterCallbacks();
 }
 
-void Manager::Init(Window *window) {
-  window_ = window;
+Manager::~Manager() {
+  window_.SetKeyCallback(nullptr);
+  window_.SetKeyCallback(nullptr);
+  window_.SetMouseButtonCallback(nullptr);
+  window_.SetScrollCallback(nullptr);
+}
+
+void Manager::RegisterCallbacks() {
   static auto *instance = this;
   // Inputs
-  glfwSetKeyCallback(
-      window_->GetGLFWWindow(),
-      [](GLFWwindow *, const int key, const int, const int action, const int) {
+  window_.SetKeyCallback(
+      [](const int key, const int, const int action, const int) {
         const auto state = static_cast<Event::StateType>(action);
         mutex_.lock();
         instance->eventQueue_->push_back(
             Event::MakeKeyChangedEvent(getKey(key), state));
         mutex_.unlock();
       });
-  glfwSetCharCallback(
-      window_->GetGLFWWindow(), [](GLFWwindow *, const unsigned int codepoint) {
-        mutex_.lock();
-        instance->eventQueue_->push_back(
-            Event::MakeCharacterEnteredEvent(static_cast<char>(codepoint)));
-        mutex_.unlock();
-      });
-  glfwSetMouseButtonCallback(
-      window_->GetGLFWWindow(),
-      [](GLFWwindow *win, const int button, const int action, const int) {
+  window_.SetCharCallback([](const unsigned int codepoint) {
+    mutex_.lock();
+    instance->eventQueue_->push_back(
+        Event::MakeCharacterEnteredEvent(static_cast<char>(codepoint)));
+    mutex_.unlock();
+  });
+  window_.SetMouseButtonCallback(
+
+      [this](const int button, const int action, const int) {
         const auto mouseButton = GetMouseButton(button);
-        const auto cursorPosition = GetCursorPosition(win);
+        const auto cursorPosition = window_.GetCursorPos();
         const auto state = static_cast<Event::StateType>(action);
         mutex_.lock();
         instance->eventQueue_->push_back(
             Event::MakeMouseButtonEvent(cursorPosition, mouseButton, state));
         mutex_.unlock();
       });
-  glfwSetScrollCallback(
-      window_->GetGLFWWindow(),
-      [](GLFWwindow *win, const double xOffset, const double yOffset) {
-        const auto cursorPosition = GetCursorPosition(win);
-        mutex_.lock();
-        instance->eventQueue_->push_back(Event::MakeMouseWheelEvent(
-            cursorPosition, glm::vec2(xOffset, yOffset)));
-        mutex_.unlock();
-      });
+  window_.SetScrollCallback([this](const double xOffset, const double yOffset) {
+    const auto cursorPosition = window_.GetCursorPos();
+    mutex_.lock();
+    instance->eventQueue_->push_back(Event::MakeMouseWheelEvent(
+        cursorPosition, glm::vec2(xOffset, yOffset)));
+    mutex_.unlock();
+  });
 }
 
 void Manager::Update() {
@@ -68,7 +66,7 @@ void Manager::Update() {
     eventQueue_ = &eventQueueBack1_;
   }
   mutex_.unlock();
-  if (const auto newCursorPos = GetCursorPosition(window_->GetGLFWWindow());
+  if (const auto newCursorPos = window_.GetCursorPos();
       cursorPosition_ != newCursorPos) {
     eventQueueBackBuffer->push_back(
         Event::MakeMousePositionEvent(newCursorPos));
@@ -133,11 +131,9 @@ void Manager::processEvents(EventQueue *queue) {
       }
     }
     if (!isReleasedInThisFrame) {
-      double x;
-      double y;
-      glfwGetCursorPos(window_->GetGLFWWindow(), &x, &y);
+      auto cursorPos = window_.GetCursorPos();
       eventQueue_->push_back(Event::MakeMouseButtonEvent(
-          glm::vec2(x, y), pressedButton, Event::StateType::Press));
+          cursorPos, pressedButton, Event::StateType::Press));
     }
   }
 }
@@ -195,12 +191,6 @@ Keys Manager::getKey(int key) {
     default:
       return Keys::Unknown;
   }
-}
-glm::ivec2 Manager::GetCursorPosition(GLFWwindow *window) {
-  double x = NAN;
-  double y = NAN;
-  glfwGetCursorPos(window, &x, &y);
-  return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
 }
 
 MouseButton Manager::GetMouseButton(const int button) {

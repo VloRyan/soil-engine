@@ -77,7 +77,8 @@ void Stage::AddEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
   inputEventHooks_.push_back(hook);
 }
 
-void Stage::AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
+void Stage::AddEventHook(
+    soil::stage::hook::EventHook<soil::video::event::WindowEvent>* hook) {
   for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
        ++itr) {
     if (hook == *itr) {
@@ -97,6 +98,17 @@ void Stage::AddEventHook(soil::stage::hook::EventHook<event::GameEvent>* hook) {
   gameEventHooks_.push_back(hook);
 }
 
+void Stage::AddEventHook(
+    soil::stage::hook::EventHook<soil::event::EngineEvent>* hook) {
+  for (auto itr = engineEventHooks_.begin(); itr != engineEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      return;
+    }
+  }
+  engineEventHooks_.push_back(hook);
+}
+
 void Stage::RemoveEventHook(scene::Node* root,
                             soil::stage::hook::EventHook<event::Node>* hook) {
   _removeEventHook(root, hook, nodeEventHooks_);
@@ -112,7 +124,8 @@ void Stage::RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
   }
 }
 
-void Stage::RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook) {
+void Stage::RemoveEventHook(
+    soil::stage::hook::EventHook<soil::video::event::WindowEvent>* hook) {
   for (auto itr = windowEventHooks_.begin(); itr != windowEventHooks_.end();
        ++itr) {
     if (hook == *itr) {
@@ -133,13 +146,24 @@ void Stage::RemoveEventHook(
   }
 }
 
+void Stage::RemoveEventHook(
+    soil::stage::hook::EventHook<soil::event::EngineEvent>* hook) {
+  for (auto itr = engineEventHooks_.begin(); itr != engineEventHooks_.end();
+       ++itr) {
+    if (hook == *itr) {
+      engineEventHooks_.erase(itr);
+      return;
+    }
+  }
+}
+
 void Stage::Handle(const input::Event& event) {
   for (auto* hook : inputEventHooks_) {
     hook->OnEvent(event);
   }
 }
 
-void Stage::Handle(const WindowEvent& event) {
+void Stage::Handle(const soil::video::event::WindowEvent& event) {
   for (auto* hook : windowEventHooks_) {
     hook->OnEvent(event);
   }
@@ -165,12 +189,17 @@ void Stage::Handle(const event::GameEvent& event) {
     hook->OnEvent(event);
   }
 }
+void Stage::Handle(const soil::event::EngineEvent& event) {
+  for (auto* hook : engineEventHooks_) {
+    hook->OnEvent(event);
+  }
+}
 
 void Stage::Handle(const event::StageEvent& event) {
   if (event.Trigger == event::StageEvent::TriggerType::ActiveStageChanged &&
       event.Stage == this && IsLoaded()) {
-    const auto winEvent =
-        WindowEvent(GetResources().GetWindow(), WindowEvent::SizeChanged);
+    const auto winEvent = video::event::WindowEvent(
+        GetResources().GetWindow(), video::event::WindowEvent::SizeChanged);
     Handle(winEvent);
   }
 }

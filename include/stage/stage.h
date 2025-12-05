@@ -4,6 +4,7 @@
 
 #include <typeindex>
 
+#include "event/engine_event.h"
 #include "event/game_event.hpp"
 #include "event/stage_event.h"
 #include "input/event.h"
@@ -12,7 +13,7 @@
 #include "stage/event/node.h"
 #include "stage/hook/event_hook.hpp"
 #include "stage/hook/trigger_hook.h"
-#include "window_event.h"
+#include "video/event/window_event.h"
 
 namespace soil::stage {
 namespace scene {
@@ -28,10 +29,11 @@ class StageNotRegisteredException : public std::runtime_error {
 };
 
 class Stage : public input::EventHandler,
-              public WindowEventHandler,
+              public video::event::WindowEventHandler,
               public event::StageEventHandler,
               public event::NodeEventHandler,
-              public event::GameEventHandler {
+              public event::GameEventHandler,
+              public soil::event::EngineEventHandler {
  public:
   friend class Manager;
 
@@ -64,12 +66,13 @@ class Stage : public input::EventHandler,
 
   void Handle(const input::Event& event) override;
 
-  void Handle(const WindowEvent& event) override;
+  void Handle(const video::event::WindowEvent& event) override;
 
   void Handle(const event::StageEvent& event) override;
   void Handle(const event::Node& event) override;
 
   void Handle(const event::GameEvent& event) override;
+  void Handle(const soil::event::EngineEvent& event) override;
 
   void SetCurrent();
 
@@ -79,15 +82,22 @@ class Stage : public input::EventHandler,
                     soil::stage::hook::EventHook<event::Node>* hook);
 
   void AddEventHook(soil::stage::hook::EventHook<input::Event>* hook);
-  void AddEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
+  void AddEventHook(
+      soil::stage::hook::EventHook<video::event::WindowEvent>* hook);
 
   void AddEventHook(soil::stage::hook::EventHook<event::GameEvent>* hook);
+
+  void AddEventHook(
+      soil::stage::hook::EventHook<soil::event::EngineEvent>* hook);
 
   void RemoveEventHook(scene::Node* root,
                        soil::stage::hook::EventHook<event::Node>* hook);
   void RemoveEventHook(soil::stage::hook::EventHook<input::Event>* hook);
-  void RemoveEventHook(soil::stage::hook::EventHook<WindowEvent>* hook);
+  void RemoveEventHook(
+      soil::stage::hook::EventHook<video::event::WindowEvent>* hook);
   void RemoveEventHook(soil::stage::hook::EventHook<event::GameEvent>* hook);
+  void RemoveEventHook(
+      soil::stage::hook::EventHook<soil::event::EngineEvent>* hook);
 
   void AddTriggerHook(soil::stage::hook::TriggerHook* trigger,
                       const soil::stage::hook::TriggerHook::TriggerPoint& at);
@@ -127,9 +137,13 @@ class Stage : public input::EventHandler,
 
   std::vector<soil::stage::hook::EventHook<input::Event>*> inputEventHooks_;
 
-  std::vector<soil::stage::hook::EventHook<WindowEvent>*> windowEventHooks_;
+  std::vector<soil::stage::hook::EventHook<video::event::WindowEvent>*>
+      windowEventHooks_;
 
   std::vector<soil::stage::hook::EventHook<event::GameEvent>*> gameEventHooks_;
+
+  std::vector<soil::stage::hook::EventHook<soil::event::EngineEvent>*>
+      engineEventHooks_;
 
   std::unordered_map<soil::stage::hook::TriggerHook::TriggerPoint,
                      std::vector<soil::stage::hook::TriggerHook*>,

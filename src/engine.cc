@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include <GLFW/glfw3.h>
+
 #include "input/manager.h"
 #include "plog/Formatters/TxtFormatter.h"
 #include "plog/Initializers/ConsoleInitializer.h"
@@ -11,12 +13,11 @@ namespace soil {
 Engine* Engine::INSTANCE_ = nullptr;
 
 Engine::Engine(const Args_t& args)
-    : window_(new Window(args.Window)),
-      resources_(nullptr),
-      inputManager_(new input::Manager),
-      videoManager_(new video::Manager),
-      soundManager_(new sound::openal::Manager),
+    : inputManager_(nullptr),
+      videoManager_(nullptr),
+      soundManager_(nullptr),
       stageManager_(nullptr),
+      resources_(nullptr),
       config_(args.Config) {
   if (INSTANCE_ != nullptr) {
     throw std::runtime_error("instance of engine already exits");
@@ -30,19 +31,33 @@ Engine::Engine(const Args_t& args)
     stream << std::hex << code;
     throw std::runtime_error("failed to init GLFW(0x" + stream.str() + ")");
   }
-
-  videoManager_->Init(window_);
-  inputManager_->Init(window_);
-  soundManager_->Init();
-  resources_ = new stage::Resources(window_, videoManager_, soundManager_,
-                                    inputManager_);
-  stageManager_ = new stage::Manager(resources_);
-  window_->AddListener(stageManager_);
-  inputManager_->AddListener(stageManager_);
+  videoManager_ = new video::Manager(args.Context);
+  inputManager_ = new input::Manager(*videoManager_->GetWindow());
+  soundManager_ = new sound::openal::Manager();
+  resources_ =
+      new stage::Resources(videoManager_, soundManager_, inputManager_);
+  stageManager_ = new stage::Manager(*resources_);
+}
+Engine::~Engine() {
+  delete resources_;
+  delete stageManager_;
+  delete soundManager_;
+  delete videoManager_;
+  delete inputManager_;
+  glfwTerminate();
+}
+void Engine::UpdateStatistics(const Statistics& newStats) {
+  this->stats_ = newStats;
+  const auto event = event::EngineEvent(
+      this, event::EngineEvent::CauseType::StatisticsChanged);
+  fire(event);
 }
 
-void Engine::Run() const {
+const Engine::Statistics& Engine::GetStatistics() const { return stats_; }
+
+void Engine::Run() {
   PLOG_DEBUG << "Run";
+  stageManager_->HookTo(*this, *inputManager_, *videoManager_->GetWindow());
   const float skipTicks = 1.0F / static_cast<float>(config_.TicksPerSecond);
 
   auto nextGameTick = 0.0;
@@ -61,7 +76,7 @@ void Engine::Run() const {
   auto renderTime = 0L;
   auto endRenderTime = 0L;
 
-  while (!window_->IsClosed()) {
+  while (videoManager_->WindowIsOpen()) {
     loops = 0;
     startLoopTime = glfwGetTime();
     while (startLoopTime > nextGameTick && loops < config_.MaxFrameSkip) {
@@ -125,18 +140,17 @@ void Engine::Run() const {
       constexpr auto VertexCount = 0;
       constexpr auto DrawCount = 0;
 #endif
-      window_->UpdateStatistics(
-          {.FPS = frameCounter,
-           .VertexCount = vertexCount,
-           .DrawCount = drawCount,
-           .StateChanges = videoManager_->GetState().GetChanges(),
-           .updateInputTime = updateInputTime,
-           .updateStageTime = updateStageTime,
-           .updateVideoTime = updateVideoTime,
-           .updateSoundTime = updateSoundTime,
-           .startRenderTime = startRenderTime,
-           .renderTime = renderTime,
-           .endRenderTime = endRenderTime});
+      UpdateStatistics({.FPS = frameCounter,
+                        .VertexCount = vertexCount,
+                        .DrawCount = drawCount,
+                        .StateChanges = videoManager_->GetState().GetChanges(),
+                        .updateInputTime = updateInputTime,
+                        .updateStageTime = updateStageTime,
+                        .updateVideoTime = updateVideoTime,
+                        .updateSoundTime = updateSoundTime,
+                        .startRenderTime = startRenderTime,
+                        .renderTime = renderTime,
+                        .endRenderTime = endRenderTime});
       frameTime = 0;
       frameCounter = 0;
 
@@ -151,17 +165,9 @@ void Engine::Run() const {
     }
   }
   PLOG_DEBUG << "Stop engine";
-  window_->RemoveListener(stageManager_);
-  inputManager_->RemoveListener(stageManager_);
-  delete stageManager_;
-  delete resources_;
-  delete soundManager_;
-  delete videoManager_;
-  delete inputManager_;
-  glfwTerminate();
 }
 
-void Engine::Stop() const { window_->Close(); }
+void Engine::Stop() const { videoManager_->GetWindow()->Close(); }
 
 input::Manager* Engine::GetInputManager() const { return inputManager_; }
 
@@ -171,8 +177,7 @@ stage::Manager* Engine::GetStageManager() const { return stageManager_; }
 
 sound::Manager* Engine::GetSoundManager() const { return soundManager_; }
 
-Window* Engine::GetWindow() const { return window_; }
-
-void Engine::Quit() { INSTANCE_->window_->Close(); }
+void Engine::Quit() { INSTANCE_->videoManager_->GetWindow()->Close(); }
 const Engine::Config_t& Engine::Config() { return INSTANCE_->config_; }
+
 }  // namespace soil

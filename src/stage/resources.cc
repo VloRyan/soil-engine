@@ -3,16 +3,19 @@
 #include "stage/manager.h"
 
 namespace soil::stage {
-Resources::Resources(Window* window, video::Manager* videoManager,
-                     sound::Manager* soundManager, input::Manager* inputManager)
+Resources::Resources(video::Manager* videoManager, sound::Manager* soundManager,
+                     input::Manager* inputManager)
     : videoManager_(videoManager),
       soundManager_(soundManager),
-      inputManager_(inputManager),
-      window_(window) {}
+      inputManager_(inputManager) {}
 
 video::mesh::Data* Resources::GetMesh(
     const video::mesh::Prefab::Definition& definition) const {
   return videoManager_->GetMesh(definition);
+}
+
+video::vertex::Vao* Resources::GetVao(const std::string& name) const {
+  return videoManager_->VaoCache().Get(name);
 }
 
 video::shader::Shader* Resources::GetShader(const std::string& name) const {
@@ -32,9 +35,10 @@ video::render::State& Resources::GetRenderState() const {
   return videoManager_->GetState();
 }
 
-Window* Resources::GetWindow() const { return window_; }
-
 video::texture::Manager& Resources::Textures() const {
   return videoManager_->Texture();
+}
+video::Window* Resources::GetWindow() const {
+  return videoManager_->GetWindow();
 }
 }  // namespace soil::stage

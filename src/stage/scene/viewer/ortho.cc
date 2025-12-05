@@ -2,7 +2,7 @@
 
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "window.h"
+#include "video/glfw_window.h"
 
 namespace soil::stage::scene::viewer {
 Ortho::Ortho(const glm::ivec2 resolution)

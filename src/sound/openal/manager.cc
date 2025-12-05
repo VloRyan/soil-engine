@@ -16,15 +16,7 @@
 #include "util/strings.h"
 
 namespace soil::sound::openal {
-Manager::Manager() : device_(nullptr), context_(nullptr), listener_(nullptr) {}
-
-Manager::~Manager() {
-  alcMakeContextCurrent(nullptr);
-  alcDestroyContext(context_);
-  alcCloseDevice(device_);
-}
-
-void Manager::Init() {
+Manager::Manager() : device_(nullptr), context_(nullptr), listener_(nullptr) {
   // Initialization
   device_ = alcOpenDevice(nullptr);
   if (device_ == nullptr) {
@@ -46,6 +38,12 @@ void Manager::Init() {
              << " mono, " << numStereo << " stereo.\n"
              << "Capabilities: \n"
              << "EAX 2.0: " << util::Strings::to_string(eax2Enabled);
+}
+
+Manager::~Manager() {
+  alcMakeContextCurrent(nullptr);
+  alcDestroyContext(context_);
+  alcCloseDevice(device_);
 }
 
 sound::Source* Manager::GetSource(const std::string& fileName,

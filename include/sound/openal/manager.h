@@ -18,8 +18,6 @@ class Manager final : public sound::Manager, public event::EventHandler {
 
   ~Manager() override;
 
-  void Init() override;
-
   sound::Source* GetSource(const std::string& fileName, bool loop) override;
 
   [[nodiscard]] Listener* GetListener() const override;

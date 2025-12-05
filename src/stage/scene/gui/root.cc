@@ -1,7 +1,7 @@
 #include "stage/scene/gui/root.h"
 
 #include "stage/stage.h"
-#include "window.h"
+#include "video/glfw_window.h"
 
 namespace soil::stage::scene::gui {
 Root::Root(const glm::ivec2 windowSize) {
@@ -17,11 +17,13 @@ void Root::OnStageChanged(soil::stage::Stage* stage,
   Node::OnStageChanged(stage, prevStage);
   if (prevStage != nullptr) {
     prevStage->RemoveEventHook(static_cast<EventHook<input::Event>*>(this));
-    prevStage->RemoveEventHook(static_cast<EventHook<WindowEvent>*>(this));
+    prevStage->RemoveEventHook(
+        static_cast<EventHook<soil::video::event::WindowEvent>*>(this));
   }
   if (stage != nullptr) {
     stage->AddEventHook(static_cast<EventHook<input::Event>*>(this));
-    stage->AddEventHook(static_cast<EventHook<WindowEvent>*>(this));
+    stage->AddEventHook(
+        static_cast<EventHook<soil::video::event::WindowEvent>*>(this));
   }
 }
 
@@ -52,8 +54,8 @@ void Root::OnEvent(const input::Event& event) {
   }
 }
 
-void Root::OnEvent(const WindowEvent& event) {
-  if (event.Cause != WindowEvent::SizeChanged) {
+void Root::OnEvent(const soil::video::event::WindowEvent& event) {
+  if (event.Cause != soil::video::event::WindowEvent::SizeChanged) {
     return;
   }
   size_ = event.Window->GetSize();
@@ -64,4 +66,12 @@ void Root::OnEvent(const WindowEvent& event) {
   SetDirty(DirtyImpact::Dependents);
 }
 
+bool Root::IsOnElement(glm::ivec2 pos) {
+  for (auto* child : children_) {
+    if (child->IsVisible() && child->Contains(pos)) {
+      return true;
+    }
+  }
+  return false;
+}
 }  // namespace soil::stage::scene::gui

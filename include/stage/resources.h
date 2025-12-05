@@ -10,8 +10,7 @@
 namespace soil::stage {
 class Resources {
  public:
-  explicit Resources(Window* window, video::Manager* videoManager,
-                     sound::Manager* soundManager,
+  explicit Resources(video::Manager* videoManager, sound::Manager* soundManager,
                      input::Manager* inputManager);
 
   ~Resources() = default;
@@ -24,27 +23,29 @@ class Resources {
 
   Resources& operator=(Resources&& other) noexcept = delete;
 
-  [[nodiscard]] video::mesh::Data* GetMesh(
+  [[nodiscard]] virtual video::mesh::Data* GetMesh(
       const video::mesh::Prefab::Definition& definition) const;
 
-  [[nodiscard]] video::shader::Shader* GetShader(const std::string& name) const;
+  video::vertex::Vao* GetVao(const std::string& name) const;
 
-  [[nodiscard]] sound::Source* GetSource(const std::string& name,
-                                         bool loop = false) const;
+  [[nodiscard]] virtual video::shader::Shader* GetShader(
+      const std::string& name) const;
 
-  [[nodiscard]] sound::Listener* GetListener() const;
+  [[nodiscard]] virtual sound::Source* GetSource(const std::string& name,
+                                                 bool loop = false) const;
 
-  [[nodiscard]] Window* GetWindow() const;
+  [[nodiscard]] virtual sound::Listener* GetListener() const;
 
-  [[nodiscard]] video::texture::Manager& Textures() const;
+  [[nodiscard]] virtual video::Window* GetWindow() const;
 
-  [[nodiscard]] video::render::State& GetRenderState() const;
+  [[nodiscard]] virtual video::texture::Manager& Textures() const;
+
+  [[nodiscard]] virtual video::render::State& GetRenderState() const;
 
  private:
   video::Manager* videoManager_;
   sound::Manager* soundManager_;
   input::Manager* inputManager_;
-  Window* window_;
 };
 }  // namespace soil::stage
 

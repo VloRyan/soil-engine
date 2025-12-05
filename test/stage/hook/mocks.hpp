@@ -8,14 +8,14 @@ namespace soil::stage::hook {
 
 class HookMock : public TriggerHook,
                  public EventHook<event::Node>,
-                 public EventHook<WindowEvent>,
+                 public EventHook<video::event::WindowEvent>,
                  public EventHook<input::Event>,
                  public EventHook<event::GameEvent> {
  public:
   explicit HookMock() : TriggerHook() {}
 
   std::vector<event::Node> NodeEventsReceived;
-  std::vector<WindowEvent> WindowEventsReceived;
+  std::vector<video::event::WindowEvent> WindowEventsReceived;
   std::vector<input::Event> InputEventsReceived;
   std::vector<TriggerPoint> TriggerReceived;
   std::vector<event::GameEvent> GameEventsReceived;
@@ -32,7 +32,7 @@ class HookMock : public TriggerHook,
   void OnEvent(const event::Node& event) override {
     NodeEventsReceived.push_back(event);
   }
-  void OnEvent(const WindowEvent& event) override {
+  void OnEvent(const video::event::WindowEvent& event) override {
     WindowEventsReceived.push_back(event);
   }
   void OnEvent(const input::Event& event) override {
