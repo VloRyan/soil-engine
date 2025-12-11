@@ -1,9 +1,9 @@
 #include "video/render/forward/forward_rendering.h"
-namespace soil::video::render::forward {
+namespace soil::video::render {
 
 using dc = draw::DrawableContainer;
 void ForwardRendering::Render(State &state,
-                              draw::DrawableContainer &container) {
+                              draw::DrawableContainer &container) const {
   RenderOpaquePass(state, container);
   RenderTransparentPass(state, container);
 }
@@ -28,4 +28,4 @@ void ForwardRendering::DrawEach(
   }
 }
 
-}  // namespace soil::video::render::forward
+}  // namespace soil::video::render

@@ -7,6 +7,7 @@
 #include "shader/cache.h"
 #include "texture/manager.h"
 #include "util/cache.hpp"
+#include "video/render/algorithm.hpp"
 #include "window.hpp"
 
 #define OPEN_GL_MAJOR_VERSION 3
@@ -34,6 +35,8 @@ class Manager final {
   bool WindowIsOpen();
 
   util::Cache<vertex::Vao>& VaoCache();
+  static const render::Algorythm* GetRenderAlgorithm(
+      const std::string& name = "forward");
 
  protected:
   void initState();
@@ -51,6 +54,7 @@ class Manager final {
   texture::Manager textureManager_;
 
   util::Cache<vertex::Vao> vaoCache_;
+  static util::Cache<render::Algorythm> renderAlgorithmCache_;
 
   static void debugOutput(GLenum source, GLenum type, GLuint id,
                           GLenum severity, GLsizei length, const char* message,

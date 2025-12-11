@@ -5,27 +5,20 @@
 #include "video/render/forward/forward_rendering.h"
 
 namespace soil::stage::scene::component::render {
-DrawableContainerComponent::DrawableContainerComponent(
-    video::render::Algorythm *rendering)
-    : DrawableContainerComponent(
-          rendering, new video::render::draw::DrawableContainer()) {}
+DrawableContainerComponent::DrawableContainerComponent()
+    : DrawableContainerComponent(new video::render::draw::DrawableContainer()) {
+}
 
 DrawableContainerComponent::DrawableContainerComponent(
-    video::render::Algorythm *rendering,
     video::render::draw::DrawableContainer *container)
-    : RenderComponent(),
+    : Component(Component::Type::Container),
       hook_({event::Hook::EventType::Node}),
-      container_(container),
-      rendering_(rendering) {
+      container_(container) {
   hook_.SetNodeEventCallback(
       [this](const soil::stage::event::Node &event) { OnEvent(event); });
 }
 
 DrawableContainerComponent::~DrawableContainerComponent() { delete container_; }
-
-void DrawableContainerComponent::Render(video::render::State &state) {
-  rendering_->Render(state, *container_);
-}
 
 void DrawableContainerComponent::OnEvent(
     const soil::stage::event::Node &event) {
@@ -131,7 +124,11 @@ void DrawableContainerComponent::SetParent(Node *parent) {
   if (parent != nullptr) {
     hook_.SetTriggerRoot(parent->Root());
   }
-  RenderComponent::SetParent(parent);
+  Component::SetParent(parent);
+}
+video::render::draw::DrawableContainer &
+DrawableContainerComponent::Container() {
+  return *container_;
 }
 
 }  // namespace soil::stage::scene::component::render

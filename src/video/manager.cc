@@ -12,11 +12,13 @@
 #include "video/glfw_window.h"
 #include "video/mesh/cache.h"
 #include "video/open_gl_context.h"
+#include "video/render/forward/forward_rendering.h"
 #include "video/render/state.h"
 #include "video/shader/cache.h"
 #include "video/texture/manager.h"
 
 namespace soil::video {
+util::Cache<render::Algorythm> Manager::renderAlgorithmCache_;
 Manager::Manager(const Context::CreateParameter& contextParameter)
     : window_(nullptr),
       adapter(OTHER, ""),
@@ -260,5 +262,12 @@ void Manager::InitCache() {
   mesh = GetMesh({.Type = mesh::Prefab::Type::Quad});
   vao = vertex::Vao::NewFrom(*mesh);
   vaoCache_.Put("quad", vao);
+
+  renderAlgorithmCache_.Put("forward", new render::ForwardRendering());
+}
+
+const render::Algorythm* Manager::GetRenderAlgorithm(const std::string& name) {
+  util::Strings::toLower(name);
+  return renderAlgorithmCache_.Get(name);
 }
 }  // namespace soil::video

@@ -16,7 +16,6 @@ class UpdateMatricesUboComponent : public event::EventComponent {
   void SetParent(soil::stage::scene::Node* parent) override;
 
  private:
-  // event::Hook hook_;
   int uboMatricesBindingTarget_;
   viewer::Node* viewer_;
   video::render::State* renderState_;

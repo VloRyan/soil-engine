@@ -30,7 +30,7 @@ class DummyDrawableComponent : public DrawableComponent {
 
 TEST_F(DrawableContainerComponentTest, InsertRemove) {
   auto* container = new video::render::draw::DrawableContainer();
-  auto renderStateComp = DrawableContainerComponent(nullptr, container);
+  auto renderStateComp = DrawableContainerComponent(container);
 
   auto drawable = video::render::draw::DrawableMock(opaqueStateId);
   auto renderableComp = DummyDrawableComponent(drawable);
@@ -56,7 +56,7 @@ TEST_F(DrawableContainerComponentTest, InsertRemove) {
 
 TEST_F(DrawableContainerComponentTest, InsertAlreadyInserted) {
   auto* container = new video::render::draw::DrawableContainer();
-  auto renderStateComp = DrawableContainerComponent(nullptr, container);
+  auto renderStateComp = DrawableContainerComponent(container);
 
   auto drawable = video::render::draw::DrawableMock(opaqueStateId);
   auto renderableComp1 = DummyDrawableComponent(drawable);
@@ -82,7 +82,7 @@ TEST_F(DrawableContainerComponentTest, InsertAlreadyInserted) {
 
 TEST_F(DrawableContainerComponentTest, RemoveDrawablePile) {
   auto* container = new video::render::draw::DrawableContainer();
-  auto renderStateComp = DrawableContainerComponent(nullptr, container);
+  auto renderStateComp = DrawableContainerComponent(container);
 
   auto drawable = video::render::draw::DrawableMock(opaqueStateId);
   auto renderableComp = DummyDrawableComponent(drawable);

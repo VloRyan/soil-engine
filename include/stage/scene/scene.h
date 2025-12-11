@@ -9,19 +9,26 @@ class Stage;
 }
 
 namespace soil::stage::scene {
+namespace component::render {
+class DrawableContainerComponent;
+}
 class Scene : public Node {
  public:
   friend class soil::stage::Stage;
-
-  explicit Scene();
+  Scene();
+  explicit Scene(const video::render::Algorythm* algorythm);
 
   ~Scene() override;
   [[nodiscard]] class Stage* Stage() const override;
+
+  virtual void Render(video::render::State& state);
 
  protected:
   virtual void SetStage(class Stage* stage);
 
   class Stage* stage_;
+  const video::render::Algorythm* renderAlgorythm_;
+  component::render::DrawableContainerComponent* drawableContainer_;
 };
 }  // namespace soil::stage::scene
 

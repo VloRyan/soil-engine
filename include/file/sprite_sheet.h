@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-#include "sequence.hpp"
+#include "video/texture/animation.h"
 #include "video/texture/texture.h"
 
 using json = nlohmann::json;
@@ -14,12 +14,14 @@ struct SpriteSheet {
   std::string TextureFileName;
   int FramesPerDim{0};
   std::unordered_map<std::string, int> Frames;
-  std::unordered_map<std::string, Sequence> Sequences;
+  std::unordered_map<std::string, std::vector<video::texture::Animation::Frame>>
+      Animations;
   std::string Path;
 
   int FrameByName(const std::string& name) const;
 
-  const Sequence& SequenceByName(const std::string& name) const;
+  const std::vector<video::texture::Animation::Frame>* AnimationByName(
+      const std::string& name) const;
 
   static SpriteSheet Load(const std::string& file);
 
@@ -30,7 +32,7 @@ struct SpriteSheet {
   friend bool operator==(const SpriteSheet& lhs, const SpriteSheet& rhs) {
     return lhs.TextureFileName == rhs.TextureFileName &&
            lhs.FramesPerDim == rhs.FramesPerDim && lhs.Frames == rhs.Frames &&
-           lhs.Sequences == rhs.Sequences;
+           lhs.Animations == rhs.Animations;
   }
 
   friend bool operator!=(const SpriteSheet& lhs, const SpriteSheet& rhs) {
@@ -48,8 +50,19 @@ static void to_json(json& j, const SpriteSheet& p) {
   if (!p.Frames.empty()) {
     j["frames"] = p.Frames;
   }
-  if (!p.Sequences.empty()) {
-    j["sequences"] = p.Sequences;
+  if (!p.Animations.empty()) {
+    auto jAnimations = json{};
+    for (auto& seqPair : p.Animations) {
+      auto jFrames = json{};
+      for (auto i = 0; i < seqPair.second.size(); i++) {
+        jFrames[i] = json{
+            {"tileIndex", seqPair.second[i].Index},  //
+            {"duration", seqPair.second[i].Duration},
+        };
+      }
+      jAnimations[seqPair.first] = jFrames;
+    }
+    j["animations"] = jAnimations;
   }
 }
 
@@ -59,8 +72,17 @@ static void from_json(const json& j, SpriteSheet& p) {
   if (j.contains("frames")) {
     j.at("frames").get_to(p.Frames);
   }
-  if (j.contains("sequences")) {
-    j.at("sequences").get_to(p.Sequences);
+  if (j.contains("animations")) {
+    for (auto& jAni : j.at("animations").items()) {
+      auto frames = std::vector<video::texture::Animation::Frame>();
+      for (auto jFrame : jAni.value()) {
+        frames.push_back({
+            .Index = jFrame.at("tileIndex").get<int>(),
+            .Duration = jFrame.at("duration").get<int>(),
+        });
+      }
+      p.Animations.insert({jAni.key(), frames});
+    }
   }
 }
 }  // namespace soil::file

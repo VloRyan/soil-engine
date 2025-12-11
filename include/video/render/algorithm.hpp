@@ -7,7 +7,8 @@ namespace soil::video::render {
 class Algorythm {
  public:
   virtual ~Algorythm() = default;
-  virtual void Render(State& state, draw::DrawableContainer& container) = 0;
+  virtual void Render(State& state,
+                      draw::DrawableContainer& container) const = 0;
 
  protected:
   Algorythm() = default;

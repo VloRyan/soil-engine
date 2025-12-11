@@ -8,11 +8,12 @@
 #include "video/render/forward/forward_rendering.h"
 
 namespace soil::stage::scene {
-Scene::Scene() : Node(Type::Scene), stage_(nullptr) {
-  video::render::Algorythm* rendering =
-      new video::render::forward::ForwardRendering();
+Scene::Scene() : Scene(nullptr) {}
+Scene::Scene(const video::render::Algorythm* algorythm)
+    : Node(Type::Scene), stage_(nullptr), renderAlgorythm_(algorythm) {
   AddComponent(new component::UpdateGraphComponent());
-  AddComponent(new component::render::DrawableContainerComponent(rendering));
+  drawableContainer_ =
+      AddComponent(new component::render::DrawableContainerComponent());
   incorporateAddedComponents();
 }
 
@@ -31,8 +32,20 @@ void Scene::SetStage(class Stage* stage) {
   }
   auto prevStage = stage_;
   stage_ = stage;
+  if (renderAlgorythm_ == nullptr) {
+    renderAlgorythm_ =
+        video::Manager::GetRenderAlgorithm();  // set default algorithm
+  }
   OnStageChanged(stage_, prevStage);
 }
 
 Stage* Scene::Stage() const { return stage_; }
+
+void Scene::Render(video::render::State& state) {
+  if (renderAlgorythm_ == nullptr) {
+    return;
+  }
+  renderAlgorythm_->Render(state, drawableContainer_->Container());
+}
+
 }  // namespace soil::stage::scene

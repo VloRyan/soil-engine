@@ -98,7 +98,7 @@ add_library(${PROJECT_NAME}
         src/video/render/draw/instance_data_buffer.cc
         src/video/render/draw/vao_elements.cc
         src/video/render/draw/vao_elements_instanced.cc
-        src/video/render/forward/forward_rendering.cc
+        src/video/render/forward_rendering.cc
         src/video/render/properties.cc
         src/video/render/state.cc
         src/video/shader/cache.cc
@@ -173,7 +173,6 @@ target_sources(
         include/stage/scene/component/render/drawable_container_component.h
         include/stage/scene/component/render/mesh_component.h
         include/stage/scene/component/render/mesh_instance_component.h
-        include/stage/scene/component/render/render_component.hpp
         include/stage/scene/component/render/update_matrices_ubo_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/text/abstract_text.h

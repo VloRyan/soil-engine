@@ -119,7 +119,7 @@ class Node : public event::ComponentEventHandler,
   glm::vec3 GetLocalPosition() const;
   void SetLocalPosition(const glm::vec3& pos);
 
-  virtual void Render(video::render::State& state);
+  // virtual void Render(video::render::State& state);
 
   // void SetDirection(const glm::vec3& direction) override;
 

@@ -7,7 +7,6 @@
 #include <stdexcept>
 
 #include "stage/event/node.h"
-#include "stage/scene/component/render/render_component.hpp"
 #include "stage/scene/component/transform_component.h"
 #include "stage/stage.h"
 
@@ -528,14 +527,14 @@ void Node::fire(const event::Node& event) const {
   }
 }
 
-void Node::Render(video::render::State& state) {
+/*void Node::Render(video::render::State& state) {
   ForEachComponent(
       [&state](component::Component* c) {
         auto* rc = dynamic_cast<component::render::RenderComponent*>(c);
         rc->Render(state);
       },
       component::Component::Type::Render);
-}
+}*/
 
 Stage* Node::Stage() const {
   if (parent_ == nullptr) {

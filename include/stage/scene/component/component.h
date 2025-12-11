@@ -26,7 +26,7 @@ class Component : public soil::event::Observable<event::Component> {
     Metadata,
     Lighting,
     World,
-    Render,
+    Container,
     Any = 255
   };
 
