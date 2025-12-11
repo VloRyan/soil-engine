@@ -87,6 +87,8 @@ class State {
 
   texture::Texture* GetTexture(byte textureUnit);
 
+  const std::vector<texture::Texture*>& TextureUnits();
+
   [[nodiscard]] virtual int GetMaxImageUnits() const;
 
   void Clear(BufferBitDescription bits);

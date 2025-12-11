@@ -48,6 +48,7 @@ class Texture final {
    * @return
    */
   std::string GetName();
+  void SetName(const std::string& name);
 
   /**
    * Returns the OpenGl id.

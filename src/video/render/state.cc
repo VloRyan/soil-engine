@@ -340,6 +340,9 @@ void State::SetShader(const shader::Shader* shader) {
 #endif
   context_.UseProgram(shader->GetId());
 }
+const std::vector<texture::Texture*>& State::TextureUnits() {
+  return textureUnits_;
+}
 
 bool StateDef::operator==(const StateDef& rhs) const {
   return Blend == rhs.Blend && DepthTest == rhs.DepthTest &&

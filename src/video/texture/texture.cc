@@ -31,7 +31,7 @@ void Texture::free() {
   id_ = 0;
   handle_ = 0;
 }
-
+void Texture::SetName(const std::string& name) { name_ = name; }
 std::string Texture::GetName() { return name_; }
 
 uint Texture::GetId() const { return id_; }
