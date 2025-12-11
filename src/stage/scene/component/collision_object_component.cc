@@ -85,6 +85,9 @@ void CollisionObjectComponent::SetContactResponse(
   object_->SetContactResponse(
       [this](soil::world::entity::CollisionObject* object,
              const soil::world::entity::CollisionObject* other) {
+        if (world_ == nullptr) {
+          return;
+        }
         auto otherComp = world_->ResolveCollisionObjectComponent(other);
         contactResponse_(this, otherComp);
       });
