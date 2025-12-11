@@ -4,40 +4,53 @@
 #include "engine.h"
 
 namespace soil::video::texture {
-Animation::Animation(const file::Sequence* sequence)
-    : duration_(0.F), currentFrame_(0), sequence_(sequence) {}
+Animation::Frame Animation::EMPTY_FRAME = {};
+Animation::Animation(const std::vector<Frame>* frames, const int ticksPerSecond)
+    : tickDuration_(1.F / static_cast<float>(ticksPerSecond) * 1000.F),
+      currentDuration_(0.F),
+      currentFrameIndex_(0),
+      frames_(frames) {}
 
-int Animation::Update() {
-  if (sequence_ == nullptr) {
-    return -1;
+const Animation::Frame& Animation::Update() {
+  if (frames_ == nullptr) {
+    return EMPTY_FRAME;
   }
-  const auto tickDuration =
-      1.F / static_cast<float>(Engine::Config().TicksPerSecond) * 1000.F;
-  duration_ += tickDuration;
-  if (duration_ >= static_cast<float>(sequence_->FrameDuration)) {
-    duration_ = 0.F;
-    currentFrame_++;
-    if (currentFrame_ > sequence_->To) {
-      currentFrame_ = sequence_->From;
+  currentDuration_ += tickDuration_;
+  const Animation::Frame& currentFrame = frames_->at(currentFrameIndex_);
+  if (currentDuration_ > static_cast<float>(currentFrame.Duration)) {
+    currentDuration_ = 0.F;
+    currentFrameIndex_++;
+    if (currentFrameIndex_ == frames_->size()) {
+      currentFrameIndex_ = 0;
+      return frames_->at(currentFrameIndex_);
     }
   }
-  return currentFrame_;
+  return currentFrame;
 }
 
-int Animation::GetCurrentFrame() const { return currentFrame_; }
-
-void Animation::SetCurrentFrame(const int currentFrame) {
-  currentFrame_ = currentFrame;
+const Animation::Frame& Animation::CurrentFrame() const {
+  if (frames_ == nullptr) {
+    return EMPTY_FRAME;
+  }
+  return frames_->at(currentFrameIndex_);
 }
 
-const file::Sequence* Animation::GetSequence() const { return sequence_; }
-
-void Animation::SetSequence(const file::Sequence* const sequence) {
-  if (sequence_ == sequence) {
+void Animation::SetFrameIndex(const int index) {
+  if (index < 0 || index >= static_cast<int>(frames_->size())) {
     return;
   }
-  sequence_ = sequence;
-  currentFrame_ = sequence_->From;
-  duration_ = 0.F;
+  currentFrameIndex_ = index;
 }
+
+const std::vector<Animation::Frame>* Animation::Frames() const {
+  return frames_;
+}
+
+float Animation::TickDuration() const { return tickDuration_; }
+
+void Animation::SetFrames(const std::vector<Frame>* frames) {
+  frames_ = frames;
+  SetFrameIndex(currentFrameIndex_);
+}
+
 }  // namespace soil::video::texture

@@ -139,7 +139,6 @@ target_sources(
         include/event/handler.hpp
         include/event/observable.hpp
         include/file/font.h
-        include/file/sequence.hpp
         include/file/sprite_sheet.h
         include/input/constants.hpp
         include/input/event.h

@@ -18,11 +18,17 @@ TEST_F(SpriteSheetTest, SaveLoad) {
               {"three", 3},
               {"four", 4},
           },
-      .Sequences =
+      .Animations =
           {
               {
                   "all",
-                  {.From = 0, .To = 3, .FrameDuration = 8},
+                  {
+                      {
+                          .Index = 0,
+                          .Duration = 100,
+                      },
+                  },
+
               },
           },
   };

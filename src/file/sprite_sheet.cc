@@ -16,8 +16,13 @@ int SpriteSheet::FrameByName(const std::string& name) const {
   return Frames.at(name);
 }
 
-const Sequence& SpriteSheet::SequenceByName(const std::string& name) const {
-  return Sequences.at(name);
+const std::vector<video::texture::Animation::Frame>*
+SpriteSheet::AnimationByName(const std::string& name) const {
+  auto itr = Animations.find(name);
+  if (itr == Animations.end()) {
+    return nullptr;
+  }
+  return &itr->second;
 }
 
 SpriteSheet SpriteSheet::Load(const std::string& file) {

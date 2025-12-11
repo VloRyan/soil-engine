@@ -19,6 +19,8 @@ class Cache {
     return itr->second;
   }
   void Put(std::string name, T* value) { content_.insert({name, value}); }
+  bool Empty() { return content_.empty(); }
+  size_t Size() { return content_.size(); }
 
  private:
   std::unordered_map<std::string, T*> content_;

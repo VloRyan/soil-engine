@@ -1,29 +1,36 @@
 
 #ifndef SOIL_VIDEO_TEXTURE_ANIMATION_H
 #define SOIL_VIDEO_TEXTURE_ANIMATION_H
-#include "file/sequence.hpp"
-
+#include <vector>
 namespace soil::video::texture {
 class Animation {
  public:
-  explicit Animation(const file::Sequence* sequence);
-
+  struct Frame {
+    int Index{-1};
+    int Duration{-1};
+    friend bool operator==(const Frame& lhs, const Frame& rhs) {
+      return lhs.Index == rhs.Index && lhs.Duration == rhs.Duration;
+    }
+    friend bool operator!=(const Frame& lhs, const Frame& rhs) {
+      return !(lhs == rhs);
+    }
+  };
+  explicit Animation(const std::vector<Frame>*, int ticksPerSecond = 25);
   ~Animation() = default;
+  const Animation::Frame& Update();
+  [[nodiscard]] const Frame& CurrentFrame() const;
+  void SetFrameIndex(int index);
+  [[nodiscard]] const std::vector<Frame>* Frames() const;
+  [[nodiscard]] float TickDuration() const;
 
-  int Update();
-
-  [[nodiscard]] int GetCurrentFrame() const;
-
-  void SetCurrentFrame(int currentFrame);
-
-  [[nodiscard]] const file::Sequence* GetSequence() const;
-
-  void SetSequence(const file::Sequence* sequence);
+  void SetFrames(const std::vector<Frame>* frames);
 
  private:
-  float duration_;
-  int currentFrame_;
-  const file::Sequence* sequence_;
+  static Frame EMPTY_FRAME;
+  float tickDuration_;
+  float currentDuration_;
+  int currentFrameIndex_;
+  const std::vector<Frame>* frames_;
 };
 }  // namespace soil::video::texture
 
