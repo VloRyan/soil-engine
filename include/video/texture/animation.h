@@ -24,9 +24,9 @@ class Animation {
   [[nodiscard]] float TickDuration() const;
 
   void SetFrames(const std::vector<Frame>* frames);
+  static Frame EMPTY_FRAME;
 
  private:
-  static Frame EMPTY_FRAME;
   float tickDuration_;
   float currentDuration_;
   int currentFrameIndex_;

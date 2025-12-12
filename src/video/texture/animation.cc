@@ -36,6 +36,10 @@ const Animation::Frame& Animation::CurrentFrame() const {
 }
 
 void Animation::SetFrameIndex(const int index) {
+  if (frames_ == nullptr) {
+    currentFrameIndex_ = 0;
+    return;
+  }
   if (index < 0 || index >= static_cast<int>(frames_->size())) {
     return;
   }

@@ -60,4 +60,17 @@ TEST_F(AnimationTest, SetCurrentFrameIndex) {
   animation.SetFrameIndex(-2);  // invalid
   EXPECT_EQ(animation.CurrentFrame(), frames[0]);
 }
+
+TEST_F(AnimationTest, SetFrames) {
+  const auto frames = MakeFrames();
+  auto animation = Animation(nullptr, 25);
+
+  EXPECT_EQ(animation.CurrentFrame(), Animation::EMPTY_FRAME);
+
+  animation.SetFrames(&frames);
+  EXPECT_EQ(animation.CurrentFrame(), frames[0]);
+
+  animation.SetFrames(nullptr);
+  EXPECT_EQ(animation.CurrentFrame(), Animation::EMPTY_FRAME);
+}
 }  // namespace soil::video::texture
