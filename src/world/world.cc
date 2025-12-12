@@ -26,6 +26,7 @@ void World::Remove(entity::CollisionObject* object) {
 }
 
 void World::Activate(entity::CollisionObject* object) {
+  // TODO: What if object is not part of this world?
   object->SetState(entity::CollisionObject::State::Active);
   for (auto other : activeObjects_) {
     if (other.Object == object) {

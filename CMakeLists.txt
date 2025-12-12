@@ -42,7 +42,7 @@ add_library(${PROJECT_NAME}
         src/stage/hook/trigger_hook.cc
         src/stage/manager.cc
         src/stage/resources.cc
-        src/stage/scene/component/collision_object_component.cc
+        src/stage/scene/component/world/collision_object_component.cc
         src/stage/scene/component/component.cc
         src/stage/scene/component/event/event_component.cc
         src/stage/scene/component/event/hook.cc
@@ -71,7 +71,7 @@ add_library(${PROJECT_NAME}
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
         src/stage/scene/volume/frustum_culling.cc
-        src/stage/scene/world/world_node.cc
+        src/stage/scene/component/world/world_component.cc
         src/stage/stage.cc
         src/util/files.cc
         src/util/strings.cc
@@ -162,7 +162,7 @@ target_sources(
         include/stage/interfaces.h
         include/stage/manager.h
         include/stage/resources.h
-        include/stage/scene/component/collision_object_component.h
+        include/stage/scene/component/world/collision_object_component.h
         include/stage/scene/component/component.h
         include/stage/scene/component/event/event_component.h
         include/stage/scene/component/event/hook.h
@@ -191,7 +191,7 @@ target_sources(
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
         include/stage/scene/volume/frustum_culling.h
-        include/stage/scene/world/world_node.h
+        include/stage/scene/component/world/world_component.h
         include/stage/stage.h
         include/util/cache.hpp
         include/util/files.h

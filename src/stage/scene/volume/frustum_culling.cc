@@ -5,7 +5,7 @@
 
 namespace soil::stage::scene::volume {
 FrustumCulling::FrustumCulling(viewer::Node* viewer,
-                               const world::WorldNode* world)
+                               const component::world::WorldComponent* world)
     : hook::TriggerHook(), world_(world), viewer_(viewer) {}
 
 void FrustumCulling::OnEvent(const event::Node& event) {
@@ -43,7 +43,7 @@ void FrustumCulling::OnTrigger(const TriggerPoint& point) {
       continue;
     }
     const auto* objectComponent =
-        dynamic_cast<const component::CollisionObjectComponent*>(
+        dynamic_cast<const component::world::CollisionObjectComponent*>(
             parent->GetFirstComponent(component::Component::Type::WorldEntity));
     std::vector<int> indices;
     world_->Container()->QueryNodeIndicesFor(objectComponent->Object(),

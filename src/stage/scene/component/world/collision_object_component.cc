@@ -1,11 +1,9 @@
-#include "stage/scene/component/collision_object_component.h"
+#include "stage/scene/component/world/collision_object_component.h"
 
-#include <utility>
-
+#include "stage/scene/component/world/world_component.h"
 #include "stage/scene/node.h"
-#include "stage/scene/world/world_node.h"
 
-namespace soil::stage::scene::component {
+namespace soil::stage::scene::component::world {
 CollisionObjectComponent::CollisionObjectComponent(
     soil::world::volume::Volume* volume,
     const soil::world::entity::CollisionObject::ContactType contactType,
@@ -48,15 +46,11 @@ soil::world::entity::CollisionObject* CollisionObjectComponent::Object() const {
   return object_;
 }
 
-void CollisionObjectComponent::SetWorld(
-    soil::stage::scene::world::WorldNode* world) {
+void CollisionObjectComponent::SetWorld(WorldComponent* world) {
   world_ = world;
 }
 
-soil::stage::scene::world::WorldNode* CollisionObjectComponent::GetWorld()
-    const {
-  return world_;
-}
+WorldComponent* CollisionObjectComponent::GetWorld() const { return world_; }
 glm::vec3 CollisionObjectComponent::GetPosition() const {
   return Object()->GetPosition();
 }
@@ -77,10 +71,8 @@ void CollisionObjectComponent::SetVelocity(const glm::vec3& velocity) {
 }
 
 void CollisionObjectComponent::SetContactResponse(
-    const std::function<
-        void(soil::stage::scene::component::CollisionObjectComponent*,
-             const soil::stage::scene::component::CollisionObjectComponent*)>&
-        response) {
+    const std::function<void(CollisionObjectComponent*,
+                             const CollisionObjectComponent*)>& response) {
   contactResponse_ = response;
   object_->SetContactResponse(
       [this](soil::world::entity::CollisionObject* object,
@@ -93,4 +85,4 @@ void CollisionObjectComponent::SetContactResponse(
       });
 }
 
-}  // namespace soil::stage::scene::component
+}  // namespace soil::stage::scene::component::world

@@ -4,15 +4,16 @@
 #include "stage/hook/event_hook.hpp"
 #include "stage/hook/trigger_hook.h"
 #include "stage/scene/component/render/drawable_component.h"
+#include "stage/scene/component/world/world_component.h"
 #include "stage/scene/viewer/node.h"
-#include "stage/scene/world/world_node.h"
 #include "world/volume/container.h"
 
 namespace soil::stage::scene::volume {
 class FrustumCulling : public hook::EventHook<event::Node>,
                        public hook::TriggerHook {
  public:
-  explicit FrustumCulling(viewer::Node* viewer, const world::WorldNode* world);
+  explicit FrustumCulling(viewer::Node* viewer,
+                          const component::world::WorldComponent* world);
 
   void OnEvent(const event::Node& event) override;
   void OnTrigger(const TriggerPoint& point) override;
@@ -26,7 +27,7 @@ class FrustumCulling : public hook::EventHook<event::Node>,
 
   void setVisibility(int index, bool visible);
 
-  const world::WorldNode* world_;
+  const component::world::WorldComponent* world_;
   viewer::Node* viewer_;
   std::vector<bool> nodesVisibility_;
   std::vector<component::DrawableComponent*> addedRenderables_;

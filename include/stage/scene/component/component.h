@@ -20,12 +20,12 @@ class Component : public soil::event::Observable<event::Component> {
     // TODO rename
     Transform = 0,
     Drawable,
-    WorldEntity,
     Interaction,
     Sound,
     Metadata,
     Lighting,
     World,
+    WorldEntity,
     Container,
     Any = 255
   };

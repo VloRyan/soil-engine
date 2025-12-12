@@ -285,5 +285,6 @@ void Hook::SetTriggerRoot(Node *triggerRoot) {
     stage_->AddTriggerHook(this, point);
   }
 }
+stage::scene::Node *Hook::TriggerRoot() { return triggerRoot_; }
 
 }  // namespace soil::stage::scene::component::event

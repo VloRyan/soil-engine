@@ -3,7 +3,6 @@
 
 #include "base.h"
 #include "container.h"
-#include "stage/scene/component/collision_object_component.h"
 
 namespace soil::world::volume {
 

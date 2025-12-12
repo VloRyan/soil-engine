@@ -1,17 +1,16 @@
-#ifndef SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
-#define SOIL_STAGE_SCENE_COMPONENT_BOUNDING_VOLUME_H_
+#ifndef SOIL_STAGE_SCENE_COMPONENT_WORLD_COLLISION_OBJECT_COMPONENT_H
+#define SOIL_STAGE_SCENE_COMPONENT_WORLD_COLLISION_OBJECT_COMPONENT_H
 
 #include <bitset>
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "component.h"
+#include "stage/scene/component/component.h"
 #include "world/entity/collision_object.h"
 #include "world/volume/volume.hpp"
-namespace soil::stage::scene::world {
-class WorldNode;
-}
-namespace soil::stage::scene::component {
+
+namespace soil::stage::scene::component::world {
+class WorldComponent;
 
 class CollisionObjectComponent final : public Component {
  public:
@@ -36,9 +35,9 @@ class CollisionObjectComponent final : public Component {
 
   void SetParent(Node* parent) override;
 
-  void SetWorld(soil::stage::scene::world::WorldNode* world);
+  void SetWorld(WorldComponent* world);
 
-  [[nodiscard]] soil::stage::scene::world::WorldNode* GetWorld() const;
+  [[nodiscard]] WorldComponent* GetWorld() const;
 
   void SetContactResponse(
       const std::function<void(CollisionObjectComponent* object,
@@ -47,11 +46,11 @@ class CollisionObjectComponent final : public Component {
 
  protected:
   soil::world::entity::CollisionObject* object_;
-  soil::stage::scene::world::WorldNode* world_;
+  WorldComponent* world_;
   std::function<void(CollisionObjectComponent* object,
                      const CollisionObjectComponent* other)>
       contactResponse_;
 };
-}  // namespace soil::stage::scene::component
+}  // namespace soil::stage::scene::component::world
 
 #endif

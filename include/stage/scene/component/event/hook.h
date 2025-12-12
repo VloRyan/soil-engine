@@ -63,6 +63,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
       const std::function<void(const soil::event::EngineEvent &)>
           &engineEventCallback);
   void SetTriggerRoot(Node *triggerRoot);
+  stage::scene::Node *TriggerRoot();
 
  protected:
   soil::stage::Stage *stage_;
