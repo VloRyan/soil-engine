@@ -56,6 +56,9 @@ glm::vec3 CollisionObjectComponent::GetPosition() const {
 }
 void CollisionObjectComponent::SetPosition(const glm::vec3& pos) {
   Object()->SetPosition(pos);
+  if (world_ != nullptr) {
+    world_->UpdatePosition(this);
+  }
 }
 glm::vec3 CollisionObjectComponent::GetVelocity() const {
   return Object()->GetVelocity();

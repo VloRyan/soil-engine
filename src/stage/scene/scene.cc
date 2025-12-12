@@ -11,7 +11,7 @@ namespace soil::stage::scene {
 Scene::Scene() : Scene(nullptr) {}
 Scene::Scene(const video::render::Algorythm* algorythm)
     : Node(Type::Scene), stage_(nullptr), renderAlgorythm_(algorythm) {
-  AddComponent(new component::UpdateGraphComponent());
+  updateGraphComponent_ = AddComponent(new component::UpdateGraphComponent());
   drawableContainer_ =
       AddComponent(new component::render::DrawableContainerComponent());
   incorporateAddedComponents();
@@ -46,6 +46,11 @@ void Scene::Render(video::render::State& state) {
     return;
   }
   renderAlgorythm_->Render(state, drawableContainer_->Container());
+}
+
+void Scene::Update() {
+  updateGraphComponent_->Update();
+  Node::Update();
 }
 
 }  // namespace soil::stage::scene

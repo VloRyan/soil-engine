@@ -12,6 +12,9 @@ namespace soil::stage::scene {
 namespace component::render {
 class DrawableContainerComponent;
 }
+namespace component {
+class UpdateGraphComponent;
+}
 class Scene : public Node {
  public:
   friend class soil::stage::Stage;
@@ -22,6 +25,7 @@ class Scene : public Node {
   [[nodiscard]] class Stage* Stage() const override;
 
   virtual void Render(video::render::State& state);
+  void Update() override;
 
  protected:
   virtual void SetStage(class Stage* stage);
@@ -29,6 +33,7 @@ class Scene : public Node {
   class Stage* stage_;
   const video::render::Algorythm* renderAlgorythm_;
   component::render::DrawableContainerComponent* drawableContainer_;
+  component::UpdateGraphComponent* updateGraphComponent_;
 };
 }  // namespace soil::stage::scene
 

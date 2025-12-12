@@ -6,11 +6,7 @@
 namespace soil::stage::scene::component {
 UpdateGraphComponent::UpdateGraphComponent()
     : EventComponent(Type::Transform,
-                     {.Events = {EventComponent::EventType::Node},
-                      .TriggerPoints =
-                          {
-                              {.TriggerType = TriggerType::BeforeUpdateScene},
-                          }}),
+                     {.Events = {EventComponent::EventType::Node}}),
       dirtyNodesPtr_{&dirtyNodesFront_},
       deletingNodes_(false) {}
 

@@ -362,6 +362,7 @@ void Node::Handle(const event::Component& event) {
             }
           }
           if (event.Origin == transform_) {
+            // TODO: Why is Dependents not enough?
             SetDirty(DirtyImpact::Transform);
           }
           break;
