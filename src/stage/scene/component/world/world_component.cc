@@ -37,6 +37,7 @@ void WorldComponent::SetParent(Node *parent) {
         continue;
       }
       Insert(colObj);
+      colObj->SetWorld(this);
     }
   });
 }
