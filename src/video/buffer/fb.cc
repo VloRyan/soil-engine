@@ -76,12 +76,13 @@ void FrameBuffer::Resize(const glm::ivec2 newSize) {
   if (colorBuffer_.Id != 0U) {
     ResizeRenderBuffer(colorBuffer_, newSize);
   }
-  texture::Data data(nullptr, size_, 0, GL_UNSIGNED_BYTE);
+  texture::Data data(nullptr, newSize, 0, GL_UNSIGNED_BYTE);
   for (auto* colorTexture : colorAttachmentTextures_) {
     data.Format = toTexture2DDataFormat(colorTexture->GetFormat());
     texture::Manager::ResizeTexture2D(colorTexture->GetId(), data,
                                       colorTexture->GetFormat());
   }
+  size_ = newSize;
   Unbind();
 }
 
