@@ -82,8 +82,6 @@ class Object {
  protected:
   virtual void create();
 
-  virtual void uploadData(const void* data, gl_size_t dataSize);
-
   Object(Types bufferType, UsageType usage,
          AccessType access = AccessType::Draw);
 

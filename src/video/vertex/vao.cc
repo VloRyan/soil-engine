@@ -70,6 +70,7 @@ size_t Vao::AddAttributePointer(const std::string& bufferName,
     glBindVertexArray(this->id_);
     buffer->Bind();
     vPointer->Set(attribPointer_.size());
+    buffer->Unbind();
     glBindVertexArray(0);
   }
   attribPointer_.push_back(vPointer);

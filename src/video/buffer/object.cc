@@ -50,47 +50,41 @@ void Object::Reserve(const gl_size_t newBufferSize) {
   }
 #endif
   this->Bind();
-  glBufferData(getGLBufferType(getBufferType()), newBufferSize, nullptr,
-               getGLUsageType());
   if (data_ != nullptr) {
-    glBufferSubData(getGLBufferType(getBufferType()), 0, bufferSize_, data_);
     auto *newBuffer = new byte[newBufferSize];
     memcpy(newBuffer, data_, bufferSize_);
     delete[] data_;
     data_ = newBuffer;
   } else {
-    delete[] data_;
     data_ = new byte[newBufferSize];
+  }
+  if (cursor_ != nullptr) {
+    delete cursor_;
+    cursor_ = new Cursor(data_);
   }
   bufferSize_ = newBufferSize;
 }
 
 void Object::SetData(const void *data, const gl_size_t dataSize) {
   Reserve(dataSize);
-  if (data != nullptr) {
-    auto &cursor = GetCursor();
-    cursor.MoveTo(0);
-    cursor.Write(data, dataSize);
-    Flush();
+  if (data == nullptr) {
+    return;
   }
+  auto &cursor = GetCursor();
+  cursor.MoveTo(0);
+  cursor.Write(data, dataSize);
+  Flush();
 }
 
 void Object::Flush() {
   if (cursor_ != nullptr) {
-    uploadData(GetData(), static_cast<int>(cursor_->GetDataWritten()));
-    cursor_->MoveTo(0);
-  }
-}
-
-void Object::uploadData(const void *data, const gl_size_t dataSize) {
-  if (dataSize > GetBufferSize()) {
-    Reserve(dataSize);  // also sets the current data
-  } else {
     this->Bind();
     // Buffer orphaning, a common way to improve streaming perf.
     glBufferData(getGLBufferType(getBufferType()), GetBufferSize(), nullptr,
                  getGLUsageType());
-    glBufferSubData(getGLBufferType(getBufferType()), 0, dataSize, data);
+    glBufferSubData(getGLBufferType(getBufferType()), 0,
+                    static_cast<int>(cursor_->GetDataWritten()), data_);
+    cursor_->MoveTo(0);
   }
 }
 

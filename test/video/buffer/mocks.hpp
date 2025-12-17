@@ -14,17 +14,14 @@ class BufferObjectMock : public Object {
       : Object(Types::Vertex, UsageType::Dynamic, AccessType::Draw) {}
 
   Cursor& GetCursor() override { return Cursor_; }
-
+  void Flush() override { Calls.Flush++; }
   struct {
-    int UploadData{0};
+    int Flush{0};
   } Calls;
   MockCursor Cursor_;
-  void ResetMocks() { Calls.UploadData = 0; };
+  void ResetMocks() { Calls.Flush = 0; };
 
  protected:
-  virtual void uploadData(const void* data, gl_size_t dataSize) override {
-    Calls.UploadData++;
-  }
 };
 }  // namespace soil::video::buffer
 #endif

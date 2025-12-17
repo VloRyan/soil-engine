@@ -6,11 +6,12 @@
 #include "GL/gl3w.h"
 
 namespace soil::video::vertex {
-AttributePointer::AttributePointer(buffer::Object* vbo, const DataType dataType,
+AttributePointer::AttributePointer(buffer::Object* bufferObject,
+                                   const DataType dataType,
                                    const int elementSize,
                                    const GLsizei elementStride,
                                    const byte divisor, const size_t offset)
-    : vbo_(vbo),
+    : bufferObject_(bufferObject),
       dataType_(dataType),
       elementSize_(elementSize),
       elementStride_(elementStride),
@@ -19,7 +20,7 @@ AttributePointer::AttributePointer(buffer::Object* vbo, const DataType dataType,
       normalize_(false) {}
 
 void AttributePointer::Set(const uint index) const {
-  vbo_->BindAs(buffer::Object::Types::Vertex);
+  bufferObject_->Bind();
   const auto glType = static_cast<GLenum>(dataType_);
   glEnableVertexAttribArray(index);
 
@@ -45,7 +46,7 @@ void AttributePointer::Set(const uint index) const {
   if (this->GetDivisor() != 0U) {
     glVertexAttribDivisor(index, this->GetDivisor());
   }
-  vbo_->UnbindAs(buffer::Object::Types::Vertex);
+  bufferObject_->Unbind();
 }
 
 GLsizei AttributePointer::GetSizeOfDataType(const DataType type) {
@@ -84,7 +85,7 @@ void AttributePointer::SetDataType(const DataType DataType) {
   dataType_ = DataType;
 }
 
-buffer::Object* AttributePointer::GetVbo() const { return vbo_; }
+buffer::Object* AttributePointer::GetVbo() const { return bufferObject_; }
 
 void AttributePointer::SetNormalize(const bool Normalize) {
   normalize_ = Normalize;

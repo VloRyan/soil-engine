@@ -18,7 +18,7 @@ class AttributePointer final {
 
   /**
    *
-   * @param vbo Specifies the Vertex Buffer Object to point to.
+   * @param bufferObject Specifies the Buffer Object to point to.
    * @param dataType Specifies the data type of each component in the array.
    * @param elementSize Specifies the number of components per generic vertex
    * attribute. Must be 1, 2, 3, 4. E.g. one vector(x, y ,z) consists of 3
@@ -33,8 +33,8 @@ class AttributePointer final {
    * generic vertex attribute in the array in the data store of the buffer
    * currently bound to the GL_ARRAY_BUFFER target. The initial value is 0.
    */
-  AttributePointer(buffer::Object* vbo, DataType dataType, int elementSize,
-                   GLsizei elementStride = 0, byte divisor = 0,
+  AttributePointer(buffer::Object* bufferObject, DataType dataType,
+                   int elementSize, GLsizei elementStride = 0, byte divisor = 0,
                    size_t offset = 0);
 
   ~AttributePointer() = default;
@@ -55,8 +55,6 @@ class AttributePointer final {
 
   void SetDataType(DataType DataType);
 
-  [[nodiscard]] uint GetGLDataType() const;
-
   [[nodiscard]] buffer::Object* GetVbo() const;
 
   void SetNormalize(bool Normalize);
@@ -66,7 +64,7 @@ class AttributePointer final {
   [[nodiscard]] static GLsizei GetSizeOfDataType(DataType type);
 
  private:
-  buffer::Object* vbo_;
+  buffer::Object* bufferObject_;
   DataType dataType_;
   int elementSize_;
   GLsizei elementStride_;
