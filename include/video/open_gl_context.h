@@ -26,6 +26,7 @@ class OpenGLContext : public Context {
   void BindVertexArray(uint array) override;
   void UseProgram(uint program) override;
   std::vector<std::string> GetExtensions() override;
+  void SwapBuffers() override;
 
  private:
   GLFWwindow* window_;

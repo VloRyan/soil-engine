@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 
 // for windows mkdir
@@ -106,5 +107,12 @@ bool Files::IsFile(const std::string& path) {
     return (stat_.st_mode & S_IFREG) != 0U;
   }
   return false;
+}
+std::string Files::Read(const std::string& file) {
+  auto size = std::filesystem::file_size(file);
+  std::string content(size, '\0');
+  std::ifstream in(file);
+  in.read(&content[0], static_cast<long>(size));
+  return content;
 }
 }  // namespace soil::util

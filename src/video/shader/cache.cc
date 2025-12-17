@@ -10,20 +10,20 @@ Cache::~Cache() {
   }
 }
 
-void Cache::ForEach(const std::function<void(Shader *)> &callback) const {
+void Cache::ForEach(const std::function<void(Program *)> &callback) const {
   for (auto *shader : shaders_ | std::views::values) {
     callback(shader);
   }
 }
 
-Shader *Cache::GetByName(const std::string &name) {
+Program *Cache::GetByName(const std::string &name) {
   if (const auto itr = shaders_.find(name); itr != shaders_.end()) {
     return itr->second;
   }
   return nullptr;
 }
 
-Shader *Cache::GetById(const int id) const {
+Program *Cache::GetById(const int id) const {
   for (auto *shader : shaders_ | std::views::values) {
     if (shader->GetId() == id) {
       return shader;
@@ -37,26 +37,29 @@ void Cache::Prepare(const std::string &name, const std::string &path) {
   if (shader != nullptr) {
     return;
   }
-  shader = new Shader(name, path);
+  shader = new Program(name, path);
+  shader->Create();
   std::pair pair(name, shader);
   shaders_.insert(pair);
 }
 
-void Cache::Prepare(const std::string &name, Shader *shader) {
+void Cache::Prepare(const std::string &name, Program *shader) {
   if (const auto *existing = GetByName(name); existing != nullptr) {
     throw std::runtime_error("Shader already exists");
   }
+  shader->Create();
   std::pair pair(name, shader);
   shaders_.insert(pair);
 }
 
-Shader *Cache::Create(const std::string &name, const Definition &shaderDef) {
+Program *Cache::Create(const std::string &name,
+                       const shader::Program::Definition &programDef) {
 #ifdef DEBUG
   if (shaders_.contains(name)) {
     throw std::runtime_error("Shader " + name + " already cached");
   }
 #endif
-  auto *shader = new Shader(shaderDef);
+  auto *shader = new Program(programDef);
   shader->SetName(name);
   std::pair pair(name, shader);
   shaders_.insert(pair);

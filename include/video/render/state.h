@@ -9,8 +9,12 @@
 #include "types.hpp"
 #include "video/context.hpp"
 #include "video/vertex/vao.h"
+
+namespace soil::video {
+class Manager;
+}
 namespace soil::video::shader {
-class Shader;
+class Program;
 }
 namespace soil::video::render {
 struct StateDef {
@@ -83,7 +87,7 @@ class State {
   void SetTexture(byte textureUnit, texture::Texture& texture);
   void SetTexture(GLenum target, byte textureUnit, texture::Texture& texture);
 
-  void SetShader(const shader::Shader* shader);
+  void SetShader(const shader::Program* shader);
 
   texture::Texture* GetTexture(byte textureUnit);
 
@@ -99,6 +103,12 @@ class State {
   void BindVao(const vertex::Vao* vao);
   const vertex::Vao* GetVao() const;
 
+  size_t FramesRendered() const;
+
+  friend class video::Manager;
+
+  static void UnmapBuffers();
+
  private:
   Context& context_;
   bool depthTest_;
@@ -108,10 +118,12 @@ class State {
   bool blend_;
   glm::vec4 clearColor_;
   const vertex::Vao* vao_;
-  uint shaderProgramId_;
+  const video::shader::Program* shaderProgram_;
 
   int changes_;
   int maxImageUnits_;
+
+  size_t framesRendered_;
 
   buffer::UniformBufferObject* uboMatrices_;
   std::unordered_map<int, buffer::UniformBufferObject*> uboMap_;

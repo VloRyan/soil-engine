@@ -3,7 +3,7 @@
 #include <string>
 
 #include "base.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 #include "video/vertex/vertex.h"
 
 namespace soil::video::mesh {

@@ -34,7 +34,7 @@ class AbstractText : public DrawableComponent,
   struct PrefabData {
     video::vertex::Vao* QuadVao{nullptr};
     video::mesh::Data* MeshData{nullptr};
-    video::shader::Shader* Shader{nullptr};
+    video::shader::Program* Shader{nullptr};
     const file::Font* Font{nullptr};
     video::texture::Texture* FontTexture{nullptr};
   };

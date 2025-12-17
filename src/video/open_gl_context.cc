@@ -94,4 +94,5 @@ std::string OpenGLContext::GetString(uint name) {
 std::string OpenGLContext::GetStringIndexed(uint name, uint index) {
   return reinterpret_cast<const char*>(glGetStringi(name, index));
 }
+void OpenGLContext::SwapBuffers() { glfwSwapBuffers(window_); }
 }  // namespace soil::video

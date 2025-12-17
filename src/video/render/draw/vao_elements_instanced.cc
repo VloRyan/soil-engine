@@ -3,7 +3,7 @@
 #include "video/buffer/vbo.h"
 #include "video/mesh/data.h"
 #include "video/render/draw/instance_data_buffer.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 namespace soil::video::render::draw {
 util::Cache<VaoElementsInstanced> VaoElementsInstanced::CACHE;
 VaoElementsInstanced::VaoElementsInstanced(const PileDescriptor& pileDescriptor,
@@ -49,9 +49,9 @@ void VaoElementsInstanced::Draw() {
   }
 
   auto* ebo = stateId_.Vao->GetEbo();
-  shader::Shader::DrawElementsInstanced(static_cast<uint>(drawMode_),
-                                        ebo->GetIndexCount(),
-                                        ebo->GetIndexType(), amount, 0);
+  shader::Program::DrawElementsInstanced(static_cast<uint>(drawMode_),
+                                         ebo->GetIndexCount(),
+                                         ebo->GetIndexType(), amount, 0);
 }
 
 float VaoElementsInstanced::DistanceTo(const glm::vec3& point) { return 0; }

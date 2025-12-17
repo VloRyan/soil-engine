@@ -5,7 +5,7 @@
 namespace soil::stage::scene::component::render {
 MeshComponent::MeshComponent(const video::vertex::Vao* vao,
                              video::render::DrawMode mode,
-                             video::shader::Shader* shader, const bool opaque)
+                             video::shader::Program* shader, const bool opaque)
     : DrawableComponent(opaque),
       mesh_(new video::render::draw::VaoElements(
           vao, shader, mode, *this,
@@ -22,7 +22,7 @@ float MeshComponent::DistanceTo(const glm::vec3& point) {
   return glm::distance(GetParent()->GetPosition(), point);
 }
 
-video::shader::Shader* MeshComponent::GetShader() const {
+video::shader::Program* MeshComponent::GetShader() const {
   return mesh_->StateId().Shader;
 }
 
@@ -35,8 +35,11 @@ void MeshComponent::SetOpaque(bool opaque) {
   mesh_->UpdateState(state);
   DrawableComponent::SetOpaque(opaque);
 }
+
 void MeshComponent::BeforeDraw() {}
+
 void MeshComponent::SignalChanged() { /*No need*/ }
+
 void MeshComponent::SetVisible(bool visible) {
   if (visible_ == visible) {
     return;
@@ -44,6 +47,7 @@ void MeshComponent::SetVisible(bool visible) {
   visible_ = visible;
   DrawableComponent::SignalChanged();
 }
+
 void MeshComponent::SetCulled(bool culled) {
   if (culled_ == culled) {
     return;

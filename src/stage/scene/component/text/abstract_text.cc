@@ -197,7 +197,7 @@ void AbstractText::Draw() {
                                         parentPos.z + GetPositionOffset().z);
         SetupCharacter(character, worldPos);
         const auto* ebo = stateId_.Vao->GetEbo();
-        soil::video::shader::Shader::DrawElements(
+        soil::video::shader::Program::DrawElements(
             static_cast<uint>(video::render::DrawMode::TriangleStrip),
             ebo->GetIndexCount(), ebo->GetIndexType());
 

@@ -35,6 +35,7 @@ class Context {
   virtual void ClearColor(float r, float g, float b, float a) = 0;
   virtual void BindVertexArray(uint array) = 0;
   virtual void UseProgram(uint program) = 0;
+  virtual void SwapBuffers() = 0;
 
   virtual std::vector<std::string> GetExtensions() = 0;
 
@@ -64,6 +65,7 @@ class EmptyContext : public Context {
   void BindVertexArray(uint array) override {}
   void UseProgram(uint program) override {}
   std::vector<std::string> GetExtensions() override { return {}; }
+  void SwapBuffers() override {}
 };
 }  // namespace soil::video
 #endif

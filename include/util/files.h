@@ -48,6 +48,8 @@ class Files {
    */
   static bool FolderExists(const std::string& name);
 
+  static std::string Read(const std::string& file);
+
  private:
   /**
    * Portable wrapper for mkdir. Internally used by mkdir()

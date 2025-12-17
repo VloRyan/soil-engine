@@ -42,7 +42,6 @@ add_library(${PROJECT_NAME}
         src/stage/hook/trigger_hook.cc
         src/stage/manager.cc
         src/stage/resources.cc
-        src/stage/scene/component/world/collision_object_component.cc
         src/stage/scene/component/component.cc
         src/stage/scene/component/event/event_component.cc
         src/stage/scene/component/event/hook.cc
@@ -58,6 +57,8 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/text/parser.cc
         src/stage/scene/component/transform_component.cc
         src/stage/scene/component/update_graph_component.cc
+        src/stage/scene/component/world/collision_object_component.cc
+        src/stage/scene/component/world/world_component.cc
         src/stage/scene/gui/container/base.cc
         src/stage/scene/gui/container/h_box.cc
         src/stage/scene/gui/container/v_box.cc
@@ -71,7 +72,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
         src/stage/scene/volume/frustum_culling.cc
-        src/stage/scene/component/world/world_component.cc
         src/stage/stage.cc
         src/util/files.cc
         src/util/strings.cc
@@ -102,9 +102,9 @@ add_library(${PROJECT_NAME}
         src/video/render/properties.cc
         src/video/render/state.cc
         src/video/shader/cache.cc
-        src/video/shader/definition.cc
+        src/video/shader/file_loader.cc
+        src/video/shader/program.cc
         src/video/shader/shader.cc
-        src/video/shader/stage.cc
         src/video/texture/animation.cc
         src/video/texture/data.cc
         src/video/texture/manager.cc
@@ -162,7 +162,6 @@ target_sources(
         include/stage/interfaces.h
         include/stage/manager.h
         include/stage/resources.h
-        include/stage/scene/component/world/collision_object_component.h
         include/stage/scene/component/component.h
         include/stage/scene/component/event/event_component.h
         include/stage/scene/component/event/hook.h
@@ -178,6 +177,8 @@ target_sources(
         include/stage/scene/component/text/parser.h
         include/stage/scene/component/transform_component.h
         include/stage/scene/component/update_graph_component.h
+        include/stage/scene/component/world/collision_object_component.h
+        include/stage/scene/component/world/world_component.h
         include/stage/scene/gui/container/base.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
@@ -191,7 +192,6 @@ target_sources(
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
         include/stage/scene/volume/frustum_culling.h
-        include/stage/scene/component/world/world_component.h
         include/stage/stage.h
         include/util/cache.hpp
         include/util/files.h
@@ -230,9 +230,9 @@ target_sources(
         include/video/render/types.hpp
         include/video/render/types.hpp
         include/video/shader/cache.h
-        include/video/shader/definition.h
+        include/video/shader/file_loader.h
+        include/video/shader/program.h
         include/video/shader/shader.h
-        include/video/shader/stage.h
         include/video/texture/animation.h
         include/video/texture/data.h
         include/video/texture/manager.h

@@ -6,7 +6,7 @@
 #include <plog/Log.h>
 
 #include "video/glfw_window.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 
 namespace soil::video::render {
 State::State(Context& context)
@@ -24,7 +24,8 @@ State::State(Context& context)
       scissor_({}),
       vao_(nullptr),
       clearColor_(),
-      shaderProgramId_(0) {
+      shaderProgram_(nullptr),
+      framesRendered_(0) {
   blend_ = context_.IsEnabled(GL_BLEND);
   depthTest_ = context_.IsEnabled(GL_DEPTH_TEST);
   depthFunc_ = static_cast<DepthFunc>(context_.GetInteger(GL_DEPTH_FUNC));
@@ -309,40 +310,41 @@ void State::BindVao(const vertex::Vao* vao) {
   if (vao == vao_) {
     return;
   }
-#ifdef DEBUG
-  changes_++;
-#endif
   if (vao != nullptr) {
     context_.BindVertexArray(vao->GetId());
   } else {
     context_.BindVertexArray(0);
   }
   vao_ = vao;
+#ifdef DEBUG
+  changes_++;
+#endif
 }
 const vertex::Vao* State::GetVao() const { return vao_; }
 
-void State::SetShader(const shader::Shader* shader) {
-  if (shader == nullptr) {
-    if (shaderProgramId_ == 0) {
-      return;
-    }
-#ifdef DEBUG
-    changes_++;
-#endif
-    context_.UseProgram(0);
+void State::SetShader(const shader::Program* shader) {
+  if (shader == shaderProgram_) {
     return;
   }
-  if (shaderProgramId_ == shader->GetId()) {
-    return;
+  shaderProgram_ = shader;
+  if (shaderProgram_ == nullptr) {
+    context_.UseProgram(0);
+  } else {
+#ifdef DEBUG
+    if (!shader->IsValid()) {
+      throw std::runtime_error("shader is invalid");
+    }
+#endif
+    context_.UseProgram(shaderProgram_->GetId());
   }
 #ifdef DEBUG
   changes_++;
 #endif
-  context_.UseProgram(shader->GetId());
 }
 const std::vector<texture::Texture*>& State::TextureUnits() {
   return textureUnits_;
 }
+size_t State::FramesRendered() const { return framesRendered_; }
 
 bool StateDef::operator==(const StateDef& rhs) const {
   return Blend == rhs.Blend && DepthTest == rhs.DepthTest &&

@@ -12,7 +12,7 @@ class VaoElements : public Drawable {
     virtual void BeforeDraw() {};
     virtual void OnBind(State& state) {};
   };
-  explicit VaoElements(const vertex::Vao* vao, video::shader::Shader* shader,
+  explicit VaoElements(const vertex::Vao* vao, video::shader::Program* shader,
                        DrawMode drawMode, Data& data, StateDef state = {});
   ~VaoElements() override = default;
   [[nodiscard]] const StateIdentifier& StateId() const override;

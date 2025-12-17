@@ -36,6 +36,7 @@ void DrawableComponent::SetCulled(const bool culled) {
   culled_ = culled;
   SignalChanged();
 }
+
 bool DrawableComponent::IsDrawablePile() { return false; }
 
 }  // namespace soil::stage::scene::component

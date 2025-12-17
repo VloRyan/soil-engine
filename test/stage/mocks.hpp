@@ -97,7 +97,7 @@ class ResourcesMock : public Resources {
     return nullptr;
   }
 
-  video::shader::Shader* GetShader(const std::string& name) const override {
+  video::shader::Program* GetShader(const std::string& name) const override {
     return nullptr;
   }
 

@@ -86,7 +86,10 @@ void Manager::BeginRender() {
   GetState().Clear({.Color = true, .Depth = true, .Stencil = true});
 }
 
-void Manager::EndRender() const { glfwSwapBuffers(context_->Window()); }
+void Manager::EndRender() {
+  context_->SwapBuffers();
+  GetState().framesRendered_++;
+}
 
 void Manager::NewUniformBufferObject(const std::string& name,
                                      const gl_size_t size, const int target) {
@@ -94,7 +97,8 @@ void Manager::NewUniformBufferObject(const std::string& name,
       new buffer::UniformBufferObject(buffer::Object::UsageType::Dynamic);
   ubo->Reserve(size);
   ubo->BindToTarget(target);
-  shaderCache_.ForEach([name, target](shader::Shader* shader) {
+  shaderCache_.ForEach([name, target, this](shader::Program* shader) {
+    state_->SetShader(shader);
     shader->BindUniformBlock(name, target);
   });
   glBindBufferBase(GL_UNIFORM_BUFFER, target, ubo->GetId());
@@ -129,7 +133,7 @@ mesh::Data* Manager::GetMesh(const mesh::Prefab::Definition& definition) {
                              });
 }
 
-shader::Shader* Manager::GetShader(const std::string& name) {
+shader::Program* Manager::GetShader(const std::string& name) {
   return shaderCache_.GetByName(name);
 }
 
@@ -137,7 +141,7 @@ void Manager::PrepareShader(const std::string& name, const std::string& path) {
   shaderCache_.Prepare(name, path);
 }
 
-void Manager::PrepareShader(shader::Shader* shader) {
+void Manager::PrepareShader(shader::Program* shader) {
   shaderCache_.Prepare(shader->GetName(), shader);
 }
 
@@ -182,16 +186,19 @@ void APIENTRY Manager::debugOutput(const GLenum source, const GLenum type,
       break;
   }
   debugMessage += ") Type(";
-
+  auto logSeverity = plog::Severity::debug;
   switch (type) {
     case GL_DEBUG_TYPE_ERROR:
       debugMessage += "Error";
+      logSeverity = plog::Severity::error;
       break;
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
       debugMessage += "Deprecated Behaviour";
+      logSeverity = plog::Severity::warning;
       break;
     case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
       debugMessage += "Undefined Behaviour";
+      logSeverity = plog::Severity::warning;
       break;
     case GL_DEBUG_TYPE_PORTABILITY:
       debugMessage += "Portability";
@@ -239,7 +246,7 @@ void APIENTRY Manager::debugOutput(const GLenum source, const GLenum type,
   } else {
     debugMessage += ")";
   }
-  PLOG_DEBUG << debugMessage;
+  PLOG(logSeverity) << debugMessage;
 }
 class Window* Manager::GetWindow() {
 #ifdef DEBUG

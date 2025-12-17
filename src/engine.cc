@@ -132,10 +132,10 @@ void Engine::Run() {
       // If last was more than 1sec ago
 #ifdef DEBUG
       const auto vertexCount =
-          static_cast<int>(video::shader::Shader::GetVerticeCount());
+          static_cast<int>(video::shader::Program::GetVerticeCount());
       const auto drawCount =
-          static_cast<int>(video::shader::Shader::GetDrawCount());
-      video::shader::Shader::ResetCounter();
+          static_cast<int>(video::shader::Program::GetDrawCount());
+      video::shader::Program::ResetCounter();
 #else
       constexpr auto VertexCount = 0;
       constexpr auto DrawCount = 0;

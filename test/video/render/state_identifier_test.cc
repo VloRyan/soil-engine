@@ -2,13 +2,13 @@
 
 #include <gtest/gtest.h>
 
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 namespace soil::video::render {
 
 class StateIdentifierTest : public testing::Test {};
 
 TEST_F(StateIdentifierTest, StateIdentifierTest) {
-  auto shader = shader::Shader("test", "test");
+  auto shader = shader::Program("test", "test");
   auto id1 = StateIdentifier{.Shader = &shader,
                              .VAOId = 2,
                              .DrawMode = DrawMode::Points,

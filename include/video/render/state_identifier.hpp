@@ -11,12 +11,12 @@
 
 #include "state.h"
 namespace soil::video::shader {
-class Shader;
+class Program;
 }
 namespace soil::video::render {
 
 struct StateIdentifier final {
-  video::shader::Shader* Shader{nullptr};
+  video::shader::Program* Shader{nullptr};
   uint VAOId{0};
   const vertex::Vao* Vao{nullptr};
   enum DrawMode DrawMode { DrawMode::Points };

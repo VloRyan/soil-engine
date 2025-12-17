@@ -12,7 +12,7 @@ class VaoElementsInstanced : public Drawable {
   struct PileDescriptor {
     std::string Name;
     video::mesh::Data* MeshData{nullptr};
-    shader::Shader* Shader{nullptr};
+    shader::Program* Shader{nullptr};
     std::vector<vertex::VertexAttribDescriptor> VertexAttribDescriptors{};
     int PreserveInstances{100};
   };

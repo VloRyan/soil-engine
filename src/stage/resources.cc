@@ -18,7 +18,7 @@ video::vertex::Vao* Resources::GetVao(const std::string& name) const {
   return videoManager_->VaoCache().Get(name);
 }
 
-video::shader::Shader* Resources::GetShader(const std::string& name) const {
+video::shader::Program* Resources::GetShader(const std::string& name) const {
   return videoManager_->GetShader(name);
 }
 

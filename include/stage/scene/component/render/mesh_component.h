@@ -8,11 +8,11 @@ class MeshComponent : public DrawableComponent,
                       public video::render::draw::VaoElements::Data {
  public:
   MeshComponent(const video::vertex::Vao* vao, video::render::DrawMode mode,
-                video::shader::Shader* shader, bool opaque);
+                video::shader::Program* shader, bool opaque);
 
   ~MeshComponent() override;
 
-  [[nodiscard]] virtual video::shader::Shader* GetShader() const;
+  [[nodiscard]] virtual video::shader::Program* GetShader() const;
 
   [[nodiscard]] video::render::draw::Drawable* Drawable() override;
 

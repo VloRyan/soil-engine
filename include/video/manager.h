@@ -21,11 +21,11 @@ class Manager final {
   ~Manager() = default;
   void Update();
   void BeginRender();
-  void EndRender() const;
+  void EndRender();
   [[nodiscard]] mesh::Data* GetMesh(const mesh::Prefab::Definition& definition);
-  shader::Shader* GetShader(const std::string& name);
+  shader::Program* GetShader(const std::string& name);
   void PrepareShader(const std::string& name, const std::string& path);
-  void PrepareShader(shader::Shader* shader);
+  void PrepareShader(shader::Program* shader);
   texture::Manager& Texture();
   render::State& GetState();
   void NewUniformBufferObject(const std::string& name, gl_size_t size,

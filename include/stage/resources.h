@@ -5,7 +5,7 @@
 #include "sound/manager.h"
 #include "video/manager.h"
 #include "video/mesh/data.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 
 namespace soil::stage {
 class Resources {
@@ -26,13 +26,13 @@ class Resources {
   [[nodiscard]] virtual video::mesh::Data* GetMesh(
       const video::mesh::Prefab::Definition& definition) const;
 
-  video::vertex::Vao* GetVao(const std::string& name) const;
+  [[nodiscard]] video::vertex::Vao* GetVao(const std::string& name) const;
 
-  [[nodiscard]] virtual video::shader::Shader* GetShader(
+  [[nodiscard]] virtual video::shader::Program* GetShader(
       const std::string& name) const;
 
   [[nodiscard]] virtual sound::Source* GetSource(const std::string& name,
-                                                 bool loop = false) const;
+                                                 bool loop) const;
 
   [[nodiscard]] virtual sound::Listener* GetListener() const;
 
