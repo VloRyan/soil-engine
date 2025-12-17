@@ -21,6 +21,9 @@ video::vertex::Vao* Resources::GetVao(const std::string& name) const {
 video::shader::Program* Resources::GetShader(const std::string& name) const {
   return videoManager_->GetShader(name);
 }
+sound::Source* Resources::GetSource(const std::string& name) const {
+  return GetSource(name, false);
+}
 
 sound::Source* Resources::GetSource(const std::string& name,
                                     const bool loop) const {
@@ -41,4 +44,5 @@ video::texture::Manager& Resources::Textures() const {
 video::Window* Resources::GetWindow() const {
   return videoManager_->GetWindow();
 }
+
 }  // namespace soil::stage

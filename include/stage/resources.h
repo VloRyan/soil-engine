@@ -30,6 +30,7 @@ class Resources {
 
   [[nodiscard]] virtual video::shader::Program* GetShader(
       const std::string& name) const;
+  [[nodiscard]] virtual sound::Source* GetSource(const std::string& name) const;
 
   [[nodiscard]] virtual sound::Source* GetSource(const std::string& name,
                                                  bool loop) const;
