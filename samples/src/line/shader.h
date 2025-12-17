@@ -5,10 +5,10 @@
 
 #include "stage/scene/viewer/node.h"
 #include "stage/stage.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 
 namespace soil_samples::line {
-class Shader final : public soil::video::shader::Shader {
+class Shader final : public soil::video::shader::Program {
  public:
   explicit Shader(const std::string& path);
   ~Shader() override = default;
@@ -16,7 +16,6 @@ class Shader final : public soil::video::shader::Shader {
   void SetViewer(soil::stage::scene::viewer::Node* viewer);
 
   void Prepare(soil::video::render::State& state) override;
-  void SetTextures(const std::vector<soil::video::texture::Texture*>& textures);
 
  private:
   soil::stage::scene::viewer::Node* viewer_;

@@ -1,7 +1,6 @@
 #include "line_instance.h"
 
 #include "stage/scene/node.h"
-#include "video/render/mesh_instance_pile.h"
 #include "video/vertex/vertex.h"
 namespace soil_samples::line {
 std::vector<soil::video::vertex::VertexAttribDescriptor> LineInstance::ATTRIBS{
@@ -16,10 +15,9 @@ std::vector<soil::video::vertex::VertexAttribDescriptor> LineInstance::ATTRIBS{
      .Type = soil::video::vertex::AttributePointer::DataType::Float},
 };
 
-LineInstance::LineInstance(
-    const soil::video::render::MeshInstancePile::PileDescriptor& pileDescriptor,
-    const glm::vec3 StartPoint, const glm::vec3 EndPoint)
-    : MeshInstanceComponent(pileDescriptor, true),
+LineInstance::LineInstance(const std::string& pileName,
+                           const glm::vec3 StartPoint, const glm::vec3 EndPoint)
+    : MeshInstanceComponent(pileName),
       data_({
           .Start = StartPoint,
           .End = EndPoint,
@@ -28,30 +26,17 @@ LineInstance::LineInstance(
       localStartPoint_(StartPoint),
       localEndPoint_(EndPoint) {}
 
-LineInstance* LineInstance::NewFromPile(const std::string& name,
-                                        glm::vec3 StartPoint,
-                                        glm::vec3 EndPoint) {
-  const auto pileDescriptor =
-      soil::video::render::MeshInstancePile::GetPileDescription(name);
-  if (pileDescriptor == nullptr) {
-    throw std::runtime_error("pile '" + name + "' not registered");
-  }
-  return new LineInstance(*pileDescriptor, StartPoint, EndPoint);
-}
-/*void LineInstance::WriteData(soil::video::buffer::Cursor* cursor) const {
-  cursor->Write(&data_, sizeof(Data));
-}*/
-void LineInstance::ApplyData(const soil::video::render::data::IWriter& writer,
-                             soil::video::render::State& state) {
-  writer.Write("", data_.Start);
-  writer.Write("", data_.End);
-  writer.Write("", data_.Color);
+void LineInstance::Write(const soil::video::render::data::IWriter& writer) {
+  writer.Write("aStart", data_.Start);
+  writer.Write("aEnd", data_.End);
+  writer.Write("aColor", data_.Color);
 }
 
 void LineInstance::Update() {
   data_.Start = localStartPoint_ + GetParent()->GetPosition();
   data_.End = localEndPoint_ + GetParent()->GetPosition();
   MeshInstanceComponent::Update();
+  SignalChanged();
 }
 
 glm::vec4 LineInstance::GetColor() const { return data_.Color; }
@@ -59,7 +44,6 @@ glm::vec4 LineInstance::GetColor() const { return data_.Color; }
 void LineInstance::SetColor(const glm::vec4 color) {
   data_.Color = color;
   SignalChanged();
-  ;
 }
 
 float LineInstance::GetLength() const {
@@ -72,7 +56,6 @@ void LineInstance::SetStartPoint(const glm::vec3 StartPoint) {
   }
   localStartPoint_ = StartPoint;
   SignalChanged();
-  ;
 }
 
 void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {

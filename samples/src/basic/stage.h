@@ -11,8 +11,6 @@ class Stage final : public common::Stage {
  public:
   explicit Stage();
   ~Stage() override = default;
-  void Handle(const soil::WindowEvent& event) override;
-
   void OnLoad() override;
 
  protected:
@@ -22,7 +20,6 @@ class Stage final : public common::Stage {
   void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
   void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
   std::array<Shape*, SHAPES_PER_DIM * SHAPES_PER_DIM> shapes_;
-  bool printStatistics_;
 };
 }  // namespace soil_samples::basic
 

@@ -30,15 +30,10 @@ struct StageLoader {
 constexpr auto UBO_TARGET_MATRICES = 0;
 
 int main(const int argc, const char* argv[]) {
-  const auto engine = soil::Engine({
-      .Window =
-          soil::WindowParameter{
-              .Size = glm::ivec2(1920, 1080),
-              .RenderSize = glm::ivec2(1920, 1080),
-              .Type = soil::WindowType::Windowed,
-              .OpenGLVersion = glm::ivec2(3, 3),
-          },
-  });
+  auto engine = soil::Engine({.Context = {
+                                  .Size = glm::ivec2(1920, 1080),
+                                  .OpenGLVersion = glm::ivec2(3, 3),
+                              }});
   auto* vidMgr = engine.GetVideoManager();
   vidMgr->PrepareShader(
       new soil_samples::basic::Shader(asset::GetPath("Shader/")));

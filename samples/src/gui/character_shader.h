@@ -4,11 +4,11 @@
 #include <string>
 
 #include "stage/scene/viewer/node.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 
 namespace soil_samples::gui {
 
-class CharacterShader final : public soil::video::shader::Shader {
+class CharacterShader final : public soil::video::shader::Program {
  public:
   explicit CharacterShader(const std::string& path);
   void Prepare(soil::video::render::State& state) override;

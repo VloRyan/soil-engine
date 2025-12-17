@@ -5,10 +5,10 @@
 
 #include "stage/scene/viewer/node.h"
 #include "stage/stage.h"
-#include "video/shader/shader.h"
+#include "video/shader/program.h"
 
 namespace soil_samples::instancing {
-class Shader final : public soil::video::shader::Shader {
+class Shader final : public soil::video::shader::Program {
  public:
   explicit Shader(const std::string& path);
   ~Shader() override = default;

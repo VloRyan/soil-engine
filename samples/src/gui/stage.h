@@ -28,7 +28,6 @@ class Stage final : public common::Stage {
 
   explicit Stage();
   ~Stage() override = default;
-  void Handle(const soil::WindowEvent& event) override;
   void Render(soil::video::render::State& state) override;
 
   void GenerateMenu(const std::vector<MenuItemDefinition>& items) const;
@@ -41,7 +40,6 @@ class Stage final : public common::Stage {
  private:
   void initGui();
   menu::Item* createMenuItem(const MenuItemDefinition& def) const;
-  bool printStatistics_;
   std::vector<soil::video::texture::Texture*> textures_;
   soil::stage::scene::gui::Root* root_;
   soil::file::SpriteSheet spriteSheet_;

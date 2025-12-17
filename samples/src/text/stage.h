@@ -10,17 +10,17 @@ class Stage final : public common::Stage {
  public:
   explicit Stage();
   ~Stage() override = default;
-  void Handle(const soil::WindowEvent& event) override;
+  void Handle(const soil::video::event::WindowEvent& event) override;
   void Update() override;
   void OnLoad() override;
 
  protected:
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;
+  void OnStatsChanges(const soil::Engine::Statistics& stats) override;
 
  private:
   void initBackground(soil::stage::scene::Scene* scene, int textureSlot);
 
-  bool printStatistics_;
   Node* text_;
   soil::stage::scene::Node* bgNode_;
   basic::Shape* bgShape_;

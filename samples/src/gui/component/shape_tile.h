@@ -1,14 +1,15 @@
 #ifndef GUI_COMPONENT_SHAPE_TILE_H
 #define GUI_COMPONENT_SHAPE_TILE_H
 
-#include "stage/scene/component/mesh_component.h"
+#include "stage/scene/component/render/mesh_component.h"
 
 namespace soil_samples::gui::component {
-class ShapeTile : public soil::stage::scene::component::MeshComponent {
+class ShapeTile : public soil::stage::scene::component::render::MeshComponent {
  public:
   struct PrefabData {
+    soil::video::vertex::Vao* QuadVao{nullptr};
     soil::video::mesh::Data* MeshData{nullptr};
-    soil::video::shader::Shader* Shader{nullptr};
+    soil::video::shader::Program* Shader{nullptr};
     soil::video::texture::Texture* Texture{nullptr};
   };
 
@@ -30,9 +31,11 @@ class ShapeTile : public soil::stage::scene::component::MeshComponent {
   [[nodiscard]] virtual glm::vec2 GetTileScale() const;
   virtual void SetTileScale(glm::vec2 scale);
 
-  float DistanceTo(const glm::vec3& point);
-  void ApplyData(const soil::video::render::data::IWriter& writer,
-                 soil::video::render::State& state) override;
+  void BeforeDraw() override;
+  // void Apply(soil::video::render::State& state) override;
+  float DistanceTo(const glm::vec3& point) override;
+  // float Ordinal(const soil::video::render::State& state) override;
+  void OnBind(soil::video::render::State& state) override;
 
  private:
   static std::unordered_map<std::string, PrefabData> PREFABS;

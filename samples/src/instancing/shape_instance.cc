@@ -1,7 +1,6 @@
 #include "shape_instance.h"
 
 #include "stage/scene/node.h"
-#include "video/render/mesh_instance_pile.h"
 #include "video/vertex/vertex.h"
 
 namespace soil_samples::instancing {
@@ -30,21 +29,8 @@ std::vector<soil::video::vertex::VertexAttribDescriptor>
          .Type = soil::video::vertex::AttributePointer::DataType::UInt},
 };
 
-ShapeInstance::ShapeInstance(
-    const soil::video::render::MeshInstancePile::PileDescriptor& pileDescriptor,
-    const bool isOpaque)
-    : soil::stage::scene::component::render::MeshInstanceComponent(
-          pileDescriptor, isOpaque) {}
-
-ShapeInstance* ShapeInstance::NewFromPile(const std::string& name,
-                                          bool isOpaque) {
-  auto pileDescriptor =
-      soil::video::render::MeshInstancePile::GetPileDescription(name);
-  if (pileDescriptor == nullptr) {
-    throw std::runtime_error("pile '" + name + "' not registered");
-  }
-  return new ShapeInstance(*pileDescriptor, isOpaque);
-}
+ShapeInstance::ShapeInstance(const std::string& pileName)
+    : soil::stage::scene::component::render::MeshInstanceComponent(pileName) {}
 
 uint ShapeInstance::GetTextureIndex() const { return data_.TextureIndex; }
 
@@ -83,11 +69,11 @@ void ShapeInstance::Update() {
   data_.Matrix = GetParent()->Transform().GetMatrix();
   SignalChanged();
 }
-void ShapeInstance::ApplyData(const soil::video::render::data::IWriter& writer,
-                              soil::video::render::State& state) {
+void ShapeInstance::Write(const soil::video::render::data::IWriter& writer) {
   writer.Write("aMatrix", data_.Matrix);
   writer.Write("aSize", data_.Size);
   writer.Write("aColor", data_.Color);
   writer.Write("aTextureIndex", data_.TextureIndex);
 }
+
 }  // namespace soil_samples::instancing

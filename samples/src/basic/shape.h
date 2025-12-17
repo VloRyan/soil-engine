@@ -1,14 +1,15 @@
 #ifndef BASIC_SHAPE_H
 #define BASIC_SHAPE_H
 #include <stage/resources.h>
-#include <stage/scene/component/mesh_component.h>
+
+#include "stage/scene/component/render/mesh_component.h"
 
 namespace soil_samples::basic {
 
-class Shape : public soil::stage::scene::component::MeshComponent {
+class Shape : public soil::stage::scene::component::render::MeshComponent {
  public:
-  Shape(const soil::video::mesh::Data& mesh, bool isOpaque,
-        soil::video::shader::Shader* shader);
+  Shape(const soil::video::vertex::Vao* vao,
+        soil::video::shader::Program* shader, bool isOpaque = true);
   ~Shape() override = default;
   [[nodiscard]] virtual glm::vec2 GetSize() const;
   virtual void SetSize(const glm::vec2& size);
@@ -17,12 +18,8 @@ class Shape : public soil::stage::scene::component::MeshComponent {
   [[nodiscard]] virtual byte GetTextureUnit() const;
   virtual void SetTextureUnit(byte textureUnit);
 
-  static Shape* New(const soil::stage::Resources& resources, bool isOpaque,
-                    soil::video::shader::Shader* shader);
-
+  void BeforeDraw() override;
   float DistanceTo(const glm::vec3& point) override;
-  void ApplyData(const soil::video::render::data::IWriter& writer,
-                 soil::video::render::State& state) override;
 
  private:
   glm::vec2 size_;

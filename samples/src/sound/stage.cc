@@ -31,7 +31,7 @@ void Stage::Handle(const soil::stage::event::StageEvent& event) {
       music_->Stop();
     }
   }
-  common::Stage::Handle(event);
+  soil::stage::Stage::Handle(event);
 }
 
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {}

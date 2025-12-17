@@ -5,9 +5,10 @@
 #include <stdexcept>
 
 namespace soil_samples::basic {
-Shape::Shape(const soil::video::mesh::Data& mesh, const bool isOpaque,
-             soil::video::shader::Shader* shader)
-    : MeshComponent(mesh, shader, isOpaque),
+Shape::Shape(const soil::video::vertex::Vao* vao,
+             soil::video::shader::Program* shader, bool isOpaque)
+    : MeshComponent(vao, soil::video::render::DrawMode::TriangleStrip, shader,
+                    isOpaque),
       size_(1.F),
       color_(1.F),
       textureUnit_(0) {}
@@ -26,28 +27,13 @@ void Shape::SetTextureUnit(const byte textureUnit) {
   this->textureUnit_ = textureUnit;
 }
 
-Shape* Shape::New(const soil::stage::Resources& resources, const bool isOpaque,
-                  soil::video::shader::Shader* shader) {
-  const auto* mesh =
-      resources.GetMesh({.Identifier = "ShapeMesh",
-                         .Type = soil::video::mesh::Prefab::Type::Quad});
-  if (mesh == nullptr) {
-    throw std::runtime_error("mesh is null");
-  };
-  return nullptr;
-  // return new Shape(*mesh, isOpaque, shader);
-}
-
-float Shape::DistanceTo(const glm::vec3& point) {
-  return glm::distance(point.z, GetParent()->GetPosition().z);
-}
-
-void Shape::ApplyData(const soil::video::render::data::IWriter& writer,
-                      soil::video::render::State& state) {
-  GetShader()->Use();
+void Shape::BeforeDraw() {
   GetShader()->SetUniform("Transform", GetParent()->Transform().GetMatrix());
   GetShader()->SetUniform("Size", GetSize());
   GetShader()->SetUniform("Color", GetColor());
   GetShader()->SetUniform("Texture", GetTextureUnit());
+}
+float Shape::DistanceTo(const glm::vec3& point) {
+  return GetParent()->GetPosition().z;  // sort by z
 }
 }  // namespace soil_samples::basic

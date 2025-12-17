@@ -6,6 +6,7 @@
 #include <string>
 
 #include "common/rotation_node.h"
+#include "engine.h"
 #include "glm/glm.hpp"
 #include "shader.h"
 #include "shape_instance.h"
@@ -15,7 +16,7 @@
 
 namespace soil_samples::instancing {
 
-Stage::Stage() : shapes_(), printStatistics_(false) {}
+Stage::Stage() : shapes_() {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
@@ -37,35 +38,15 @@ void Stage::OnLoad() {
         *texture);  // texture will be bound to next free slot
   }
 
-  soil::video::render::MeshInstancePile::RegisterPile(
-      "shape", {
-                   .MeshData = GetResources().GetMesh({.Identifier = "Quad"}),
-                   .Shader = shader,
-                   .VertexAttribDescriptors = ShapeInstance::ATTRIBS,
-               });
+  soil::video::render::draw::VaoElementsInstanced::Prepare({
+      .Name = "shape",
+      .MeshData = GetResources().GetMesh({.Identifier = "Quad"}),
+      .Shader = shader,
+      .VertexAttribDescriptors = ShapeInstance::ATTRIBS,
+  });
 
   initBackground(scene, 0);
   initCarrots(scene, 1);
-}
-
-void Stage::Handle(const soil::WindowEvent& event) {
-  soil::stage::Stage::Handle(event);
-  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.Window->GetStatistics();
-    PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
-               << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
-               << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)
-               << " State changes: "
-               << std::to_string(stats.StateChanges / stats.FPS)
-               << " Update times: "
-               << std::to_string(stats.updateInputTime / stats.FPS) << ", "
-               << std::to_string(stats.updateStageTime / stats.FPS) << ", "
-               << std::to_string(stats.updateVideoTime / stats.FPS)
-               << " Render times: "
-               << std::to_string(stats.startRenderTime / stats.FPS) << ", "
-               << std::to_string(stats.renderTime / stats.FPS) << ", "
-               << std::to_string(stats.endRenderTime / stats.FPS);
-  }
 }
 
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
@@ -78,17 +59,10 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
       .AddKeyMapping(soil::input::Keys::Key_2,
                      soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
-                       shapes_[1]->SetOpaque(!shapes_[1]->IsOpaque());
-                     })
-      .AddKeyMapping(soil::input::Keys::Key_3,
-                     soil::input::Event::StateType::Release,
-                     [this](const soil::input::Event&) {
-                       shapes_[2]->SetOpaque(!shapes_[2]->IsOpaque());
-                     })
-      .AddKeyMapping(soil::input::Keys::Key_4,
-                     soil::input::Event::StateType::Release,
-                     [this](const soil::input::Event&) {
-                       shapes_[3]->SetOpaque(!shapes_[3]->IsOpaque());
+                       if (shapes_[1] != nullptr) {
+                         delete shapes_[1];
+                         shapes_[1] = nullptr;
+                       }
                      })
       .AddKeyMapping(soil::input::Keys::S,
                      soil::input::Event::StateType::Release,
@@ -101,7 +75,7 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureIndex) {
   const auto bgNode = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  auto* bgShape = bgNode->AddComponent(ShapeInstance::NewFromPile("shape"));
+  auto* bgShape = bgNode->AddComponent(new ShapeInstance("shape"));
   bgShape->SetSize({10.F, 10.F});
   bgShape->SetTextureIndex(textureIndex);
   bgNode->SetPosition({0.F, 0.F, -1.F});
@@ -118,7 +92,7 @@ void Stage::initCarrots(soil::stage::scene::Scene* scene,
     for (auto col = 0; col < SHAPES_PER_DIM; ++col) {
       const auto i = row * SHAPES_PER_DIM + col;
       auto* shapeNode = scene->AddChild(new common::RotationNode(initRotation));
-      shapes_[i] = shapeNode->AddComponent(ShapeInstance::NewFromPile("shape"));
+      shapes_[i] = shapeNode->AddComponent(new ShapeInstance("shape"));
       shapes_[i]->SetTextureIndex(textureIndex);
       shapes_[i]->SetSize(glm::vec2(1, 1));
       shapes_[i]->SetColor(glm::vec4(colors[i % 4], 1.0F));

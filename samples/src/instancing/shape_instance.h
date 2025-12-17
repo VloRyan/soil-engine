@@ -16,15 +16,9 @@ class ShapeInstance
     uint TextureIndex{0};
   };
 
-  explicit ShapeInstance(
-      const soil::video::render::MeshInstancePile::PileDescriptor&
-          pileDescriptor,
-      bool isOpaque = true);
+  explicit ShapeInstance(const std::string& pileName);
 
   ~ShapeInstance() override = default;
-
-  static ShapeInstance* NewFromPile(const std::string& name = "shape",
-                                    bool isOpaque = true);
 
   [[nodiscard]] virtual uint GetTextureIndex() const;
   virtual void SetTextureIndex(uint index);
@@ -37,9 +31,7 @@ class ShapeInstance
   static inline std::string BATCH_NAME = "Object";
   void Update() override;
 
- protected:
-  void ApplyData(const soil::video::render::data::IWriter& writer,
-                 soil::video::render::State& state) override;
+  void Write(const soil::video::render::data::IWriter& writer) override;
 
  private:
   Data data_;

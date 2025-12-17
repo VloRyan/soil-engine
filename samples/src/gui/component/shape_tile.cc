@@ -1,14 +1,14 @@
 #include "shape_tile.h"
 
 #include "stage/scene/gui/rectangle.h"
-#include "stage/scene/node.h"
-
+#include "video/shader/program.h"
 namespace soil_samples::gui::component {
 std::unordered_map<std::string, ShapeTile::PrefabData> ShapeTile::PREFABS = {};
 
 ShapeTile::ShapeTile(const std::string& prefab, const bool isOpaque)
-    : MeshComponent(*PREFABS[prefab].MeshData, PREFABS[prefab].Shader,
-                    isOpaque),
+    : MeshComponent(PREFABS[prefab].QuadVao,
+                    soil::video::render::DrawMode::TriangleStrip,
+                    PREFABS[prefab].Shader, isOpaque),
       data_(&PREFABS[prefab]),
       size_(0.F),
       color_(1.F),
@@ -18,11 +18,6 @@ ShapeTile::ShapeTile(const std::string& prefab, const bool isOpaque)
 
 void ShapeTile::InitPrefab(const std::string& name, const PrefabData& data) {
   PREFABS[name] = data;
-}
-
-float ShapeTile::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetPosition().z + positionOffset_.z,
-                       point.z);
 }
 
 int ShapeTile::GetTileIndex() const { return tileIndex_; }
@@ -75,8 +70,30 @@ void ShapeTile::SetPositionOffset(glm::vec3 offset) {
 }
 
 glm::vec3 ShapeTile::GetPositionOffset() const { return positionOffset_; }
-void ShapeTile::ApplyData(const soil::video::render::data::IWriter& writer,
-                          soil::video::render::State& state) {
+void ShapeTile::BeforeDraw() {
+  /*const auto* parentRect =
+      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
+  if (parentRect != nullptr) {
+    state.SetScissorTest(true);
+    state.SetScissor(parentRect->GetScissorRect());
+  } else {
+    state.SetScissorTest(false);
+  }*/
+  auto transform = GetParent()->Transform().GetMatrix();
+  transform[3] += glm::vec4(positionOffset_, 0.0F);
+  GetShader()->SetUniform("uTransform", transform);
+  GetShader()->SetUniform("uSize", size_);
+  GetShader()->SetUniform("uTileScale", tileScale_);
+  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
+  GetShader()->SetUniform("uColor", color_);
+  GetShader()->SetUniform("uTileIndex", tileIndex_);
+}
+
+float ShapeTile::DistanceTo(const glm::vec3& point) {
+  return GetParent()->GetPosition().z + positionOffset_.z;  // sort by z
+}
+
+void ShapeTile::OnBind(soil::video::render::State& state) {
   const auto* parentRect =
       dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
   if (parentRect != nullptr) {
@@ -85,15 +102,6 @@ void ShapeTile::ApplyData(const soil::video::render::data::IWriter& writer,
   } else {
     state.SetScissorTest(false);
   }
-  auto transform = GetParent()->Transform().GetMatrix();
-  transform[3] += glm::vec4(positionOffset_, 0.0F);
-  GetShader()->Use();
-  GetShader()->SetUniform("uTransform", transform);
-  GetShader()->SetUniform("uSize", size_);
-  GetShader()->SetUniform("uTileScale", tileScale_);
-  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
-  GetShader()->SetUniform("uColor", color_);
-  GetShader()->SetUniform("uTileIndex", tileIndex_);
 }
 
 }  // namespace soil_samples::gui::component

@@ -16,8 +16,7 @@
 #include "world/volume/quad_tree.h"
 
 namespace soil_samples::world {
-Stage::Stage()
-    : printStatistics_(false), shapes_(), world_(nullptr), colObj_(nullptr) {}
+Stage::Stage() : shapes_(), world_(nullptr), colObj_(nullptr) {}
 
 void Stage::Update() {
   if (colObj_ != nullptr &&
@@ -55,15 +54,16 @@ void Stage::OnLoad() {
 
   auto* shader = dynamic_cast<basic::Shader*>(
       GetResources().GetShader(basic::Shader::NAME));
-  shader->Use();
+  renderState.SetShader(shader);
   shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
-  world_ = scene->AddChild(
-      new soil::stage::scene::world::WorldNode(new soil::world::World(
-          {
-              .Friction = 0.01F,
-          },
-          new soil::world::volume::QuadTree(64.F))));
+  world_ = scene->AddComponent(
+      new soil::stage::scene::component::world::WorldComponent(
+          new soil::world::World(
+              {
+                  .Friction = 0.01F,
+              },
+              new soil::world::volume::QuadTree(64.F))));
 
   initBackground(scene, textures[0]->GetSlot());
   initCarrots(scene, textures[1]->GetSlot());
@@ -88,13 +88,14 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const byte textureUnit) const {
   auto* shader = dynamic_cast<basic::Shader*>(
       GetResources().GetShader(basic::Shader::NAME));
-  const auto* mesh = GetResources().GetMesh({
+  /*const auto* mesh = GetResources().GetMesh({
       .Identifier = "Quad",
-  });
+  });*/
+  auto* quadVao = GetResources().GetVao("quad");
 
   const auto bgNode = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  auto* bgShape = bgNode->AddComponent(new basic::Shape(*mesh, true, shader));
+  auto* bgShape = bgNode->AddComponent(new basic::Shape(quadVao, shader));
   bgShape->SetSize({10.F, 10.F});
   bgShape->SetTextureUnit(textureUnit);
   bgNode->SetPosition({0.F, 0.F, -1.F});
@@ -104,44 +105,26 @@ void Stage::initCarrots(soil::stage::scene::Scene* scene,
                         const byte textureUnit) {
   auto* shader = dynamic_cast<basic::Shader*>(
       GetResources().GetShader(basic::Shader::NAME));
-  const auto* mesh = GetResources().GetMesh({
+  /*const auto* mesh = GetResources().GetMesh({
       .Identifier = "Quad",
-  });
+  });*/
+  auto* quadVao = GetResources().GetVao("quad");
   constexpr std::array colors = {
       glm::vec3(1.F, 1.F, 1.F), glm::vec3(0.5F, 1.F, 1.F),
       glm::vec3(1.F, 0.5F, 1.F), glm::vec3(1.F, 1.F, 0.5F)};
   float initRotation = 0.0f;
-  auto* shapeNode = world_->AddChild(new common::RotationNode(initRotation));
-  shapes_[0] = shapeNode->AddComponent(new basic::Shape(*mesh, true, shader));
+  auto* shapeNode = scene->AddChild(new common::RotationNode(initRotation));
+  shapes_[0] = shapeNode->AddComponent(new basic::Shape(quadVao, shader));
   shapes_[0]->SetTextureUnit(textureUnit);
   shapes_[0]->SetSize(glm::vec2(1, 1));
   shapes_[0]->SetColor(glm::vec4(colors[0], 1.0F));
   shapeNode->SetPosition(glm::vec3(0.1F, 4.5F, -0.1F));
-  auto* obj = new soil::stage::scene::component::CollisionObjectComponent(
-      new soil::world::volume::AABB(glm::vec3(1.F)),
-      soil::world::entity::CollisionObject::ContactType::Object);
+  auto* obj =
+      new soil::stage::scene::component::world::CollisionObjectComponent(
+          new soil::world::volume::AABB(glm::vec3(1.F)),
+          soil::world::entity::CollisionObject::ContactType::Object);
   colObj_ = shapeNode->AddComponent(obj);
   world_->Activate(colObj_);
-}
-
-void Stage::Handle(const soil::WindowEvent& event) {
-  soil::stage::Stage::Handle(event);
-  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.Window->GetStatistics();
-    PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
-               << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
-               << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)
-               << " State changes: "
-               << std::to_string(stats.StateChanges / stats.FPS)
-               << " Update times: "
-               << std::to_string(stats.updateInputTime / stats.FPS) << ", "
-               << std::to_string(stats.updateStageTime / stats.FPS) << ", "
-               << std::to_string(stats.updateVideoTime / stats.FPS)
-               << " Render times: "
-               << std::to_string(stats.startRenderTime / stats.FPS) << ", "
-               << std::to_string(stats.renderTime / stats.FPS) << ", "
-               << std::to_string(stats.endRenderTime / stats.FPS);
-  }
 }
 
 }  // namespace soil_samples::world

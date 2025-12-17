@@ -1,5 +1,6 @@
 #include "stage.h"
 
+#include <GL/gl3w.h>
 #include <plog/Log.h>
 
 #include <string>
@@ -13,7 +14,7 @@
 
 namespace soil_samples::line {
 
-Stage::Stage() : lines_(), printStatistics_(false), offset_(0) {}
+Stage::Stage() : lines_(), offset_(0) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
@@ -24,50 +25,25 @@ void Stage::OnLoad() {
 
   auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
   shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
-
-  soil::video::render::MeshInstancePile::RegisterPile(
-      LineInstance::BATCH_NAME,
-      {
-          .MeshData = GetResources().GetMesh(
-              {.Type = soil::video::mesh::Prefab::Type::Line}),
-          .Shader = shader,
-          .VertexAttribDescriptors = LineInstance::ATTRIBS,
-      });
-
-  glLineWidth(1.F);
+  soil::video::render::draw::VaoElementsInstanced::Prepare({
+      .Name = LineInstance::BATCH_NAME,
+      .MeshData = GetResources().GetMesh(
+          {.Type = soil::video::mesh::Prefab::Type::Line}),
+      .Shader = shader,
+      .VertexAttribDescriptors = LineInstance::ATTRIBS,
+  });
   initLines(scene);
 }
 
-void Stage::Update() { soil::stage::Stage::Update(); }
-
-void Stage::Handle(const soil::WindowEvent& event) {
-  soil::stage::Stage::Handle(event);
-  if (event.Cause == soil::WindowEvent::StatisticsChanged) {
-    if (lines_[0] != nullptr) {
-      offset_++;
-      for (auto i = 0; i < MAX_LINES; ++i) {
-        lines_[i]->SetVisible(i <= offset_);
-      }
-      if (offset_ >= MAX_LINES) {
-        offset_ = 0;
-      }
+void Stage::OnStatsChanges(const soil::Engine::Statistics& stats) {
+  common::Stage::OnStatsChanges(stats);
+  if (lines_[0] != nullptr) {
+    offset_++;
+    for (auto i = 0; i < MAX_LINES; ++i) {
+      lines_[i]->SetVisible(i <= offset_);
     }
-    if (printStatistics_) {
-      const auto stats = event.Window->GetStatistics();
-      PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
-                 << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
-                 << " Vertices: "
-                 << std::to_string(stats.VertexCount / stats.FPS)
-                 << " State changes: "
-                 << std::to_string(stats.StateChanges / stats.FPS)
-                 << " Update times: "
-                 << std::to_string(stats.updateInputTime / stats.FPS) << ", "
-                 << std::to_string(stats.updateStageTime / stats.FPS) << ", "
-                 << std::to_string(stats.updateVideoTime / stats.FPS)
-                 << " Render times: "
-                 << std::to_string(stats.startRenderTime / stats.FPS) << ", "
-                 << std::to_string(stats.renderTime / stats.FPS) << ", "
-                 << std::to_string(stats.endRenderTime / stats.FPS);
+    if (offset_ >= MAX_LINES) {
+      offset_ = 0;
     }
   }
 }
@@ -87,10 +63,10 @@ void Stage::initLines(soil::stage::scene::Scene* scene) {
   for (auto i = 0; i < MAX_LINES; ++i) {
     auto* node = scene->AddChild(new soil::stage::scene::Node(
         soil::stage::scene::Node::Type::Transform));
-    lines_[i] = node->AddComponent(LineInstance::NewFromPile(
-        LineInstance::BATCH_NAME,                         //
-        glm::vec3(inner * cos(i), inner * sin(i), -0.1),  //
-        glm::vec3(outer * cos(i), outer * sin(i), -0.1)));
+    lines_[i] = node->AddComponent(
+        new LineInstance(LineInstance::BATCH_NAME,                         //
+                         glm::vec3(inner * cos(i), inner * sin(i), -0.1),  //
+                         glm::vec3(outer * cos(i), outer * sin(i), -0.1)));
     lines_[i]->SetVisible(false);
     node->SetPosition(glm::vec3(500, 500, 0));
     auto remain = static_cast<float>(i);

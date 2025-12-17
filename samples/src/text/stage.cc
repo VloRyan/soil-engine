@@ -16,8 +16,7 @@
 
 namespace soil_samples::text {
 Stage::Stage()
-    : printStatistics_(false),
-      text_(nullptr),
+    : text_(nullptr),
       bgNode_(nullptr),
       bgShape_(nullptr),
       description_(),
@@ -30,8 +29,7 @@ void Stage::OnLoad() {
 
   const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
       GetResources().GetWindow()->GetSize()));
-  auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
-
+  auto* quadVao = GetResources().GetVao("quad");
   auto* bgTexture = GetResources().Textures().GetTexture2D(
       asset::GetPath("Textures/crt.jpg"));
   auto& renderState = GetResources().GetRenderState();
@@ -49,12 +47,12 @@ void Stage::OnLoad() {
 
   auto* charShader = dynamic_cast<gui::CharacterShader*>(
       GetResources().GetShader(gui::CharacterShader::NAME));
-  charShader->Use();
+  renderState.SetShader(charShader);
   charShader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
   soil::stage::scene::component::text::AbstractText::InitPrefab(
       "TextCalibri", {
-                         .MeshData = quadMesh,
+                         .QuadVao = quadVao,
                          .Shader = charShader,
                          .Font = fontFile,
                          .FontTexture = fontTexture,
@@ -165,46 +163,21 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureSlot) {
   auto* bgShader = dynamic_cast<basic::Shader*>(
       GetResources().GetShader(basic::Shader::NAME));
-  auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
+  // auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
+  auto* quadVao = GetResources().GetVao("quad");
   const auto winSize =
       glm::vec2(GetResources().GetWindow()->GetSize() - glm::ivec2(30, 30));
   bgNode_ = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  bgShape_ = bgNode_->AddComponent(new basic::Shape(*quadMesh, true, bgShader));
+  bgShape_ = bgNode_->AddComponent(new basic::Shape(quadVao, bgShader));
   bgShape_->SetSize(winSize);
   bgShape_->SetTextureUnit(textureSlot);
   bgShape_->SetColor({.2F, .2F, .2F, 1.F});
 }
 
-void Stage::Handle(const soil::WindowEvent& event) {
+void Stage::Handle(const soil::video::event::WindowEvent& event) {
   soil::stage::Stage::Handle(event);
-  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.Window->GetStatistics();
-    text_->Text().SetText(
-        "Hello world!\n"
-        "FPS:" +
-        std::to_string(stats.FPS) +
-        "\n"
-        " Draws: " +
-        std::to_string(stats.DrawCount / stats.FPS) +
-        "\n"
-        " Vertices: " +
-        std::to_string(stats.VertexCount / stats.FPS) +
-        "\n"
-        " State changes: " +
-        std::to_string(stats.StateChanges / stats.FPS) +
-        "\n"
-        " Update times: " +
-        std::to_string(stats.updateInputTime / stats.FPS) + ", " +
-        std::to_string(stats.updateStageTime / stats.FPS) + ", " +
-        std::to_string(stats.updateVideoTime / stats.FPS) +
-        "\n"
-        " Render times: " +
-        std::to_string(stats.startRenderTime / stats.FPS) + ", " +
-        std::to_string(stats.renderTime / stats.FPS) + ", " +
-        std::to_string(stats.endRenderTime / stats.FPS));
-  }
-  if (event.Cause == soil::WindowEvent::SizeChanged) {
+  if (event.Cause == soil::video::event::WindowEvent::SizeChanged) {
     const auto winSize =
         glm::vec2(event.Window->GetSize() - glm::ivec2(30, 30));
     const auto winCenter = glm::vec2(winSize) * glm::vec2(.5F);
@@ -217,6 +190,31 @@ void Stage::Handle(const soil::WindowEvent& event) {
   }
 }
 
+void Stage::OnStatsChanges(const soil::Engine::Statistics& stats) {
+  text_->Text().SetText(
+      "Hello world!\n"
+      "FPS:" +
+      std::to_string(stats.FPS) +
+      "\n"
+      " Draws: " +
+      std::to_string(stats.DrawCount / stats.FPS) +
+      "\n"
+      " Vertices: " +
+      std::to_string(stats.VertexCount / stats.FPS) +
+      "\n"
+      " State changes: " +
+      std::to_string(stats.StateChanges / stats.FPS) +
+      "\n"
+      " Update times: " +
+      std::to_string(stats.updateInputTime / stats.FPS) + ", " +
+      std::to_string(stats.updateStageTime / stats.FPS) + ", " +
+      std::to_string(stats.updateVideoTime / stats.FPS) +
+      "\n"
+      " Render times: " +
+      std::to_string(stats.startRenderTime / stats.FPS) + ", " +
+      std::to_string(stats.renderTime / stats.FPS) + ", " +
+      std::to_string(stats.endRenderTime / stats.FPS));
+}
 void Stage::Update() {
   const auto winSize =
       glm::vec2(GetResources().GetWindow()->GetSize() - glm::ivec2(30, 30));

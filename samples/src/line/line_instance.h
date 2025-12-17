@@ -15,12 +15,11 @@ class LineInstance final
     glm::vec4 Color;
   };
 
-  LineInstance(const soil::video::render::MeshInstancePile::PileDescriptor&
-                   pileDescriptor,
-               glm::vec3 StartPoint, glm::vec3 EndPoint);
+  LineInstance(const std::string& pileName, glm::vec3 StartPoint,
+               glm::vec3 EndPoint);
 
-  static LineInstance* NewFromPile(const std::string& name,
-                                   glm::vec3 StartPoint, glm::vec3 EndPoint);
+  /*static LineInstance* NewFromPile(const std::string& name,
+                                   glm::vec3 StartPoint, glm::vec3 EndPoint);*/
 
   [[nodiscard]] glm::vec4 GetColor() const;
 
@@ -34,9 +33,8 @@ class LineInstance final
 
   [[nodiscard]] glm::vec3 GetEndPoint() const;
 
-  void ApplyData(const soil::video::render::data::IWriter& writer,
-                 soil::video::render::State& state) override;
-
+  void Write(const soil::video::render::data::IWriter& writer) override;
+ 
   void Update() override;
   inline static const auto BATCH_NAME = std::string("Line");
   static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;

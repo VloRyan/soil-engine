@@ -3,10 +3,10 @@
 
 namespace soil_samples::gui {
 CharacterShader::CharacterShader(const std::string& path)
-    : Shader(NAME, path), viewer_(nullptr) {}
+    : Program(NAME, path), viewer_(nullptr) {}
 
 void CharacterShader::Prepare(soil::video::render::State& state) {
-  Shader::Prepare(state);
+  Program::Prepare(state);
   SetUniform("ProjectionViewMatrix",
              viewer_->GetProjectionMatrix() * viewer_->GetViewMatrix());
 }

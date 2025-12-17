@@ -23,7 +23,7 @@
 namespace soil_samples::gui {
 constexpr auto UBO_TARGET_MATRICES = 0;
 
-Stage::Stage() : printStatistics_(false), root_(nullptr), mainMenu_(nullptr) {}
+Stage::Stage() : root_(nullptr), mainMenu_(nullptr) {}
 
 void Stage::OnLoad() {
   auto* scene = AddScene(new soil::stage::scene::Scene());
@@ -49,8 +49,8 @@ void Stage::OnLoad() {
   scene->AddComponent(
       new soil::stage::scene::component::render::UpdateMatricesUboComponent(
           viewer, UBO_TARGET_MATRICES, &state));
-
-  auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
+  
+  auto* quadVao = GetResources().GetVao("quad");
 
   auto* shapeTileShader = dynamic_cast<ShapeTileShader*>(
       GetResources().GetShader(ShapeTileShader::NAME));
@@ -65,13 +65,13 @@ void Stage::OnLoad() {
   charShader->SetViewer(viewer);
 
   component::ShapeTile::InitPrefab("gui", {
-                                              .MeshData = quadMesh,
+                                              .QuadVao = quadVao,
                                               .Shader = shapeTileShader,
                                               .Texture = guiTexture,
                                           });
   soil::stage::scene::component::text::AbstractText::InitPrefab(
       "Calibri", {
-                     .MeshData = quadMesh,
+                     .QuadVao = quadVao,
                      .Shader = charShader,
                      .Font = fontFile,
                      .FontTexture = fontTexture,
@@ -186,26 +186,6 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
     item->SetOnMouseOutFunc([toolTip] { toolTip->SetVisible(false); });
   }
   return item;
-}
-
-void Stage::Handle(const soil::WindowEvent& event) {
-  soil::stage::Stage::Handle(event);
-  if (printStatistics_ && event.Cause == soil::WindowEvent::StatisticsChanged) {
-    const auto stats = event.Window->GetStatistics();
-    PLOG_DEBUG << "FPS: " << std::to_string(stats.FPS)
-               << " Draws: " << std::to_string(stats.DrawCount / stats.FPS)
-               << " Vertices: " << std::to_string(stats.VertexCount / stats.FPS)
-               << " State changes: "
-               << std::to_string(stats.StateChanges / stats.FPS)
-               << " Update times: "
-               << std::to_string(stats.updateInputTime / stats.FPS) << ", "
-               << std::to_string(stats.updateStageTime / stats.FPS) << ", "
-               << std::to_string(stats.updateVideoTime / stats.FPS)
-               << " Render times: "
-               << std::to_string(stats.startRenderTime / stats.FPS) << ", "
-               << std::to_string(stats.renderTime / stats.FPS) << ", "
-               << std::to_string(stats.endRenderTime / stats.FPS);
-  }
 }
 
 }  // namespace soil_samples::gui
