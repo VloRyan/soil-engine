@@ -53,8 +53,11 @@ const std::vector<Animation::Frame>* Animation::Frames() const {
 float Animation::TickDuration() const { return tickDuration_; }
 
 void Animation::SetFrames(const std::vector<Frame>* frames) {
+  if (frames_ == frames) {
+    return;
+  }
   frames_ = frames;
-  SetFrameIndex(currentFrameIndex_);
+  currentFrameIndex_ = 0;
 }
 
 }  // namespace soil::video::texture
