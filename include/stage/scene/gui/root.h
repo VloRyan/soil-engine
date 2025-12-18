@@ -14,8 +14,6 @@ class Root final : public Rectangle,
   void OnEvent(const input::Event& event) override;
   void OnEvent(const soil::video::event::WindowEvent& event) override;
 
-  bool IsOnElement(glm::ivec2 pos);
-
   template <class T>
   T AddOverlay(T rect) {
     using type = std::remove_pointer_t<T>;
@@ -26,6 +24,7 @@ class Root final : public Rectangle,
   }
 
   void RemoveOverlay(Rectangle* rect);
+  Rectangle* FindChildAt(glm::ivec2 pos) override;
 
  protected:
   void OnStageChanged(soil::stage::Stage* stage,

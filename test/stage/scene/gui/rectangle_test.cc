@@ -123,4 +123,18 @@ TEST_F(RectangleTest, UpdateSize) {
   EXPECT_VEC_EQ(rect->GetSize(), glm::ivec2(350, 250));
 }
 
+class DerivedRect : public Rectangle {};
+TEST_F(RectangleTest, GuiRoot) {
+  auto root = Root(glm::ivec2(800, 600));
+  const auto rect = root.AddChild(new Rectangle());
+  const auto childRect = rect->AddChild(new Rectangle());
+  const auto nonRootedRect = Rectangle();
+  const auto derivedRect = root.AddChild(new DerivedRect());
+
+  EXPECT_EQ(rect->GuiRoot(), &root);
+  EXPECT_EQ(childRect->GuiRoot(), &root);
+  EXPECT_EQ(derivedRect->GuiRoot(), &root);
+  EXPECT_EQ(nonRootedRect.GuiRoot(), nullptr);
+}
+
 }  // namespace soil::stage::scene::gui

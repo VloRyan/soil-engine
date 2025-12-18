@@ -1,6 +1,7 @@
 #include "stage/scene/gui/rectangle.h"
 
 #include "stage/scene/component/transform_component.h"
+#include "stage/scene/gui/root.h"
 
 namespace soil::stage::scene::gui {
 Rectangle::Rectangle()
@@ -330,4 +331,21 @@ void Rectangle::SetMinSize(const glm::ivec2& minSize) { minSize_ = minSize; }
 glm::ivec2 Rectangle::GetMaxSize() const { return maxSize_; }
 
 void Rectangle::SetMaxSize(const glm::ivec2& maxSize) { maxSize_ = maxSize; }
+
+class Root* Rectangle::GuiRoot() const {
+  auto p = const_cast<Rectangle*>(this);
+  while (p->GetParentRect() != nullptr) {
+    p = p->GetParentRect();
+  }
+  return dynamic_cast<class Root*>(p);
+}
+Rectangle* Rectangle::FindChildAt(glm::ivec2 pos) {
+  for (auto* child : children_) {
+    if (child->Contains(pos)) {
+      return child;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace soil::stage::scene::gui

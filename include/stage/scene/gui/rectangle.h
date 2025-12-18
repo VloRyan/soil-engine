@@ -5,6 +5,7 @@
 #include "video/render/state.h"
 
 namespace soil::stage::scene::gui {
+
 class Rectangle : public Node {
   friend class Root;
 
@@ -73,6 +74,10 @@ class Rectangle : public Node {
   virtual void SetPadding(const glm::ivec4& padding);
 
   void RemoveChild(Node* node) override;
+
+  class Root* GuiRoot() const;
+
+  virtual Rectangle* FindChildAt(glm::ivec2 pos);
 
  protected:
   void addChild(Node* node) override;

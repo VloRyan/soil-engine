@@ -66,15 +66,6 @@ void Root::OnEvent(const soil::video::event::WindowEvent& event) {
   SetDirty(DirtyImpact::Dependents);
 }
 
-bool Root::IsOnElement(glm::ivec2 pos) {
-  for (auto* child : children_) {
-    if (child->IsVisible() && child->Contains(pos)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void Root::addToOverlayContainer(Rectangle* rect) {
   if (overlayContainer_ == nullptr) {
     overlayContainer_ = AddChild(new Rectangle());
@@ -88,5 +79,12 @@ void Root::RemoveOverlay(Rectangle* rect) {
     return;
   }
   overlayContainer_->RemoveChild(rect);
+}
+Rectangle* Root::FindChildAt(glm::ivec2 pos) {
+  auto* child = Rectangle::FindChildAt(pos);
+  if (child != nullptr && child == overlayContainer_) {
+    return overlayContainer_->FindChildAt(pos);
+  }
+  return child;
 }
 }  // namespace soil::stage::scene::gui
