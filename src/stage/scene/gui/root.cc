@@ -4,7 +4,7 @@
 #include "video/glfw_window.h"
 
 namespace soil::stage::scene::gui {
-Root::Root(const glm::ivec2 windowSize) {
+Root::Root(const glm::ivec2 windowSize) : overlayContainer_(nullptr) {
   size_ = windowSize;
   scissorRect_.Size = size_;
   childScissorRect_.Size = size_;
@@ -73,5 +73,20 @@ bool Root::IsOnElement(glm::ivec2 pos) {
     }
   }
   return false;
+}
+
+void Root::addToOverlayContainer(Rectangle* rect) {
+  if (overlayContainer_ == nullptr) {
+    overlayContainer_ = AddChild(new Rectangle());
+    overlayContainer_->SetRelativeSize(glm::vec2(1.F));
+    overlayContainer_->SetPosition(glm::vec3(0.F, 0.F, -10.F));
+  }
+  overlayContainer_->AddChild(rect);
+}
+void Root::RemoveOverlay(Rectangle* rect) {
+  if (overlayContainer_ == nullptr) {
+    return;
+  }
+  overlayContainer_->RemoveChild(rect);
 }
 }  // namespace soil::stage::scene::gui

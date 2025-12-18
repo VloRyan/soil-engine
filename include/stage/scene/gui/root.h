@@ -16,9 +16,24 @@ class Root final : public Rectangle,
 
   bool IsOnElement(glm::ivec2 pos);
 
+  template <class T>
+  T AddOverlay(T rect) {
+    using type = std::remove_pointer_t<T>;
+    static_assert(std::is_base_of_v<Rectangle, type>,
+                  "rect must be derived from scene::Node");
+    addToOverlayContainer(rect);
+    return rect;
+  }
+
+  void RemoveOverlay(Rectangle* rect);
+
  protected:
   void OnStageChanged(soil::stage::Stage* stage,
                       soil::stage::Stage* prevStage) override;
+
+ private:
+  void addToOverlayContainer(Rectangle* rect);
+  Rectangle* overlayContainer_;
 };
 }  // namespace soil::stage::scene::gui
 

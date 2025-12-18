@@ -14,7 +14,6 @@
 #include "shape_tile_shader.h"
 #include "stage/scene/component/render/update_matrices_ubo_component.h"
 #include "stage/scene/gui/container/h_box.h"
-#include "stage/scene/gui/overlay.h"
 #include "stage/scene/gui/root.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
@@ -49,7 +48,7 @@ void Stage::OnLoad() {
   scene->AddComponent(
       new soil::stage::scene::component::render::UpdateMatricesUboComponent(
           viewer, UBO_TARGET_MATRICES, &state));
-  
+
   auto* quadVao = GetResources().GetVao("quad");
 
   auto* shapeTileShader = dynamic_cast<ShapeTileShader*>(
@@ -166,22 +165,20 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
   label->Text().SetCharacterSize(def.LetterSize);
 
   if (!def.ToolTip.empty()) {
-    auto* toolTip =
-        item->AddChild(new soil::stage::scene::gui::Overlay(root_, true));
+    auto* toolTip = root_->AddOverlay(new Label(def.ToolTip));
     toolTip->SetVisible(false);
-    auto* toolTipLabel = toolTip->AddChild(new Label(def.ToolTip));
-    auto style = toolTipLabel->GetStyle();
+    auto style = toolTip->GetStyle();
     style.BackgroundColor = glm::vec4(0.5F, 0.5F, 0.5F, 0.8F);
     style.BackgroundColorMouseOver = glm::vec4(0.5F, 0.5F, 0.5F, 0.8F);
-    toolTipLabel->SetStyle(style);
-    toolTipLabel->Text().SetCharacterSize(0.2F);
-    item->SetOnMouseOverFunc([toolTip, toolTipLabel](const glm::ivec2 pos) {
+    toolTip->SetStyle(style);
+    toolTip->Text().SetCharacterSize(0.2F);
+    item->SetOnMouseOverFunc([toolTip, this](const glm::ivec2 pos) {
       if (!toolTip->IsVisible()) {
-        toolTip->SetSize(toolTipLabel->GetSize());
         toolTip->SetVisible(true);
       }
-      const auto halfSize = toolTipLabel->GetSize() / glm::ivec2(2.F, 2.F);
-      toolTip->SetPosition(glm::vec3(pos + halfSize, 0.F));
+      auto relPos = pos - root_->GetSize() / glm::ivec2(2);
+      toolTip->SetLocalPosition(
+          glm::vec3(relPos, toolTip->GetLocalPosition().z));
     });
     item->SetOnMouseOutFunc([toolTip] { toolTip->SetVisible(false); });
   }

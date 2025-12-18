@@ -12,7 +12,6 @@ auto constexpr DefaultStyle = Plane::Style{
 Label::Label(const std::string& text, const std::string& font)
     : Plane("gui", DefaultStyle), text_(nullptr) {
   text_ = AddComponent(new component::Text(font, text));
-  text_->SetPositionOffset(glm::vec3(0.0f, 0.0f, LAYER_Z_COMPONENT_INCREMENT));
 }
 
 void Label::SetVisible(const bool visible) {
