@@ -30,11 +30,6 @@ class Node : public event::ComponentEventHandler,
     Delete,
   };
 
-  enum class UpdateType : std::uint8_t {
-    Active,
-    Passive,
-  };
-
   enum class DirtyImpact : std::uint8_t {
     /** Updates only itself*/
     Self = 0,
@@ -110,8 +105,6 @@ class Node : public event::ComponentEventHandler,
 
   void Handle(const event::Component& event) override;
 
-  [[nodiscard]] UpdateType GetUpdateType() const;
-
   [[nodiscard]] virtual Type GetType() const;
   virtual glm::vec3 GetPosition() const;
   virtual void SetPosition(const glm::vec3& pos);
@@ -154,8 +147,6 @@ class Node : public event::ComponentEventHandler,
 
   virtual void UpdateDirty();
 
-  virtual void SetUpdateType(UpdateType type);
-
   virtual void addChild(Node* node);
 
   void addComponent(component::Component* comp);
@@ -178,7 +169,6 @@ class Node : public event::ComponentEventHandler,
   Type type_;
   Node* parent_;
   State state_;
-  UpdateType updateType_;
   std::bitset<4> dirtyImpacts_;
   std::vector<Node*> children_;
   std::vector<component::Component*> addedComponents_;

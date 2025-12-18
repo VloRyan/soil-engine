@@ -10,7 +10,6 @@ RotationNode::RotationNode(const float initialRotation, const float velocity)
   auto transform = transform_->GetLocalMatrix();
   transform = glm::rotate(transform, initialRotation, glm::vec3(0.F, 0.F, 1.F));
   transform_->SetLocalMatrix(transform);
-  Node::SetUpdateType(UpdateType::Active);
 }
 void RotationNode::OnTrigger(
     const soil::stage::hook::TriggerHook::TriggerPoint &point) {

@@ -15,7 +15,6 @@ Node::Node(const Type type)
     : type_(type),
       parent_(nullptr),
       state_(State::Normal),
-      updateType_(UpdateType::Passive),
       transform_(new component::TransformComponent()) {
   const auto compTypeIndex = static_cast<std::int8_t>(transform_->GetType());
   components_[compTypeIndex].push_back(transform_);
@@ -56,7 +55,6 @@ void Node::SetParent(Node* parent) {
   }
   auto* prevScene = Root();
   auto* prevStage = prevScene != nullptr ? prevScene->Stage() : nullptr;
-  class Scene* scene = nullptr;
   class Stage* stage = nullptr;
   parent_ = parent;
   if (parent_ != nullptr) {
@@ -98,16 +96,6 @@ void Node::RemoveChild(Node* node) {
   }
 }
 
-void Node::SetUpdateType(const UpdateType type) {
-  if (type == updateType_) {
-    return;
-  }
-  updateType_ = type;
-  fire(event::Node(this, event::Node::ChangeType::UpdateType));
-}
-
-Node::UpdateType Node::GetUpdateType() const { return updateType_; }
-
 Node::Type Node::GetType() const { return type_; }
 
 glm::vec3 Node::GetPosition() const { return transform_->GetPosition(); }
@@ -121,10 +109,9 @@ void Node::SetLocalPosition(const glm::vec3& pos) {
   transform_->SetLocalPosition(pos);
 }
 
-/*
+/* TODO
 void Node::SetDirection(const glm::vec3& direction) {
   auto localDirection = glm::vec3(localTransform_[2]);
-  /*
   if (auto* parent = GetParent(); parent != nullptr) {
     auto relDir = direction - parent->GetDirection();
     if (relDir == localDirection) {
@@ -135,7 +122,7 @@ void Node::SetDirection(const glm::vec3& direction) {
     localTransform_ = glm::inverse(parent->GetTransform()) * localTransform_;
     localTransform_[3] = glm::vec4(localPos, 1.F);
   } else {*//*
-  // TODO
+
   if (direction == localDirection) {
     return;
   }
@@ -144,17 +131,16 @@ void Node::SetDirection(const glm::vec3& direction) {
   //}
   SetDirty(DirtyImpact::Transform);
 }
-/*
+
 void Node::SetRight(const glm::vec3& right) {
   auto localRight = glm::vec3(localTransform_[0]);
-  /*if (auto* parent = GetParent(); parent != nullptr) {
+  if (auto* parent = GetParent(); parent != nullptr) {
     auto relRight = right - parent->GetRight();
     if (relRight == localRight) {
       return;
     }
     localTransform_[0] = glm::vec4(relRight, 1.F);
-  } else {*//*
-  // TODO
+  } else {
   if (right == localRight) {
     return;
   }
@@ -163,17 +149,16 @@ void Node::SetRight(const glm::vec3& right) {
   //}
   SetDirty(DirtyImpact::Transform);
 }
-/*
+
 void Node::SetUp(const glm::vec3& up) {
   auto localUp = glm::vec3(localTransform_[1]);
-  /*if (auto* parent = GetParent(); parent != nullptr) {
+  if (auto* parent = GetParent(); parent != nullptr) {
     auto relUp = up - parent->GetUp();
     if (relUp == localUp) {
       return;
     }
     localTransform_[1] = glm::vec4(relUp, 1.F);
-  } else {*//*
-  // TODO
+  } else {
   if (up == localUp) {
     return;
   }
@@ -182,7 +167,7 @@ void Node::SetUp(const glm::vec3& up) {
   //}
   SetDirty(DirtyImpact::Transform);
 }
-/*
+
 void Node::SetTransform(const glm::mat4& transform) {
   if (transform == localTransform_) {
     return;
@@ -527,15 +512,6 @@ void Node::fire(const event::Node& event) const {
     stage->Handle(event);
   }
 }
-
-/*void Node::Render(video::render::State& state) {
-  ForEachComponent(
-      [&state](component::Component* c) {
-        auto* rc = dynamic_cast<component::render::RenderComponent*>(c);
-        rc->Render(state);
-      },
-      component::Component::Type::Render);
-}*/
 
 Stage* Node::Stage() const {
   if (parent_ == nullptr) {

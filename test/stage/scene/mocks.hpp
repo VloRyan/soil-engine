@@ -59,10 +59,7 @@ class NodeMock : public Node {
                        const bool value = true) override {
     Node::SetReceiverType(type, value);
   }
-
-  void SetUpdateType(const UpdateType type) override {
-    Node::SetUpdateType(type);
-  }
+  
   class Stage* Stage() const override {
     if (StageOverride != nullptr) {
       return StageOverride;
