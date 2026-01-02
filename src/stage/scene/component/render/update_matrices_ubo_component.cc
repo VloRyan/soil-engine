@@ -3,7 +3,7 @@
 #include "stage/stage.h"
 namespace soil::stage::scene::component::render {
 UpdateMatricesUboComponent::UpdateMatricesUboComponent(
-    viewer::Node *viewer, int uboMatricesBindingTarget,
+    const viewer::Node *viewer, int uboMatricesBindingTarget,
     video::render::State *renderState)
     : event::EventComponent(Type::Transform, {}),
       renderState_(renderState),

@@ -7,7 +7,8 @@
 namespace soil::stage::scene::component::render {
 class UpdateMatricesUboComponent : public event::EventComponent {
  public:
-  UpdateMatricesUboComponent(viewer::Node* viewer, int uboMatricesBindingTarget,
+  UpdateMatricesUboComponent(const viewer::Node* viewer,
+                             int uboMatricesBindingTarget,
                              video::render::State* renderState);
   ~UpdateMatricesUboComponent() override = default;
 
@@ -17,7 +18,7 @@ class UpdateMatricesUboComponent : public event::EventComponent {
 
  private:
   int uboMatricesBindingTarget_;
-  viewer::Node* viewer_;
+  const viewer::Node* viewer_;
   video::render::State* renderState_;
 };
 }  // namespace soil::stage::scene::component::render
