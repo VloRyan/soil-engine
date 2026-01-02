@@ -10,19 +10,20 @@ namespace soil::stage::scene::component::text {
 class Parser {
  public:
   Parser() = delete;
-
   ~Parser() = default;
-
   Parser(const Parser& other) = delete;
-
   Parser(Parser&& other) noexcept = delete;
-
   Parser& operator=(const Parser& other) = delete;
-
   Parser& operator=(Parser&& other) noexcept = delete;
-
-  static std::vector<Line> Parse(const std::string& text,
-                                 const file::Font* font, int maxLineLength);
+  static std::vector<Line> Parse(
+      const std::string& text,
+      const std::unordered_map<int, file::Font::Character>& characterMap,
+      int maxLineLength = -1);
+  static std::vector<Line> Parse(
+      const std::string& text,
+      const std::unordered_map<int, file::Font::Character>& characterMap,
+      const std::unordered_map<std::string, Symbol>& symbolMap,
+      int maxLineLength = -1);
 };
 }  // namespace soil::stage::scene::component::text
 

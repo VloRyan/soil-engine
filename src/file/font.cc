@@ -196,7 +196,7 @@ void Font::parseChar(Font* fontFile,
                            getIntValue("yoffset", values)),
       .Size = glm::ivec2(getIntValue("width", values),
                          getIntValue("height", values)),
-      .XAdvance = getIntValue("xadvance", values),
+      .AdvanceX = getIntValue("xadvance", values),
   };
   fontFile->Characters.insert({id, character});
 }

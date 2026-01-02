@@ -8,13 +8,12 @@ class DrawableMock : public Drawable {
   DrawableMock() : Drawable() {};
   explicit DrawableMock(const StateIdentifier& id) : State(id) {};
   ~DrawableMock() override = default;
-  void Bind(State& state) override {}
   bool IsSortable() override { return Sortable; }
   float DistanceTo(const glm::vec3& point) override { return FixDistance; }
   [[nodiscard]] const StateIdentifier& StateId() const override {
     return State;
   }
-  void Draw() override {
+  void Draw(video::render::State& state) override {
     Calls.Draw++;
     if (Mock.Draw != nullptr) {
       Mock.Draw(this);

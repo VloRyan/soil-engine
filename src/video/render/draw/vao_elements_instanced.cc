@@ -37,7 +37,12 @@ const StateIdentifier& VaoElementsInstanced::StateId() const {
   return stateId_;
 }
 
-void VaoElementsInstanced::Draw() {
+void VaoElementsInstanced::Draw(State& state) {
+  state.Apply(stateId_.State);
+  state.SetShader(stateId_.Shader);
+  stateId_.Shader->Prepare(state);
+  state.BindVao(stateId_.Vao);
+
   Update();
   const auto amount = static_cast<int>(instanceBuffer_->InstancesCount());
   if (amount == 0) {
@@ -55,13 +60,6 @@ void VaoElementsInstanced::Draw() {
 }
 
 float VaoElementsInstanced::DistanceTo(const glm::vec3& point) { return 0; }
-
-void VaoElementsInstanced::Bind(State& state) {
-  state.Apply(stateId_.State);
-  state.SetShader(stateId_.Shader);
-  stateId_.Shader->Prepare(state);
-  state.BindVao(stateId_.Vao);
-}
 
 void VaoElementsInstanced::Update() { instanceBuffer_->Update(); }
 

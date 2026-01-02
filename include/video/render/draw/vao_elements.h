@@ -9,15 +9,13 @@ class VaoElements : public Drawable {
     Data() = default;
     virtual ~Data() = default;
     virtual float DistanceTo(const glm::vec3& point) = 0;
-    virtual void BeforeDraw() {};
-    virtual void OnBind(State& state) {};
+    virtual void BeforeDrawElements(State& state) {};
   };
   explicit VaoElements(const vertex::Vao* vao, video::shader::Program* shader,
                        DrawMode drawMode, Data& data, StateDef state = {});
   ~VaoElements() override = default;
   [[nodiscard]] const StateIdentifier& StateId() const override;
-  void Bind(State& state) override;
-  void Draw() override;
+  void Draw(State& state) override;
   float DistanceTo(const glm::vec3& point) override;
   bool IsSortable() override;
 

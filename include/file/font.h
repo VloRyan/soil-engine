@@ -14,14 +14,14 @@ struct Font {
     glm::ivec2 TextureCoord{0, 0};
     glm::ivec2 Offset{0, 0};
     glm::ivec2 Size{0, 0};
-    int XAdvance{0};
+    int AdvanceX{0};
 
     [[nodiscard]] bool IsPrintable() const;
 
     friend bool operator==(const Character& lhs, const Character& rhs) {
       return lhs.Id == rhs.Id && lhs.TextureCoord == rhs.TextureCoord &&
              lhs.Offset == rhs.Offset && lhs.Size == rhs.Size &&
-             lhs.XAdvance == rhs.XAdvance;
+             lhs.AdvanceX == rhs.AdvanceX;
     }
 
     friend bool operator!=(const Character& lhs, const Character& rhs) {
@@ -93,83 +93,6 @@ struct Font {
   static void parseKerning(
       Font* fontFile, std::unordered_map<std::string, std::string>& values);
 };
-
-/*
-    class Font final {
-    public:
-        struct Character {
-            uint Id;
-            glm::vec2 TextureCoord;
-            glm::vec2 MaxTextureCoord;
-            glm::vec2 Offset;
-            glm::vec2 Size;
-            float XAdvance;
-
-            [[nodiscard]] bool IsPrintable() const;
-        };
-
-        ~Font();
-
-        glm::vec4 GetPadding() const;
-
-        float GetSpaceWidth() const;
-
-        video::model::Letter* GetLetter(std::uint32_t code);
-
-        std::string GetTextureFile() const;
-
-        float GetHorizontalPadding();
-
-        float GetVerticalPadding();
-
-        uint GetImageSize() const;
-
-        std::string GetFileName() const;
-
-        float GetLineHeight() const;
-
-        float GetBase() const;
-
-        static Font* Load(std::string fontFilePath);
-
-    protected:
-        explicit Font(std::string fileName);
-
-        static void mapValues(std::string line, std::unordered_map<std::string,
-   std::string>& map);
-
-        static int GetIntValue(const std::string& key,
-   std::unordered_map<std::string, std::string>& map);
-
-        static std::string getValue(const std::string& key,
-   std::unordered_map<std::string, std::string>& map);
-
-        static void loadInfos(Font* fontFile, std::unordered_map<std::string,
-   std::string>& map);
-
-        static void loadCommon(Font* fontFile, std::unordered_map<std::string,
-   std::string>& map);
-
-        static void loadChars(Font* fontFile, std::unordered_map<std::string,
-   std::string>& map);
-
-        static void loadPage(Font* fontFile, std::unordered_map<std::string,
-   std::string>& map);
-
-        static void loadChar(Font* fontFile, std::unordered_map<std::string,
-   std::string>& map);
-
-    private:
-        std::string fileName_;
-        float lineHeight_;
-        float base_;
-        float spaceWidth_;
-        glm::vec4 padding_;
-        glm::vec2 perPixelSize_;
-        std::unordered_map<std::uint32_t, video::model::Letter*> characterMap_;
-        std::string textureFile_;
-        uint imageSize_;
-    }; */
 }  // namespace soil::file
 
 #endif

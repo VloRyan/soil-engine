@@ -18,7 +18,6 @@ class MeshComponent : public DrawableComponent,
 
   void SetOpaque(bool opaque) override;
   float DistanceTo(const glm::vec3& point) override;
-  void BeforeDraw() override;
   void SetVisible(bool visible) override;
   void SetCulled(bool culled) override;
 

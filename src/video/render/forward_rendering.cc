@@ -23,8 +23,7 @@ void ForwardRendering::RenderTransparentPass(
 void ForwardRendering::DrawEach(
     State &state, const std::vector<draw::Drawable *> &drawables) {
   for (auto *drawable : drawables) {
-    drawable->Bind(state);
-    drawable->Draw();
+    drawable->Draw(state);
   }
 }
 

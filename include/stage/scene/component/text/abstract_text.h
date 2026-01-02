@@ -1,5 +1,7 @@
 #ifndef SOIL_STAGE_SCENE_COMPONENT_TEXT_ABSTRACT_TEXT_H
 #define SOIL_STAGE_SCENE_COMPONENT_TEXT_ABSTRACT_TEXT_H
+#include <unordered_map>
+
 #include "file/font.h"
 #include "stage/scene/component/render/mesh_component.h"
 #include "stage/scene/node.h"
@@ -8,14 +10,51 @@
 #include "video/texture/texture.h"
 
 namespace soil::stage::scene::component::text {
+struct Symbol {
+  std::string Name{-1};
+  video::texture::Texture* Texture{nullptr};
+  int TileIndex{0};
+  int AdvanceX{0};
+  int SizeX{0};
+
+  bool operator==(const Symbol& rhs) const {
+    return Name == rhs.Name && Texture == rhs.Texture &&
+           TileIndex == rhs.TileIndex;
+  }
+  bool operator!=(const Symbol& rhs) const { return !(rhs == *this); }
+};
+
+struct Glyph {
+  enum class Type : std::uint8_t {
+    Character = 0,
+    Symbol,
+  };
+  [[nodiscard]] int AdvanceX() const;
+  [[nodiscard]] int SizeX() const;
+  Glyph::Type Type{Glyph::Type::Character};
+  const file::Font::Character* Character{nullptr};
+  const text::Symbol* Symbol{nullptr};
+  bool operator==(const Glyph& rhs) const {
+    return Type == rhs.Type && Character == rhs.Character &&
+           Symbol == rhs.Symbol;
+  }
+  bool operator!=(const Glyph& rhs) const { return !(rhs == *this); }
+};
+
 struct Word {
-  std::vector<const file::Font::Character*> Characters{};
+  std::vector<Glyph> Glyphs{};
+  std::vector<Symbol> Symbols{};
 #ifdef DEBUG
   std::string Text{};
 #endif
   int Length{0};
 
-  void Append(const file::Font::Character* character);
+  void Append(Glyph glyph);
+  bool operator==(const Word& rhs) const {
+    return Glyphs == rhs.Glyphs && Symbols == rhs.Symbols && Text == rhs.Text &&
+           Length == rhs.Length;
+  }
+  bool operator!=(const Word& rhs) const { return !(rhs == *this); }
 };
 
 struct Line {
@@ -24,8 +63,8 @@ struct Line {
   std::string Text{};
 #endif
   int Length{0};
-
   void Append(const Word& word);
+  void Close();
 };
 
 class AbstractText : public DrawableComponent,
@@ -33,10 +72,11 @@ class AbstractText : public DrawableComponent,
  public:
   struct PrefabData {
     video::vertex::Vao* QuadVao{nullptr};
-    video::mesh::Data* MeshData{nullptr};
-    video::shader::Program* Shader{nullptr};
+    video::shader::Program* CharacterShader{nullptr};
+    video::shader::Program* SymbolShader{nullptr};
     const file::Font* Font{nullptr};
     video::texture::Texture* FontTexture{nullptr};
+    std::unordered_map<std::string, Symbol> SymbolMap{};
   };
 
   explicit AbstractText(const std::string& prefab,
@@ -78,21 +118,18 @@ class AbstractText : public DrawableComponent,
 
   [[nodiscard]] const file::Font* GetFont() const;
 
-  [[nodiscard]] virtual glm::vec2 GetMaxSize() const;
-
-  virtual void SetMaxSize(const glm::vec2& maxSize);
+  [[nodiscard]] virtual int GetMaxLineLength() const;
+  virtual void SetMaxLineLength(int maxLineLength);
 
   [[nodiscard]] virtual byte GetTextureSlot() const;
 
   virtual void SetPositionOffset(const glm::vec3& positionOffset);
-
   [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
 
   const std::vector<Line>& GetLines() const;
 
   [[nodiscard]] const video::render::StateIdentifier& StateId() const override;
-  void Bind(video::render::State& state) override;
-  void Draw() override;
+  void Draw(video::render::State& state) override;
   float DistanceTo(const glm::vec3& point) override;
   bool IsSortable() override;
   class Drawable* Drawable() override;
@@ -100,9 +137,23 @@ class AbstractText : public DrawableComponent,
   void UpdateState(const video::render::StateDef& state);
 
   virtual void SetupCharacter(const file::Font::Character& character,
-                              const glm::vec3& worldPos) = 0;
+                              const glm::vec3& worldPos,
+                              video::shader::Program* shader) = 0;
+
+  virtual void SetupSymbol(const text::Symbol* symbol,
+                           const glm::vec3& worldPos,
+                           video::shader::Program* shader) = 0;
+
+  virtual void SetupText(video::render::State& state) {};
 
  protected:
+  struct SymbolPosition {
+    const text::Symbol* Symbol{nullptr};
+    glm::vec3 Position{};
+  };
+  float DrawCharacter(const glm::vec3& at,
+                      const file::Font::Character& character);
+  float DrawSymbol(glm::vec2& cursorPos, const text::Symbol* symbol);
   const PrefabData& Data();
 
   PrefabData* data_;
@@ -121,7 +172,7 @@ class AbstractText : public DrawableComponent,
 
   std::string text_;
   float characterSize_;
-  glm::vec2 maxSize_;
+  int maxLineLength_;
   glm::vec4 color_;
   glm::vec3 borderColor_;
 

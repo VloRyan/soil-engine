@@ -30,8 +30,7 @@ class VaoElementsInstanced : public Drawable {
 
   ~VaoElementsInstanced() override = default;
   [[nodiscard]] const StateIdentifier& StateId() const override;
-  void Bind(State& state) override;
-  void Draw() override;
+  void Draw(State& state) override;
   float DistanceTo(const glm::vec3& point) override;
   bool IsSortable() override;
 

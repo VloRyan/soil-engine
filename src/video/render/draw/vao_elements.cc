@@ -14,8 +14,13 @@ VaoElements::VaoElements(const vertex::Vao* vao, video::shader::Program* shader,
 
 const StateIdentifier& VaoElements::StateId() const { return stateId_; }
 
-void VaoElements::Draw() {
-  data_.BeforeDraw();
+void VaoElements::Draw(State& state) {
+  state.Apply(stateId_.State);
+  state.SetShader(stateId_.Shader);
+  stateId_.Shader->Prepare(state);
+  state.BindVao(stateId_.Vao);
+
+  data_.BeforeDrawElements(state);
   auto* ebo = stateId_.Vao->GetEbo();
   shader::Program::DrawElements(static_cast<uint>(drawMode_),
                                 ebo->GetIndexCount(), ebo->GetIndexType());
@@ -23,14 +28,6 @@ void VaoElements::Draw() {
 
 float VaoElements::DistanceTo(const glm::vec3& point) {
   return data_.DistanceTo(point);
-}
-
-void VaoElements::Bind(State& state) {
-  state.Apply(stateId_.State);
-  state.SetShader(stateId_.Shader);
-  stateId_.Shader->Prepare(state);
-  state.BindVao(stateId_.Vao);
-  data_.OnBind(state);
 }
 
 bool VaoElements::IsSortable() { return true; }

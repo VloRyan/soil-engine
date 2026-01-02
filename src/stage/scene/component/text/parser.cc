@@ -1,54 +1,92 @@
 #include "stage/scene/component/text/parser.h"
 
 namespace soil::stage::scene::component::text {
-std::vector<Line> Parser::Parse(const std::string& text, const file::Font* font,
-                                const int maxLineLength) {
+std::vector<Line> Parser::Parse(
+    const std::string& text,
+    const std::unordered_map<int, file::Font::Character>& characterMap,
+    const int maxLineLength) {
+  return Parse(text, characterMap, {}, maxLineLength);
+}
+
+std::vector<Line> Parser::Parse(
+    const std::string& text,
+    const std::unordered_map<int, file::Font::Character>& characterMap,
+    const std::unordered_map<std::string, Symbol>& symbolMap,
+    int maxLineLength) {
   std::vector<Line> lines;
   auto currentLine = Line();
   auto currentWord = Word();
   glm::ivec2 cursorPosition(0);
-  const auto& spaceCharacter = font->Characters.at(' ');
-  for (const auto c : text) {
+  const auto& spaceGlyph = Glyph{
+      .Type = Glyph::Type::Character,
+      .Character = &characterMap.at(' '),
+  };
+  for (auto i = 0; i < text.size(); i++) {
+    auto c = text.at(i);
     bool newWord = false;
     bool newLine = false;
-    if (c == spaceCharacter.Id) {
+    if (c == spaceGlyph.Character->Id) {
       newWord = true;
       if (maxLineLength > 0 && currentLine.Length > 0 &&
           cursorPosition.x + currentWord.Length > maxLineLength) {
         newLine = true;
       } else {
-        currentWord.Append(&spaceCharacter);
+        currentWord.Append(spaceGlyph);
       }
     }
     if (c == '\n') {
       newWord = true;
     }
+    if (c == ':') {
+      int markerEnd = -1;
+      for (auto j = i + 1; j < text.size(); j++) {
+        auto m = text.at(j);
+        if (m == ':') {
+          markerEnd = j;
+          break;
+        }
+        if (m == ' ') {
+          break;
+        }
+      }
+      if (markerEnd != -1) {
+        auto name = text.substr(i + 1, markerEnd - i - 1);
+        if (symbolMap.contains(name)) {
+          currentWord.Append(Glyph{
+              .Type = Glyph::Type::Symbol,
+              .Symbol = &symbolMap.at(name),
+          });
+          i = markerEnd;
+          continue;
+        }
+      }
+    }
     if (newLine) {
       cursorPosition.x = 0;
+      currentLine.Close();
       lines.push_back(currentLine);
       currentLine = Line();
     }
     if (newWord) {
-      for (const auto letter : currentWord.Characters) {
-        const auto advance = letter->XAdvance;
+      for (const auto& glyph : currentWord.Glyphs) {
+        const auto advance = glyph.AdvanceX();
         if (maxLineLength > 0 && cursorPosition.x + advance > maxLineLength) {
           break;
         }
         cursorPosition.x += advance;
       }
-      /*if (!currentWord.Characters.empty()) {
-           currentWord.Length -= currentWord.Characters.back()->XAdvance -
-               currentWord.Characters.back()->Size.x - font->Padding[1];
-      }*/
       currentLine.Append(currentWord);
-      cursorPosition.x += spaceCharacter.XAdvance;
+      cursorPosition.x += spaceGlyph.AdvanceX();
       currentWord = Word();
     } else {
-      auto& character = font->Characters.at(c);
-      currentWord.Append(&character);
+      currentWord.Append(Glyph{
+          .Type = Glyph::Type::Character,
+          .Character = &characterMap.at(c),
+      });
     }
     if (c == '\n') {
       cursorPosition.x = 0;
+      currentLine.Close();
       lines.push_back(currentLine);
       currentLine = Line();
     }
@@ -57,15 +95,12 @@ std::vector<Line> Parser::Parse(const std::string& text, const file::Font* font,
     if (maxLineLength > 0 && currentLine.Length > 0 &&
         cursorPosition.x + currentWord.Length > maxLineLength) {
       cursorPosition.x = 0;
+      currentLine.Close();
       lines.push_back(currentLine);
       currentLine = Line();
     }
-    if (!currentWord.Characters.empty()) {
-      currentWord.Length -= currentWord.Characters.back()->XAdvance -
-                            currentWord.Characters.back()->Size.x -
-                            font->Padding[1];
-    }
     currentLine.Append(currentWord);
+    currentLine.Close();
     lines.push_back(currentLine);
     currentLine = Line();
   }
@@ -76,19 +111,4 @@ std::vector<Line> Parser::Parse(const std::string& text, const file::Font* font,
   return lines;
 }
 
-void Word::Append(const file::Font::Character* character) {
-  Characters.push_back(character);
-#ifdef DEBUG
-  Text += static_cast<char>(character->Id);
-#endif
-  Length += character->XAdvance;
-}
-
-void Line::Append(const Word& word) {
-  Words.push_back(word);
-#ifdef DEBUG
-  Text += word.Text;
-#endif
-  Length += word.Length;
-}
 }  // namespace soil::stage::scene::component::text

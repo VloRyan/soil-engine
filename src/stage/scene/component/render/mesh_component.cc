@@ -36,8 +36,6 @@ void MeshComponent::SetOpaque(bool opaque) {
   DrawableComponent::SetOpaque(opaque);
 }
 
-void MeshComponent::BeforeDraw() {}
-
 void MeshComponent::SignalChanged() { /*No need*/ }
 
 void MeshComponent::SetVisible(bool visible) {

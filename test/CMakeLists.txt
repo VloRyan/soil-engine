@@ -12,7 +12,7 @@ add_executable(${PROJECT_NAME}
         file/font_test.cc
         file/sprite_sheet_test.cc
         stage/manager_test.cc
-        stage/scene/component/collision_object_component_test.cc
+        stage/scene/component/world/collision_object_component_test.cc
         stage/scene/component/component_test.cc
         stage/scene/component/event/event_component_test.cc
         stage/scene/component/event/hook_test.cc
@@ -46,6 +46,7 @@ add_executable(${PROJECT_NAME}
         world/volume/quad_tree_test.cc
         world/world_test.cc
         video/texture/animation_test.cc
+        stage/scene/component/text/parser_test.cc
 
 )
 

@@ -14,11 +14,11 @@ AbstractText::AbstractText(const std::string& prefab, const std::string& text)
       characterOutline_(0.5F, 0.2F),
       borderOutline_(0.5F, 0.1F),
       characterSize_(1.0F),
-      maxSize_(0.F),
+      maxLineLength_(-1),
       color_(glm::vec4(1.0F)),
       borderColor_(0.F) {
   stateId_ = {
-      .Shader = data_->Shader,
+      .Shader = nullptr,  // no explicit
       .Vao = data_->QuadVao,
       .State =
           {
@@ -56,12 +56,6 @@ void AbstractText::SetText(const std::string& text) {
 
 std::string AbstractText::GetText() const { return text_; }
 
-/*
-float AbstractText::DistanceTo(const glm::vec3& point) {
-  return glm::distance(GetParent()->GetPosition().z + positionOffset_.z,
-                       point.z);
-}*/
-
 const std::vector<Line>& AbstractText::GetLines() const { return lines_; }
 
 void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
@@ -72,7 +66,8 @@ void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
 glm::vec3 AbstractText::GetPositionOffset() const { return positionOffset_; }
 
 void AbstractText::updateText() {
-  lines_ = Parser::Parse(GetText(), data_->Font, static_cast<int>(maxSize_.x));
+  lines_ = Parser::Parse(GetText(), data_->Font->Characters, data_->SymbolMap,
+                         maxLineLength_);
   const auto effectiveLineHeight =
       static_cast<float>(data_->Font->LineHeight -
                          (data_->Font->Padding[0] + data_->Font->Padding[2])) *
@@ -111,13 +106,13 @@ void AbstractText::SetCharacterOutline(const glm::vec2& characterOutline) {
   SignalChanged();
 }
 
-glm::vec2 AbstractText::GetMaxSize() const { return maxSize_; }
+int AbstractText::GetMaxLineLength() const { return maxLineLength_; }
 
-void AbstractText::SetMaxSize(const glm::vec2& max_size) {
-  if (maxSize_ == max_size) {
+void AbstractText::SetMaxLineLength(int maxLineLength) {
+  if (maxLineLength_ == maxLineLength) {
     return;
   }
-  maxSize_ = max_size;
+  maxLineLength_ = maxLineLength;
   updateText();
 }
 
@@ -159,55 +154,95 @@ const file::Font* AbstractText::GetFont() const { return data_->Font; }
 
 const AbstractText::PrefabData& AbstractText::Data() { return *data_; }
 
-void AbstractText::Bind(video::render::State& state) {
+void AbstractText::Draw(video::render::State& state) {
   state.Apply(stateId_.State);
-  state.SetShader(stateId_.Shader);
-  stateId_.Shader->Prepare(state);
   state.BindVao(stateId_.Vao);
-}
 
-void AbstractText::Draw() {
+  state.SetShader(data_->CharacterShader);
+  data_->CharacterShader->Prepare(state);
+  SetupText(state);
+  std::vector<SymbolPosition> symbolPositions;
   glm::vec2 cursorPosition;
   const auto effectiveLineHeight =
       GetSize().y / static_cast<float>(GetLines().size());
   cursorPosition.y =
       effectiveLineHeight * static_cast<float>(GetLines().size() + 1) * 0.5F;
+  const auto parentPos = GetParent()->GetPosition();
 
   for (auto& line : GetLines()) {
     cursorPosition.x = GetSize().x * -0.5F;
 
     for (auto& word : line.Words) {
-      for (auto i = 0; i < word.Characters.size(); ++i) {
-        const auto& character = *word.Characters[i];
-        const glm::vec2 halfSize =
-            (glm::vec2(character.Size) * glm::vec2(0.5F)) * GetCharacterSize();
-        const glm::vec2 fontOffset =
-            glm::vec2(character.Offset) * GetCharacterSize();
+      for (auto glyph : word.Glyphs) {
+        switch (glyph.Type) {
+          case Glyph::Type::Character: {
+            const glm::vec2 halfSize =
+                (glm::vec2(glyph.Character->Size) * glm::vec2(0.5F)) *
+                GetCharacterSize();
+            const glm::vec2 fontOffset =
+                glm::vec2(glyph.Character->Offset) * GetCharacterSize();
 
-        const glm::vec2 centerPosition(
-            fontOffset.x + halfSize.x,
-            effectiveLineHeight * -0.5F - (fontOffset.y + halfSize.y));
+            const glm::vec2 centerPosition(
+                fontOffset.x + halfSize.x,
+                effectiveLineHeight * -0.5F - (fontOffset.y + halfSize.y));
 
-        const auto localPosition =
-            cursorPosition + centerPosition + glm::vec2(GetPositionOffset());
+            const auto localPosition = cursorPosition + centerPosition +
+                                       glm::vec2(GetPositionOffset());
 
-        const auto parentPos = GetParent()->GetPosition();
-        const auto worldPos = glm::vec3(localPosition.x + parentPos.x,
-                                        localPosition.y + parentPos.y,
-                                        parentPos.z + GetPositionOffset().z);
-        SetupCharacter(character, worldPos);
-        const auto* ebo = stateId_.Vao->GetEbo();
-        soil::video::shader::Program::DrawElements(
-            static_cast<uint>(video::render::DrawMode::TriangleStrip),
-            ebo->GetIndexCount(), ebo->GetIndexType());
-
-        const auto advance =
-            static_cast<float>(character.XAdvance) * GetCharacterSize();
-        cursorPosition.x += advance;
+            const auto worldPos = glm::vec3(
+                localPosition.x + parentPos.x, localPosition.y + parentPos.y,
+                parentPos.z + GetPositionOffset().z);
+            cursorPosition.x += DrawCharacter(worldPos, *glyph.Character);
+            break;
+          }
+          case Glyph::Type::Symbol: {
+            auto halfSize =
+                static_cast<float>(glyph.SizeX()) * 0.5F * GetCharacterSize();
+            auto worldPos =
+                parentPos +
+                glm::vec3(cursorPosition.x + halfSize,
+                          cursorPosition.y - effectiveLineHeight * 0.5 -
+                              halfSize -
+                              data_->Font->Padding[1] * GetCharacterSize(),
+                          0.F);
+            symbolPositions.push_back(
+                SymbolPosition{.Symbol = glyph.Symbol, .Position = worldPos});
+            cursorPosition.x +=
+                static_cast<float>(glyph.AdvanceX()) * GetCharacterSize();
+            break;
+          }
+          default:;
+        }
       }
     }
     cursorPosition.y -= effectiveLineHeight;
   }
+  if (symbolPositions.empty() || data_->SymbolShader == nullptr) {
+    return;
+  }
+  state.SetShader(data_->SymbolShader);
+  data_->SymbolShader->Prepare(state);
+  for (auto& symPos : symbolPositions) {
+    SetupSymbol(symPos.Symbol, symPos.Position, data_->SymbolShader);
+    const auto* ebo = stateId_.Vao->GetEbo();
+    soil::video::shader::Program::DrawElements(
+        static_cast<uint>(video::render::DrawMode::TriangleStrip),
+        ebo->GetIndexCount(), ebo->GetIndexType());
+  }
+}
+float AbstractText::DrawCharacter(const glm::vec3& at,
+                                  const file::Font::Character& character) {
+  SetupCharacter(character, at, data_->CharacterShader);
+  const auto* ebo = stateId_.Vao->GetEbo();
+  soil::video::shader::Program::DrawElements(
+      static_cast<uint>(video::render::DrawMode::TriangleStrip),
+      ebo->GetIndexCount(), ebo->GetIndexType());
+
+  return static_cast<float>(character.AdvanceX) * GetCharacterSize();
+}
+
+float AbstractText::DrawSymbol(glm::vec2& at, const text::Symbol* symbol) {
+  return 0.F;
 }
 
 float AbstractText::DistanceTo(const glm::vec3& point) {
@@ -225,4 +260,48 @@ const video::render::StateIdentifier& AbstractText::StateId() const {
 }
 
 video::render::draw::Drawable* AbstractText::Drawable() { return this; }
+
+int Glyph::AdvanceX() const {
+  switch (Type) {
+    case Type::Character:
+      return Character->AdvanceX;
+    case Type::Symbol:
+      return Symbol->AdvanceX;
+  }
+}
+int Glyph::SizeX() const {
+  switch (Type) {
+    case Type::Character:
+      return Character->Size.x;
+    case Type::Symbol:
+      return Symbol->SizeX;
+  }
+}
+
+void Word::Append(Glyph glyph) {
+  Glyphs.push_back(glyph);
+#ifdef DEBUG
+  if (glyph.Type == Glyph::Type::Character) {
+    Text += static_cast<char>(glyph.Character->Id);
+  } else {
+    Text += "¶";
+  }
+
+#endif
+  Length += glyph.AdvanceX();
+}
+
+void Line::Append(const Word& word) {
+  Words.push_back(word);
+#ifdef DEBUG
+  Text += word.Text;
+#endif
+  Length += word.Length;
+}
+void Line::Close() {
+  if (!Words.empty() && !Words.back().Glyphs.empty()) {
+    Length -= Words.back().Glyphs.back().AdvanceX() -
+              Words.back().Glyphs.back().SizeX();
+  }
+}
 }  // namespace soil::stage::scene::component::text

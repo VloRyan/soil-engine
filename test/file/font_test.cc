@@ -17,14 +17,14 @@ TEST_F(FontTest, Load) {
           .TextureCoord = {1, 2},
           .Offset = {1, 2},
           .Size = {1, 2},
-          .XAdvance = 1,
+          .AdvanceX = 1,
       },
       {
           .Id = 'b',
           .TextureCoord = {-1, -2},
           .Offset = {-1, -2},
           .Size = {-1, -2},
-          .XAdvance = -1,
+          .AdvanceX = -1,
       },
   };
   const std::vector<Font::Kerning> kernings = {

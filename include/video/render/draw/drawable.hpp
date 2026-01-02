@@ -10,8 +10,7 @@ class Drawable : public soil::event::Observable<event::DrawableEvent> {
  public:
   ~Drawable() override = default;
   [[nodiscard]] virtual const StateIdentifier& StateId() const = 0;
-  virtual void Bind(State& state) = 0;
-  virtual void Draw() = 0;
+  virtual void Draw(State& state) = 0;
   virtual float DistanceTo(const glm::vec3& point) = 0;
   virtual bool IsSortable() = 0;
 
