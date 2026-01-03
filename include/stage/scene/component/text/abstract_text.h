@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "file/font.h"
+#include "file/sprite_sheet.h"
 #include "stage/scene/component/render/mesh_component.h"
 #include "stage/scene/node.h"
 #include "video/manager.h"
@@ -145,6 +146,10 @@ class AbstractText : public DrawableComponent,
                            video::shader::Program* shader) = 0;
 
   virtual void SetupText(video::render::State& state) {};
+
+  static std::unordered_map<std::string, Symbol> MakeSymbolMap(
+      const file::SpriteSheet& spriteSheet, const file::Font& font,
+      const video::texture::Texture* symbolTexture);
 
  protected:
   struct SymbolPosition {

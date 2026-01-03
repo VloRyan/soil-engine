@@ -40,10 +40,6 @@ class Stage final : public common::Stage {
 
  private:
   void initGui();
-  std::unordered_map<std::string, soil::stage::scene::component::text::Symbol>
-  makeSymbolMap(const soil::file::SpriteSheet& spriteSheet,
-                const soil::file::Font& font,
-                const soil::video::texture::Texture* symbolTexture);
 
   menu::Item* createMenuItem(const MenuItemDefinition& def) const;
   std::vector<soil::video::texture::Texture*> textures_;

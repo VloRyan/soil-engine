@@ -64,15 +64,15 @@ void Stage::OnLoad(soil::stage::scene::Scene* scene) {
       GetResources().GetShader(gui::component::Text::SYMBOL_SHADER_NAME);
 
   soil::stage::scene::component::text::AbstractText::InitPrefab(
-      "Calibri",
-      {
-          .QuadVao = quadVao,
-          .CharacterShader = charShader,
-          .SymbolShader = symbolShader,
-          .Font = fontFile,
-          .FontTexture = fontTexture,
-          .SymbolMap = makeSymbolMap(spriteSheet_, *fontFile, guiTexture),
-      });
+      "Calibri", {
+                     .QuadVao = quadVao,
+                     .CharacterShader = charShader,
+                     .SymbolShader = symbolShader,
+                     .Font = fontFile,
+                     .FontTexture = fontTexture,
+                     .SymbolMap = component::Text::AbstractText::MakeSymbolMap(
+                         spriteSheet_, *fontFile, guiTexture),
+                 });
 
   {
     initGui();
@@ -174,35 +174,6 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
     item->SetOnMouseOutFunc([toolTip] { toolTip->SetVisible(false); });
   }
   return item;
-}
-std::unordered_map<std::string, soil::stage::scene::component::text::Symbol>
-Stage::makeSymbolMap(const soil::file::SpriteSheet& spriteSheet,
-                     const soil::file::Font& font,
-                     const soil::video::texture::Texture* symbolTexture) {
-  auto map = std::unordered_map<std::string,
-                                soil::stage::scene::component::text::Symbol>();
-  for (auto& pair : spriteSheet.Frames) {
-    map.insert({pair.first,
-                soil::stage::scene::component::text::Symbol{
-                    .Name = pair.first,
-                    .Texture = symbolTexture,
-                    .TileIndex = pair.second,
-                    .AdvanceX = font.Base + font.Padding[0] + font.Padding[2],
-                    .SizeX = font.Base,
-                }});
-  }
-
-  /*  for (auto& name : names) {
-      map.insert(
-          {name, soil::stage::scene::component::text::Symbol{
-                     .Name = name,
-                     .Texture = texture,
-                     .TileIndex = spriteSheet.FrameByName(name),
-                     .AdvanceX = font.Base + font.Padding[0] +
-    font.Padding[2], .SizeX = font.Base,
-                 }})
-    }*/
-  return map;
 }
 
 }  // namespace soil_samples::gui

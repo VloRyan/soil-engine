@@ -261,6 +261,23 @@ const video::render::StateIdentifier& AbstractText::StateId() const {
 
 video::render::draw::Drawable* AbstractText::Drawable() { return this; }
 
+std::unordered_map<std::string, Symbol> AbstractText::MakeSymbolMap(
+    const file::SpriteSheet& spriteSheet, const file::Font& font,
+    const video::texture::Texture* symbolTexture) {
+  auto map = std::unordered_map<std::string, Symbol>();
+  for (auto& pair : spriteSheet.Frames) {
+    map.insert({pair.first,
+                soil::stage::scene::component::text::Symbol{
+                    .Name = pair.first,
+                    .Texture = symbolTexture,
+                    .TileIndex = pair.second,
+                    .AdvanceX = font.Base + font.Padding[0] + font.Padding[2],
+                    .SizeX = font.Base,
+                }});
+  }
+  return map;
+}
+
 int Glyph::AdvanceX() const {
   switch (Type) {
     case Type::Character:
