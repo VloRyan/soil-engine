@@ -9,7 +9,11 @@
 #include "util/strings.h"
 
 namespace soil::stage::scene::gui {
-class RectangleTest : public testing::Test {};
+class RectangleTest : public testing::Test {
+ protected:
+  static inline float LAYER_Z_BOTTOM =
+      -Rectangle::TOP_Z_LAYER + Rectangle::LAYER_Z_INCREMENT;
+};
 
 TEST_F(RectangleTest, Contruct) {
   const auto rect = Rectangle();
@@ -135,6 +139,47 @@ TEST_F(RectangleTest, GuiRoot) {
   EXPECT_EQ(childRect->GuiRoot(), &root);
   EXPECT_EQ(derivedRect->GuiRoot(), &root);
   EXPECT_EQ(nonRootedRect.GuiRoot(), nullptr);
+}
+
+TEST_F(RectangleTest, ApplyAnchor) {
+  auto root = Root(glm::ivec2(400, 400));
+  const auto rect = root.AddChild(new Rectangle());
+  rect->SetSize(glm::vec2(10, 10));
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Center,
+                  Rectangle::VerticalAnchors::Middle);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(200.F, 200.F, LAYER_Z_BOTTOM))
+
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Left,
+                  Rectangle::VerticalAnchors::Top);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(5.F, 395.F, LAYER_Z_BOTTOM))
+
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Right,
+                  Rectangle::VerticalAnchors::Bottom);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(395.F, 5.F, LAYER_Z_BOTTOM))
+}
+
+TEST_F(RectangleTest, ApplyAnchorWithPadding) {
+  auto root = Root(glm::ivec2(400, 400));
+  root.SetPadding(glm::vec4(10.F, 5.F, 15.F, 2.F));
+  const auto rect = root.AddChild(new Rectangle());
+  rect->SetSize(glm::vec2(10, 10));
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Center,
+                  Rectangle::VerticalAnchors::Middle);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(195.F, 197.F, LAYER_Z_BOTTOM))
+
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Left,
+                  Rectangle::VerticalAnchors::Top);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(15.F, 390.F, LAYER_Z_BOTTOM))
+
+  rect->SetAnchor(Rectangle::HorizontalAnchors::Right,
+                  Rectangle::VerticalAnchors::Bottom);
+  rect->Update();
+  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(380.F, 7.F, LAYER_Z_BOTTOM))
 }
 
 }  // namespace soil::stage::scene::gui

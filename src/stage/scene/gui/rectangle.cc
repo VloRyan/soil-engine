@@ -112,6 +112,7 @@ void Rectangle::SetAnchor(const HorizontalAnchors horizontal,
                           const VerticalAnchors vertical) {
   horizontalAnchors_ = horizontal;
   verticalAnchors_ = vertical;
+  MarkDirtyWith(DirtyImpact::Dependents);
 }
 
 const glm::vec2& Rectangle::GetAspectRatio() const { return aspectRatio_; }
@@ -162,9 +163,8 @@ void Rectangle::UpdateDirty() {
       SetDirty(DirtyImpact::Dependents);
     }
     if (visibleEffective_) {
-      const auto childSize = parent->GetChildSize();
-      UpdateSize(childSize);
-      ApplyAnchors(childSize, parent->GetCenter());
+      UpdateSize(parent->GetChildSize());
+      ApplyAnchors();
       if (IsDirtyImpact(DirtyImpact::Transform)) {
         transform_->UpdateTransform(parent->Transform().GetMatrix());
       }
@@ -212,13 +212,16 @@ void Rectangle::UpdateSize(const glm::ivec2& parentSize) {
   auto newSize = GetSize();
   for (auto i = 0; i < 2; i++) {
     if (relativeSize_[i] > 0.F) {
-      newSize[i] = parentSize[i] * relativeSize_[i];
+      newSize[i] = static_cast<int>(static_cast<float>(parentSize[i]) *
+                                    relativeSize_[i]);
     }
   }
   if (aspectRatio_.x > 0.F) {
-    newSize.x = newSize.y * aspectRatio_.x;
+    newSize.x =
+        static_cast<int>(static_cast<float>(newSize.y) * aspectRatio_.x);
   } else if (aspectRatio_.y > 0.F) {
-    newSize.y = newSize.x / aspectRatio_.y;
+    newSize.y =
+        static_cast<int>(static_cast<float>(newSize.x) / aspectRatio_.y);
   }
   SetSize(newSize);
 }
@@ -267,8 +270,10 @@ const video::render::Rect& Rectangle::GetScissorRect() const {
   return scissorRect_;
 }
 
-void Rectangle::ApplyAnchors(const glm::ivec2& parentSize,
-                             const glm::vec2& parentCenter) {
+void Rectangle::ApplyAnchors() {
+  glm::vec4 parentPadding = GetParentRect()->GetPadding();
+  auto parentSize = GetParentRect()->GetSize();
+  auto parentCenter = GetParentRect()->GetCenter();
   if (horizontalAnchors_ == HorizontalAnchors::None &&
       verticalAnchors_ == VerticalAnchors::None) {
     return;
@@ -278,23 +283,26 @@ void Rectangle::ApplyAnchors(const glm::ivec2& parentSize,
   const glm::vec2 halfSize = GetSize() / glm::ivec2(2);
   switch (horizontalAnchors_) {
     case HorizontalAnchors::Left:
-      pos.x = -parentHalfSize.x + halfSize.x;
+      pos.x = -parentHalfSize.x + halfSize.x + parentPadding[0];
       break;
     case HorizontalAnchors::Right:
-      pos.x = parentHalfSize.x - halfSize.x;
+      pos.x = parentHalfSize.x - halfSize.x - parentPadding[2];
       break;
     case HorizontalAnchors::Center:
-    case HorizontalAnchors::None:;
+    case HorizontalAnchors::None:
+      pos.x = (parentPadding[0] - parentPadding[2]);
+      break;
   }
   switch (verticalAnchors_) {
     case VerticalAnchors::Top:
-      pos.y = parentHalfSize.y - halfSize.y;
+      pos.y = parentHalfSize.y - halfSize.y - parentPadding[1];
       break;
     case VerticalAnchors::Bottom:
-      pos.y = -parentHalfSize.y + halfSize.y;
+      pos.y = -parentHalfSize.y + halfSize.y + parentPadding[3];
       break;
     case VerticalAnchors::Middle:
-    case VerticalAnchors::None:;
+    case VerticalAnchors::None:
+      pos.y = (-parentPadding[1] + parentPadding[3]);
   }
   SetLocalPosition(pos);
 }

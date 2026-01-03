@@ -92,8 +92,7 @@ class Rectangle : public Node {
 
   virtual void UpdateScissor(const video::render::Rect& parentRect);
 
-  void ApplyAnchors(const glm::ivec2& parentSize,
-                    const glm::vec2& parentCenter);
+  void ApplyAnchors();
 
   virtual void OnMouseOver(const glm::ivec2& pos);
 
