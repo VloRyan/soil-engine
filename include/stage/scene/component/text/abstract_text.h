@@ -12,7 +12,7 @@
 namespace soil::stage::scene::component::text {
 struct Symbol {
   std::string Name{-1};
-  video::texture::Texture* Texture{nullptr};
+  const video::texture::Texture* Texture{nullptr};
   int TileIndex{0};
   int AdvanceX{0};
   int SizeX{0};
