@@ -16,7 +16,7 @@ class Scene;
 
 namespace soil::stage::scene::component::event {
 class Hook : public hook::EventHook<stage::event::Node>,
-             public hook::EventHook<input::Event>,
+             public hook::EventHook<soil::input::Event>,
              public hook::EventHook<video::event::WindowEvent>,
              public hook::EventHook<stage::event::GameEvent>,
              public hook::EventHook<soil::event::EngineEvent>,
@@ -39,7 +39,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
   void RemoveTrigger(const TriggerPoint &point);
 
   void OnEvent(const stage::event::Node &event) override;
-  void OnEvent(const input::Event &event) override;
+  void OnEvent(const soil::input::Event &event) override;
   void OnEvent(const video::event::WindowEvent &event) override;
   void OnEvent(const stage::event::GameEvent &event) override;
   void OnEvent(const soil::event::EngineEvent &event) override;
@@ -50,7 +50,8 @@ class Hook : public hook::EventHook<stage::event::Node>,
   void SetNodeEventCallback(
       const std::function<void(const stage::event::Node &)> &nodeEventCallback);
   void SetInputEventCallback(
-      const std::function<void(const input::Event &)> &inputEventCallback);
+      const std::function<void(const soil::input::Event &)>
+          &inputEventCallback);
   void SetWindowEventCallback(
       const std::function<void(const video::event::WindowEvent &)>
           &windowEventCallback);
@@ -71,7 +72,7 @@ class Hook : public hook::EventHook<stage::event::Node>,
   std::vector<soil::stage::hook::TriggerHook::TriggerPoint>
       activeTriggerPoints_;
   std::function<void(const stage::event::Node &event)> nodeEventCallback_;
-  std::function<void(const input::Event &event)> inputEventCallback_;
+  std::function<void(const soil::input::Event &event)> inputEventCallback_;
   std::function<void(const video::event::WindowEvent &event)>
       windowEventCallback_;
   std::function<void(const soil::event::EngineEvent &event)>
