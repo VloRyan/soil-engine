@@ -31,11 +31,10 @@ class ShapeTile : public soil::stage::scene::component::render::MeshComponent {
   [[nodiscard]] virtual glm::vec2 GetTileScale() const;
   virtual void SetTileScale(glm::vec2 scale);
 
-  void BeforeDraw() override;
-  // void Apply(soil::video::render::State& state) override;
+  void BeforeDrawElements(soil::video::render::State& state) override;
   float DistanceTo(const glm::vec3& point) override;
-  // float Ordinal(const soil::video::render::State& state) override;
-  void OnBind(soil::video::render::State& state) override;
+
+  inline static const auto SHADER_NAME = std::string("ShapeTile");
 
  private:
   static std::unordered_map<std::string, PrefabData> PREFABS;

@@ -32,6 +32,7 @@ class ShapeInstance
   void Update() override;
 
   void Write(const soil::video::render::data::IWriter& writer) override;
+  inline static const std::string SHADER_NAME = "Instancing";
 
  private:
   Data data_;

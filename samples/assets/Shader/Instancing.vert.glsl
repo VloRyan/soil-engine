@@ -1,12 +1,11 @@
-#version 330
+//#include header
+//#include uniform.Matrices_033
 
 layout (location = 0) in vec2 aVertexPosition;
 layout (location = 1) in mat4 aMatrix;// 4x4 = location 1...4
 layout (location = 5) in vec2 aSize;
 layout (location = 6) in vec4 aColor;
 layout (location = 7) in uint aTextureIndex;
-
-uniform mat4 ProjectionViewMatrix;
 
 out VS_OUT {
     vec2 uv;

@@ -7,7 +7,6 @@
 
 #include "common/rotation_node.h"
 #include "glm/glm.hpp"
-#include "shader.h"
 #include "shape.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
@@ -15,13 +14,13 @@
 namespace soil_samples::basic {
 Stage::Stage() : shapes_() {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
-
-  const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
-      GetResources().GetWindow()->GetSize()));
+soil::stage::scene::viewer::Node* Stage::NewViewer(glm::ivec2 windowSize) {
+  auto viewer = new soil::stage::scene::viewer::Ortho(windowSize);
   viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
+  return viewer;
+}
 
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   const std::vector textures = {GetResources().Textures().GetTexture2D(
                                     asset::GetPath("Textures/soil_engine.png")),
                                 GetResources().Textures().GetTexture2D(
@@ -33,9 +32,8 @@ void Stage::OnLoad() {
         *texture);  // texture will be bound to next free slot
   }
 
-  auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
+  auto* shader = GetResources().GetShader(Shape::SHADER_NAME);
   renderState.SetShader(shader);
-  shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
   initBackground(scene, textures[0]->GetSlot());
   initCarrots(scene, textures[1]->GetSlot());
@@ -72,10 +70,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
 
 void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const byte textureUnit) const {
-  auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
-  /*const auto* mesh = GetResources().GetMesh({
-      .Identifier = "Quad",
-  });*/
+  auto* shader = GetResources().GetShader(Shape::SHADER_NAME);
   auto* quadVao = GetResources().GetVao("quad");
 
   const auto bgNode = scene->AddChild(
@@ -88,10 +83,7 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
 
 void Stage::initCarrots(soil::stage::scene::Scene* scene,
                         const byte textureUnit) {
-  auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
-  /*const auto* mesh = GetResources().GetMesh({
-      .Identifier = "Quad",
-  });*/
+  auto* shader = GetResources().GetShader(Shape::SHADER_NAME);
   auto* quadVao = GetResources().GetVao("quad");
   constexpr std::array colors = {
       glm::vec3(1.F, 1.F, 1.F), glm::vec3(0.5F, 1.F, 1.F),

@@ -186,8 +186,4 @@ void Menu::addChild(Node* node) {
   }
 }
 
-void Menu::UpdateScissor(const soil::video::render::Rect& parentRect) {
-  Rectangle::UpdateScissor(parentRect);
-}
-
 }  // namespace soil_samples::gui::menu

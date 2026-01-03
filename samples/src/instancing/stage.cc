@@ -6,36 +6,34 @@
 #include <string>
 
 #include "common/rotation_node.h"
-#include "engine.h"
 #include "glm/glm.hpp"
-#include "shader.h"
 #include "shape_instance.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
-#include "stage/stage.h"
 
 namespace soil_samples::instancing {
 
 Stage::Stage() : shapes_() {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
-
-  auto* viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
-      GetResources().GetWindow()->GetSize()));
+soil::stage::scene::viewer::Node* Stage::NewViewer(glm::ivec2 windowSize) {
+  auto viewer = new soil::stage::scene::viewer::Ortho(windowSize);
   viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
+  return viewer;
+}
 
-  auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
+  auto* shader = GetResources().GetShader(ShapeInstance::SHADER_NAME);
   const std::vector textures = {GetResources().Textures().GetTexture2D(
                                     asset::GetPath("Textures/soil_engine.png")),
                                 GetResources().Textures().GetTexture2D(
                                     asset::GetPath("Textures/carrot.png"))};
-  shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
-  shader->SetTextures(textures);
   auto& renderState = GetResources().GetRenderState();
-  for (auto* texture : textures) {
+  renderState.SetShader(shader);
+  for (auto i = 0; i < textures.size(); i++) {
     renderState.SetTexture(
-        *texture);  // texture will be bound to next free slot
+        *textures[i]);  // texture will be bound to next free slot
+    shader->SetUniform("Textures[" + std::to_string(i) + "]",
+                       textures[i]->GetSlot());
   }
 
   soil::video::render::draw::VaoElementsInstanced::Prepare({

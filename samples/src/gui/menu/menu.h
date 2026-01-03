@@ -49,7 +49,6 @@ class Menu : public soil::stage::scene::gui::Rectangle {
 
  protected:
   void addChild(Node* node) override;
-  void UpdateScissor(const soil::video::render::Rect& parentRect) override;
 
   void OnMouseOver(const glm::ivec2& pos) override;
   void OnMouseOut() override;

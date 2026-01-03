@@ -70,30 +70,12 @@ void ShapeTile::SetPositionOffset(glm::vec3 offset) {
 }
 
 glm::vec3 ShapeTile::GetPositionOffset() const { return positionOffset_; }
-void ShapeTile::BeforeDraw() {
-  /*const auto* parentRect =
-      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
-  if (parentRect != nullptr) {
-    state.SetScissorTest(true);
-    state.SetScissor(parentRect->GetScissorRect());
-  } else {
-    state.SetScissorTest(false);
-  }*/
-  auto transform = GetParent()->Transform().GetMatrix();
-  transform[3] += glm::vec4(positionOffset_, 0.0F);
-  GetShader()->SetUniform("uTransform", transform);
-  GetShader()->SetUniform("uSize", size_);
-  GetShader()->SetUniform("uTileScale", tileScale_);
-  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
-  GetShader()->SetUniform("uColor", color_);
-  GetShader()->SetUniform("uTileIndex", tileIndex_);
-}
 
 float ShapeTile::DistanceTo(const glm::vec3& point) {
   return GetParent()->GetPosition().z + positionOffset_.z;  // sort by z
 }
 
-void ShapeTile::OnBind(soil::video::render::State& state) {
+void ShapeTile::BeforeDrawElements(soil::video::render::State& state) {
   const auto* parentRect =
       dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
   if (parentRect != nullptr) {
@@ -102,6 +84,14 @@ void ShapeTile::OnBind(soil::video::render::State& state) {
   } else {
     state.SetScissorTest(false);
   }
+  auto transform = GetParent()->Transform().GetMatrix();
+  transform[3] += glm::vec4(positionOffset_, 0.0F);
+  GetShader()->SetUniform("uTransform", transform);
+  GetShader()->SetUniform("uSize", size_);
+  GetShader()->SetUniform("uTileScale", tileScale_);
+  GetShader()->SetUniform("uTexture", data_->Texture->GetSlot());
+  GetShader()->SetUniform("uColor", color_);
+  GetShader()->SetUniform("uTileIndex", tileIndex_);
 }
 
 }  // namespace soil_samples::gui::component

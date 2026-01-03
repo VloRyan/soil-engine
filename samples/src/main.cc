@@ -1,12 +1,8 @@
 #include "asset.h"
-#include "basic/shader.h"
 #include "basic/stage.h"
-#include "gui/character_shader.h"
-#include "gui/shape_tile_shader.h"
+#include "common/globals.hpp"
 #include "gui/stage.h"
-#include "instancing/shader.h"
 #include "instancing/stage.h"
-#include "line/shader.h"
 #include "line/stage.h"
 #include "sound/stage.h"
 #include "text/stage.h"
@@ -24,10 +20,10 @@ int parseIntOrDefault(const std::string& s, const int defaultValue) {
 struct StageLoader {
   std::string Id;
   std::string Name;
+  std::string IconName;
+  std::string ToolTip;
   std::function<soil_samples::common::Stage*()> NewStage;
 };
-
-constexpr auto UBO_TARGET_MATRICES = 0;
 
 int main(const int argc, const char* argv[]) {
   auto engine = soil::Engine({.Context = {
@@ -35,16 +31,24 @@ int main(const int argc, const char* argv[]) {
                                   .OpenGLVersion = glm::ivec2(3, 3),
                               }});
   auto* vidMgr = engine.GetVideoManager();
-  vidMgr->PrepareShader(
-      new soil_samples::basic::Shader(asset::GetPath("Shader/")));
-  vidMgr->PrepareShader(
-      new soil_samples::instancing::Shader(asset::GetPath("Shader/")));
-  vidMgr->PrepareShader(
-      new soil_samples::gui::ShapeTileShader(asset::GetPath("Shader/")));
-  vidMgr->PrepareShader(
-      new soil_samples::gui::CharacterShader(asset::GetPath("Shader/")));
-  vidMgr->PrepareShader(
-      new soil_samples::line::Shader(asset::GetPath("Shader/")));
+
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::basic::Shape::SHADER_NAME, asset::GetPath("Shader/")));
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::instancing::ShapeInstance::SHADER_NAME,
+      asset::GetPath("Shader/")));
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::gui::component::ShapeTile::SHADER_NAME,
+      asset::GetPath("Shader/")));
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::gui::component::Text::CHARACTER_SHADER_NAME,
+      asset::GetPath("Shader/")));
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::gui::component::Text::SYMBOL_SHADER_NAME,
+      asset::GetPath("Shader/")));
+  vidMgr->PrepareShader(new soil::video::shader::Program(
+      soil_samples::line::LineInstance::SHADER_NAME,
+      asset::GetPath("Shader/")));
 
   constexpr uint bufferSize = 4 * sizeof(glm::mat4);
   vidMgr->NewUniformBufferObject("Matrices", bufferSize, UBO_TARGET_MATRICES);
@@ -53,36 +57,44 @@ int main(const int argc, const char* argv[]) {
       {
           .Id = "default",
           .Name = "Gui",
+          .IconName = "gui",
           .NewStage = [] { return new soil_samples::gui::Stage(); },
       },
       {
           .Id = "basic",
           .Name = "Basic",
+          .IconName = "basic",
           .NewStage = [] { return new soil_samples::basic::Stage(); },
       },
       {
           .Id = "instancing",
           .Name = "Instancing",
+          .IconName = "instancing",
           .NewStage = [] { return new soil_samples::instancing::Stage(); },
       },
       {
           .Id = "text",
           .Name = "Text",
+          .IconName = "text",
           .NewStage = [] { return new soil_samples::text::Stage(); },
       },
       {
           .Id = "line",
           .Name = "Line",
+          .IconName = "line",
           .NewStage = [] { return new soil_samples::line::Stage(); },
       },
       {
           .Id = "sound",
           .Name = "Sound",
+          .IconName = "sound",
           .NewStage = [] { return new soil_samples::sound::Stage(); },
       },
       {
           .Id = "world",
-          .Name = "World (Physics)",
+          .Name = "World",
+          .IconName = "world",
+          .ToolTip = "Physics simulation :rocket:",
           .NewStage = [] { return new soil_samples::world::Stage(); },
       },
   };
@@ -120,8 +132,9 @@ int main(const int argc, const char* argv[]) {
           .Caption = option.Name,
           .Value = option.Id,
           .BackgroundTileName = "button",
-          .IconTileName = "basic",
-          .LetterSize = 0.5f,
+          .IconName = option.IconName,
+          .ToolTip = option.ToolTip,
+          .LetterSize = 0.8f,
           .OnClick =
               [stage](const soil_samples::gui::menu::Item& _) {
                 stage->SetCurrent();

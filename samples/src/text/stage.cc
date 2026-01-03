@@ -4,16 +4,14 @@
 
 #include <string>
 
-#include "basic/shader.h"
 #include "basic/shape.h"
 #include "glm/glm.hpp"
-#include "gui/character_shader.h"
+#include "gui/component/shape_tile.h"
 #include "gui/component/text.h"
 #include "node.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
-
 namespace soil_samples::text {
 Stage::Stage()
     : text_(nullptr),
@@ -24,19 +22,12 @@ Stage::Stage()
       bounceTextVelocity(0.F),
       bounceTextGlowVelocity(0.01F) {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
-
-  const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
-      GetResources().GetWindow()->GetSize()));
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   auto* quadVao = GetResources().GetVao("quad");
   auto* bgTexture = GetResources().Textures().GetTexture2D(
       asset::GetPath("Textures/crt.jpg"));
   auto& renderState = GetResources().GetRenderState();
-  auto* bgShader = dynamic_cast<basic::Shader*>(
-      GetResources().GetShader(basic::Shader::NAME));
   renderState.SetTexture(0, *bgTexture);
-  bgShader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
 
   initBackground(scene, 0);
 
@@ -45,22 +36,70 @@ void Stage::OnLoad() {
       GetResources().Textures().GetTexture2D(fontFile->TextureFileName);
   renderState.SetTexture(1, *fontTexture);
 
-  auto* charShader = dynamic_cast<gui::CharacterShader*>(
-      GetResources().GetShader(gui::CharacterShader::NAME));
+  auto* charShader =
+      GetResources().GetShader(gui::component::Text::CHARACTER_SHADER_NAME);
   renderState.SetShader(charShader);
-  charShader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
+
+  spriteSheet_ =
+      soil::file::SpriteSheet::Load(asset::GetPath("Textures/Tiles/Gui.json"));
+  auto* guiTexture = GetResources().Textures().GetTextureArray2D(
+      spriteSheet_.GetTextureFile(), spriteSheet_.FramesPerDim);
+
+  auto* symbolShader =
+      GetResources().GetShader(gui::component::Text::SYMBOL_SHADER_NAME);
 
   soil::stage::scene::component::text::AbstractText::InitPrefab(
-      "TextCalibri", {
-                         .QuadVao = quadVao,
-                         .Shader = charShader,
-                         .Font = fontFile,
-                         .FontTexture = fontTexture,
-                     });
+      "TextCalibri",
+      {
+          .QuadVao = quadVao,
+          .CharacterShader = charShader,
+          .SymbolShader = symbolShader,
+          .Font = fontFile,
+          .FontTexture = fontTexture,
+          .SymbolMap = {{"smiley",
+                         {
+                             .Name = "smiley",
+                             .Texture = guiTexture,
+                             .TileIndex = spriteSheet_.FrameByName("smiley"),
+                             .AdvanceX = fontFile->Base + fontFile->Padding[0] +
+                                         fontFile->Padding[2],
+                             .SizeX = fontFile->Base,
+
+                         }},
+                        {"party_popper",
+                         {
+                             .Name = "party_popper",
+                             .Texture = guiTexture,
+                             .TileIndex =
+                                 spriteSheet_.FrameByName("party_popper"),
+                             .AdvanceX = fontFile->Base + fontFile->Padding[0] +
+                                         fontFile->Padding[2],
+                             .SizeX = fontFile->Base,
+                         }},
+                        {"love",
+                         {
+                             .Name = "love",
+                             .Texture = guiTexture,
+                             .TileIndex = spriteSheet_.FrameByName("love"),
+                             .AdvanceX = fontFile->Base + fontFile->Padding[0] +
+                                         fontFile->Padding[2],
+                             .SizeX = fontFile->Base,
+                         }},
+                        {"hot",
+                         {
+                             .Name = "hot",
+                             .Texture = guiTexture,
+                             .TileIndex = spriteSheet_.FrameByName("hot"),
+                             .AdvanceX = fontFile->Base + fontFile->Padding[0] +
+                                         fontFile->Padding[2],
+                             .SizeX = fontFile->Base,
+                         }}},
+
+      });
 
   text_ = scene->AddChild(new Node("TextCalibri", "Hello world!"));
   text_->Text().SetCharacterSize(1);
-  text_->Text().SetMaxSize(glm::vec2(300.0f));
+  text_->Text().SetMaxLineLength(1080);
   text_->Text().SetColor(glm::vec4(0.0, .4F, .4F, .5F));
   text_->Text().SetBorderColor(glm::vec3(0.0, .6F, .6F));
   text_->Text().SetCharacterOutline(glm::vec2(0.5F, 0.2F));
@@ -70,8 +109,9 @@ void Stage::OnLoad() {
       scene->AddChild(new Node("TextCalibri",
                                "Text sample\n"
                                "Press\n"
-                               "    s - Show statistics and FPS\n"
-                               "    t - Toggle long text (lorem ipsum)\n"
+                               "    1 - Show statistics and FPS\n"
+                               "    2 - Toggle long text (lorem ipsum)\n"
+                               "    3 - Text with symbols\n"
                                "    + - Increase text size\n"
                                "    - - Decrease text size\n"));
   description_->Text().SetCharacterSize(0.2);
@@ -115,7 +155,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                              text_->Text().GetCharacterSize() - 0.1F);
                        };
                      })
-      .AddKeyMapping(soil::input::Keys::S,
+      .AddKeyMapping(soil::input::Keys::Key_1,
                      soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
                        printStatistics_ = !printStatistics_;
@@ -124,7 +164,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                        }
                      })
       .AddKeyMapping(
-          soil::input::Keys::T, soil::input::Event::StateType::Release,
+          soil::input::Keys::Key_2, soil::input::Event::StateType::Release,
           [this](const soil::input::Event&) {
             if (text_->Text().GetText().starts_with("Lorem")) {
               text_->Text().SetText("Hallo world!");
@@ -148,6 +188,14 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                   "takimata sanctus est Lorem ipsum dolor sit amet.");
             }
           })
+      .AddKeyMapping(soil::input::Keys::Key_3,
+                     soil::input::Event::StateType::Release,
+                     [this](const soil::input::Event&) {
+                       text_->Text().SetText(
+                           "Text with :smiley:_symbols:party_popper:"
+                           "\n"
+                           "\n:love: this :hot: feature");
+                     })
       .AddKeyMapping(soil::input::Keys::F,
                      soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
@@ -161,9 +209,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
 
 void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const int textureSlot) {
-  auto* bgShader = dynamic_cast<basic::Shader*>(
-      GetResources().GetShader(basic::Shader::NAME));
-  // auto* quadMesh = GetResources().GetMesh({.Identifier = "Quad"});
+  auto* bgShader = GetResources().GetShader(basic::Shape::SHADER_NAME);
   auto* quadVao = GetResources().GetVao("quad");
   const auto winSize =
       glm::vec2(GetResources().GetWindow()->GetSize() - glm::ivec2(30, 30));
@@ -191,6 +237,9 @@ void Stage::Handle(const soil::video::event::WindowEvent& event) {
 }
 
 void Stage::OnStatsChanges(const soil::Engine::Statistics& stats) {
+  if (!printStatistics_) {
+    return;
+  }
   text_->Text().SetText(
       "Hello world!\n"
       "FPS:" +

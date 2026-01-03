@@ -18,9 +18,6 @@ class LineInstance final
   LineInstance(const std::string& pileName, glm::vec3 StartPoint,
                glm::vec3 EndPoint);
 
-  /*static LineInstance* NewFromPile(const std::string& name,
-                                   glm::vec3 StartPoint, glm::vec3 EndPoint);*/
-
   [[nodiscard]] glm::vec4 GetColor() const;
 
   void SetColor(glm::vec4 color);
@@ -34,10 +31,12 @@ class LineInstance final
   [[nodiscard]] glm::vec3 GetEndPoint() const;
 
   void Write(const soil::video::render::data::IWriter& writer) override;
- 
+
   void Update() override;
   inline static const auto BATCH_NAME = std::string("Line");
   static std::vector<soil::video::vertex::VertexAttribDescriptor> ATTRIBS;
+
+  inline static const std::string SHADER_NAME = "Line";
 
  private:
   Data data_;

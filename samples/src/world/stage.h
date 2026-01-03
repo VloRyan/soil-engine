@@ -1,6 +1,5 @@
 #ifndef WORLD_STAGE_H
 #define WORLD_STAGE_H
-#include "basic/shader.h"
 #include "basic/shape.h"
 #include "common/stage.h"
 #include "engine.h"
@@ -12,11 +11,12 @@ class Stage final : public common::Stage {
  public:
   explicit Stage();
   ~Stage() override = default;
-  void OnLoad() override;
+  void OnLoad(soil::stage::scene::Scene* scene) override;
   void Update() override;
 
  protected:
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;
+  soil::stage::scene::viewer::Node* NewViewer(glm::ivec2 windowSize) override;
 
  private:
   void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;

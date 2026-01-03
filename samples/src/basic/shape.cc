@@ -27,7 +27,7 @@ void Shape::SetTextureUnit(const byte textureUnit) {
   this->textureUnit_ = textureUnit;
 }
 
-void Shape::BeforeDraw() {
+void Shape::BeforeDrawElements(soil::video::render::State& state) {
   GetShader()->SetUniform("Transform", GetParent()->Transform().GetMatrix());
   GetShader()->SetUniform("Size", GetSize());
   GetShader()->SetUniform("Color", GetColor());

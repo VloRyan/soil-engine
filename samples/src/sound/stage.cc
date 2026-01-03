@@ -11,8 +11,7 @@
 namespace soil_samples::sound {
 Stage::Stage() : music_(nullptr) {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   auto* source = GetResources().GetSource(
       asset::GetPath("Sounds/Purple Black Loop Mono.ogg"), true);
   auto* node = scene->AddChild(

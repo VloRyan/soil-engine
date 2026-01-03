@@ -8,16 +8,12 @@ get_filename_component(ASSET_FILE_PATH assets ABSOLUTE)
 configure_file(src/asset.h.in asset.h)
 
 add_executable(${PROJECT_NAME} src/main.cc
-        src/basic/shader.cc
-        src/basic/shader.h
         src/basic/shape.cc
         src/basic/shape.h
         src/basic/stage.cc
         src/basic/stage.h
         src/common/rotation_node.cc
         src/common/rotation_node.h
-        src/instancing/shader.cc
-        src/instancing/shader.h
         src/instancing/shape_instance.cc
         src/instancing/shape_instance.h
         src/instancing/stage.cc
@@ -40,11 +36,7 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/gui/component/text.h
         src/gui/component/shape_tile.cc
         src/gui/component/shape_tile.h
-        src/gui/shape_tile_shader.cc
-        src/gui/shape_tile_shader.h
 
-        src/gui/character_shader.cc
-        src/gui/character_shader.h
         src/gui/menu/menu.cc
         src/gui/menu/menu.h
         src/gui/menu/item.cc
@@ -52,8 +44,6 @@ add_executable(${PROJECT_NAME} src/main.cc
         src/gui/menu/scrollbar.cc
         src/gui/menu/scrollbar.h
 
-        src/line/shader.cc
-        src/line/shader.h
         src/line/line_instance.cc
         src/line/line_instance.h
         src/line/stage.cc
@@ -63,6 +53,7 @@ add_executable(${PROJECT_NAME} src/main.cc
 
         src/sound/stage.cc
         src/sound/stage.h
+        src/common/globals.hpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)

@@ -11,7 +11,7 @@ class Stage final : public common::Stage {
   explicit Stage();
   ~Stage() override = default;
 
-  void OnLoad() override;
+  void OnLoad(soil::stage::scene::Scene* scene) override;
   void Handle(const soil::stage::event::StageEvent& event) override;
 
  protected:

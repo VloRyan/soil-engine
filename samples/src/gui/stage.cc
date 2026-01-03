@@ -5,15 +5,12 @@
 
 #include <string>
 
-#include "character_shader.h"
 #include "component/text.h"
 #include "file/font.h"
 #include "label.h"
 #include "menu/item.h"
 #include "menu/menu.h"
-#include "shape_tile_shader.h"
 #include "stage/scene/component/render/update_matrices_ubo_component.h"
-#include "stage/scene/gui/container/h_box.h"
 #include "stage/scene/gui/root.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
@@ -24,9 +21,7 @@ constexpr auto UBO_TARGET_MATRICES = 0;
 
 Stage::Stage() : root_(nullptr), mainMenu_(nullptr) {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
-
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   auto* fontFile = soil::file::Font::Load(asset::GetPath("Fonts/Calibri.fnt"));
   auto* fontTexture =
       GetResources().Textures().GetTexture2D(fontFile->TextureFileName);
@@ -51,32 +46,37 @@ void Stage::OnLoad() {
 
   auto* quadVao = GetResources().GetVao("quad");
 
-  auto* shapeTileShader = dynamic_cast<ShapeTileShader*>(
-      GetResources().GetShader(ShapeTileShader::NAME));
-  shapeTileShader->SetViewer(
-      viewer);  // will update PV matrix in Shader::Prepare())
+  auto* shapeTileShader =
+      GetResources().GetShader(component::ShapeTile::SHADER_NAME);
 
   root_ = scene->AddChild(
       new soil::stage::scene::gui::Root(GetResources().GetWindow()->GetSize()));
 
-  auto* charShader = dynamic_cast<CharacterShader*>(
-      GetResources().GetShader(CharacterShader::NAME));
-  charShader->SetViewer(viewer);
+  auto* charShader =
+      GetResources().GetShader(component::Text::CHARACTER_SHADER_NAME);
 
   component::ShapeTile::InitPrefab("gui", {
                                               .QuadVao = quadVao,
                                               .Shader = shapeTileShader,
                                               .Texture = guiTexture,
                                           });
-  soil::stage::scene::component::text::AbstractText::InitPrefab(
-      "Calibri", {
-                     .QuadVao = quadVao,
-                     .Shader = charShader,
-                     .Font = fontFile,
-                     .FontTexture = fontTexture,
-                 });
+  auto* symbolShader =
+      GetResources().GetShader(gui::component::Text::SYMBOL_SHADER_NAME);
 
-  initGui();
+  soil::stage::scene::component::text::AbstractText::InitPrefab(
+      "Calibri",
+      {
+          .QuadVao = quadVao,
+          .CharacterShader = charShader,
+          .SymbolShader = symbolShader,
+          .Font = fontFile,
+          .FontTexture = fontTexture,
+          .SymbolMap = makeSymbolMap(spriteSheet_, *fontFile, guiTexture),
+      });
+
+  {
+    initGui();
+  }
 }
 
 void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
@@ -102,9 +102,9 @@ void Stage::GenerateMenu(const std::vector<MenuItemDefinition>& items) const {
       .Caption = "Exit",
       .Value = "exit",
       .BackgroundTileName = "button",
-      .IconTileName = "exit",
+      /*.IconName = "exit",*/
       .ToolTip = "Exit the program",
-      .LetterSize = 0.5f,
+      .LetterSize = 0.8f,
       .OnClick = [this](menu::Item&) { GetResources().GetWindow()->Close(); }};
   auto* item = createMenuItem(exitButton);
   mainMenu_->AddChild(item);
@@ -137,8 +137,8 @@ void Stage::initGui() {
   mainMenu_->SetAnchor(
       soil::stage::scene::gui::Rectangle::HorizontalAnchors::Center,
       soil::stage::scene::gui::Rectangle::VerticalAnchors::Middle);
-  mainMenu_->SetRelativeSize(glm::vec2(0.0F, 0.6F));
-  mainMenu_->SetAspectRatio(glm::vec2(0.5F, 0.F));
+  mainMenu_->SetRelativeSize(glm::vec2(0.0F, 0.8F));
+  mainMenu_->SetAspectRatio(glm::vec2(3.F / 4.F, 0.F));
 }
 
 menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
@@ -147,23 +147,16 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
       spriteSheet_.FrameByName(def.BackgroundTileName));
   item->SetStyle(def.BackgroundStyle);
   item->SetRelativeSize(glm::vec2(0.95F, 0.0F));
-  item->SetAspectRatio(glm::vec2(0.F, 4.F / 1.F));
+  item->SetAspectRatio(glm::vec2(0.F, 6.F / 1.F));
   item->SetOnClick(def.OnClick);
-  auto* container = item->AddChild(new soil::stage::scene::gui::container::HBox(
-      10.F, glm::vec4(10.F, 0.F, 0.F, 0.F)));
-  container->SetRelativeSize(glm::vec2(1.F));
-  container->SetAnchor(
-      soil::stage::scene::gui::Rectangle::HorizontalAnchors::Left,
-      soil::stage::scene::gui::Rectangle::VerticalAnchors::Middle);
-  auto* itemIcon = container->AddChild(new Plane());
-  itemIcon->SetRelativeSize(glm::vec2(0.F, 0.85F));
-  itemIcon->SetAspectRatio(glm::vec2(1.F, 0.F));
-  itemIcon->Background().SetTileIndex(
-      spriteSheet_.FrameByName(def.IconTileName));
 
-  const auto* label = container->AddChild(new Label(def.Caption));
+  auto* label = item->AddChild(
+      new Label(!def.IconName.empty() ? ":" + def.IconName + ":" + def.Caption
+                                      : def.Caption));
   label->Text().SetCharacterSize(def.LetterSize);
-
+  label->SetAnchor(soil::stage::scene::gui::Rectangle::HorizontalAnchors::Left,
+                   soil::stage::scene::gui::Rectangle::VerticalAnchors::Middle);
+  item->SetPadding(glm::ivec4(15, 0, 0, 0));
   if (!def.ToolTip.empty()) {
     auto* toolTip = root_->AddOverlay(new Label(def.ToolTip));
     toolTip->SetVisible(false);
@@ -171,11 +164,9 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
     style.BackgroundColor = glm::vec4(0.5F, 0.5F, 0.5F, 0.8F);
     style.BackgroundColorMouseOver = glm::vec4(0.5F, 0.5F, 0.5F, 0.8F);
     toolTip->SetStyle(style);
-    toolTip->Text().SetCharacterSize(0.2F);
+    toolTip->Text().SetCharacterSize(0.4F);
     item->SetOnMouseOverFunc([toolTip, this](const glm::ivec2 pos) {
-      if (!toolTip->IsVisible()) {
-        toolTip->SetVisible(true);
-      }
+      toolTip->SetVisible(true);
       auto relPos = pos - root_->GetSize() / glm::ivec2(2);
       toolTip->SetLocalPosition(
           glm::vec3(relPos, toolTip->GetLocalPosition().z));
@@ -183,6 +174,35 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
     item->SetOnMouseOutFunc([toolTip] { toolTip->SetVisible(false); });
   }
   return item;
+}
+std::unordered_map<std::string, soil::stage::scene::component::text::Symbol>
+Stage::makeSymbolMap(const soil::file::SpriteSheet& spriteSheet,
+                     const soil::file::Font& font,
+                     const soil::video::texture::Texture* symbolTexture) {
+  auto map = std::unordered_map<std::string,
+                                soil::stage::scene::component::text::Symbol>();
+  for (auto& pair : spriteSheet.Frames) {
+    map.insert({pair.first,
+                soil::stage::scene::component::text::Symbol{
+                    .Name = pair.first,
+                    .Texture = symbolTexture,
+                    .TileIndex = pair.second,
+                    .AdvanceX = font.Base + font.Padding[0] + font.Padding[2],
+                    .SizeX = font.Base,
+                }});
+  }
+
+  /*  for (auto& name : names) {
+      map.insert(
+          {name, soil::stage::scene::component::text::Symbol{
+                     .Name = name,
+                     .Texture = texture,
+                     .TileIndex = spriteSheet.FrameByName(name),
+                     .AdvanceX = font.Base + font.Padding[0] +
+    font.Padding[2], .SizeX = font.Base,
+                 }})
+    }*/
+  return map;
 }
 
 }  // namespace soil_samples::gui

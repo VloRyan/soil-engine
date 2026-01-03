@@ -13,7 +13,7 @@ class Stage final : public common::Stage {
   explicit Stage();
   ~Stage() override = default;
 
-  void OnLoad() override;
+  void OnLoad(soil::stage::scene::Scene* scene) override;
 
  protected:
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;

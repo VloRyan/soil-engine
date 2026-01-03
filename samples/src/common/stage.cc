@@ -4,17 +4,23 @@
 
 #include <utility>
 
+#include "globals.hpp"
 #include "stage/scene/component/input/input_component.h"
+#include "stage/scene/component/render/update_matrices_ubo_component.h"
 #include "stage/scene/scene.h"
+#include "stage/scene/viewer/ortho.h"
 namespace soil_samples::common {
 Stage::Stage() : backAction_(nullptr), printStatistics_(false) {}
 
 void Stage::Load() {
-  OnLoad();
-  if (GetScenes().size() != 1) {
-    throw std::runtime_error("expected one scene after OnLoad()");
-  }
-  auto* scene = GetScenes()[0];
+  auto* scene = AddScene(new soil::stage::scene::Scene());
+
+  viewer_ = scene->AddChild(NewViewer(GetResources().GetWindow()->GetSize()));
+  scene->AddComponent(
+      new soil::stage::scene::component::render::UpdateMatricesUboComponent(
+          viewer_, UBO_TARGET_MATRICES, &GetResources().GetRenderState()));
+
+  OnLoad(scene);
   auto* inputComp = scene->AddComponent(
       new soil::stage::scene::component::input::InputComponent());
   auto& inputMap = inputComp->EventMap();
@@ -58,5 +64,8 @@ void Stage::OnStatsChanges(const soil::Engine::Statistics& stats) {
                << std::to_string(stats.renderTime / stats.FPS) << ", "
                << std::to_string(stats.endRenderTime / stats.FPS);
   }
+}
+soil::stage::scene::viewer::Node* Stage::NewViewer(glm::ivec2 windowSize) {
+  return new soil::stage::scene::viewer::Ortho(windowSize);
 }
 }  // namespace soil_samples::common

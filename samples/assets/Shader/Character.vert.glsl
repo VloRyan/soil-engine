@@ -1,4 +1,5 @@
 //#include header
+//#include uniform.Matrices_033
 
 // Input vertex data, different for all executions of this shader.
 layout (location = 0) in vec2 aVertexPosition;
@@ -7,7 +8,6 @@ uniform vec3 uPositionWorldspace;// Position of the center of the shape
 uniform vec2 uSize;
 uniform vec2 uTexCoords;
 uniform vec2 uTexCoordsMax;
-uniform mat4 ProjectionViewMatrix;
 
 // Output data ; will be interpolated for each fragment.
 out vec2 UV;

@@ -2,6 +2,7 @@
 #define TEXT_STAGE_H
 #include "basic/shape.h"
 #include "common/stage.h"
+#include "file/sprite_sheet.h"
 #include "node.h"
 #include "stage/stage.h"
 
@@ -12,7 +13,7 @@ class Stage final : public common::Stage {
   ~Stage() override = default;
   void Handle(const soil::video::event::WindowEvent& event) override;
   void Update() override;
-  void OnLoad() override;
+  void OnLoad(soil::stage::scene::Scene* scene) override;
 
  protected:
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;
@@ -29,6 +30,7 @@ class Stage final : public common::Stage {
   glm::vec2 bounceTextVelocity;
   float bounceTextGlowVelocity;
   int fastChangeIndex = -1;
+  soil::file::SpriteSheet spriteSheet_;
 };
 }  // namespace soil_samples::text
 

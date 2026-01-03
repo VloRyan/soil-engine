@@ -1,13 +1,9 @@
 #include "stage.h"
 
-#include <GL/gl3w.h>
-#include <plog/Log.h>
-
 #include <string>
 
 #include "glm/glm.hpp"
 #include "line_instance.h"
-#include "shader.h"
 #include "stage/scene/scene.h"
 #include "stage/scene/viewer/ortho.h"
 #include "stage/stage.h"
@@ -16,15 +12,8 @@ namespace soil_samples::line {
 
 Stage::Stage() : lines_(), offset_(0) {}
 
-void Stage::OnLoad() {
-  auto* scene = AddScene(new soil::stage::scene::Scene());
-
-  const auto viewer = scene->AddChild(new soil::stage::scene::viewer::Ortho(
-      GetResources().GetWindow()->GetSize()));
-  viewer->Look(glm::vec3(0.F), glm::vec3(0.F, 0.F, -1.F));
-
-  auto* shader = dynamic_cast<Shader*>(GetResources().GetShader(Shader::NAME));
-  shader->SetViewer(viewer);  // will update PV matrix in Shader::Prepare())
+void Stage::OnLoad(soil::stage::scene::Scene* scene) {
+  auto* shader = GetResources().GetShader(LineInstance::SHADER_NAME);
   soil::video::render::draw::VaoElementsInstanced::Prepare({
       .Name = LineInstance::BATCH_NAME,
       .MeshData = GetResources().GetMesh(

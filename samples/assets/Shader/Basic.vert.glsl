@@ -1,9 +1,8 @@
-#version 330
-precision highp float;
+//#include header
+//#include uniform.Matrices_033
 
 layout (location = 0) in vec2 aVertexPosition;
 
-uniform mat4 ProjectionViewMatrix;
 uniform mat4 Transform;
 uniform vec2 Size;
 uniform vec4 Color;

@@ -13,6 +13,16 @@
     "exit": 6,
     "sphere": 7,
     "basic": 8,
-    "test": 9
+    "test": 9,
+    "smiley": 10,
+    "party_popper": 11,
+    "love": 12,
+    "hot": 13,
+    "gui": 14,
+    "sound": 15,
+    "world": 16,
+    "instancing": 17,
+    "line": 18,
+    "rocket": 19
   }
 }

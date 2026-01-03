@@ -18,8 +18,10 @@ class Shape : public soil::stage::scene::component::render::MeshComponent {
   [[nodiscard]] virtual byte GetTextureUnit() const;
   virtual void SetTextureUnit(byte textureUnit);
 
-  void BeforeDraw() override;
+  void BeforeDrawElements(soil::video::render::State& state) override;
   float DistanceTo(const glm::vec3& point) override;
+
+  inline static const std::string SHADER_NAME = "Basic";
 
  private:
   glm::vec2 size_;
