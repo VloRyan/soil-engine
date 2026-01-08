@@ -77,7 +77,8 @@ class Rectangle : public Node {
 
   class Root* GuiRoot() const;
 
-  virtual Rectangle* FindChildAt(glm::ivec2 pos);
+  virtual void FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
+                              bool onlyVisible);
 
  protected:
   void addChild(Node* node) override;

@@ -80,11 +80,18 @@ void Root::RemoveOverlay(Rectangle* rect) {
   }
   overlayContainer_->RemoveChild(rect);
 }
-Rectangle* Root::FindChildAt(glm::ivec2 pos) {
-  auto* child = Rectangle::FindChildAt(pos);
-  if (child != nullptr && child == overlayContainer_) {
-    return overlayContainer_->FindChildAt(pos);
+
+void Root::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
+                          bool onlyVisible) {
+  for (auto* child : children_) {
+    if (onlyVisible && !child->IsVisible() || !child->Contains(pos)) {
+      continue;
+    }
+    if (child == overlayContainer_) {
+      overlayContainer_->FindChildrenAt(result, pos, onlyVisible);
+      continue;
+    }
+    result.push_back(child);
   }
-  return child;
 }
 }  // namespace soil::stage::scene::gui

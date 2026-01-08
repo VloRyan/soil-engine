@@ -189,6 +189,7 @@ void Stage::Handle(const event::GameEvent& event) {
     hook->OnEvent(event);
   }
 }
+
 void Stage::Handle(const soil::event::EngineEvent& event) {
   for (auto* hook : engineEventHooks_) {
     hook->OnEvent(event);

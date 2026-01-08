@@ -24,7 +24,8 @@ class Root final : public Rectangle,
   }
 
   void RemoveOverlay(Rectangle* rect);
-  Rectangle* FindChildAt(glm::ivec2 pos) override;
+  void FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
+                      bool onlyVisible) override;
 
  protected:
   void OnStageChanged(soil::stage::Stage* stage,

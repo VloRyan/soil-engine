@@ -240,6 +240,9 @@ void Rectangle::SetVisible(const bool visible) {
   if (visible == visible_) {
     return;
   }
+  if (!visible && IsMouseOver()) {
+    OnMouseOut();
+  }
   visible_ = visible;
   auto visibleEffective = visible_;
   if (const auto* parent = GetParentRect(); parent != nullptr) {
@@ -347,13 +350,14 @@ class Root* Rectangle::GuiRoot() const {
   }
   return dynamic_cast<class Root*>(p);
 }
-Rectangle* Rectangle::FindChildAt(glm::ivec2 pos) {
+void Rectangle::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
+                               bool onlyVisible) {
   for (auto* child : children_) {
-    if (child->Contains(pos)) {
-      return child;
+    if (onlyVisible && !child->IsVisible() || !child->Contains(pos)) {
+      continue;
     }
+    result.push_back(child);
   }
-  return nullptr;
 }
 
 }  // namespace soil::stage::scene::gui
