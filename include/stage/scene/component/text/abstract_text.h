@@ -6,67 +6,12 @@
 #include "file/sprite_sheet.h"
 #include "stage/scene/component/render/mesh_component.h"
 #include "stage/scene/node.h"
+#include "stage/text/types.hpp"
 #include "video/manager.h"
 #include "video/model/letter.h"
 #include "video/texture/texture.h"
 
 namespace soil::stage::scene::component::text {
-struct Symbol {
-  std::string Name{-1};
-  const video::texture::Texture* Texture{nullptr};
-  int TileIndex{0};
-  int AdvanceX{0};
-  int SizeX{0};
-
-  bool operator==(const Symbol& rhs) const {
-    return Name == rhs.Name && Texture == rhs.Texture &&
-           TileIndex == rhs.TileIndex;
-  }
-  bool operator!=(const Symbol& rhs) const { return !(rhs == *this); }
-};
-
-struct Glyph {
-  enum class Type : std::uint8_t {
-    Character = 0,
-    Symbol,
-  };
-  [[nodiscard]] int AdvanceX() const;
-  [[nodiscard]] int SizeX() const;
-  Glyph::Type Type{Glyph::Type::Character};
-  const file::Font::Character* Character{nullptr};
-  const text::Symbol* Symbol{nullptr};
-  bool operator==(const Glyph& rhs) const {
-    return Type == rhs.Type && Character == rhs.Character &&
-           Symbol == rhs.Symbol;
-  }
-  bool operator!=(const Glyph& rhs) const { return !(rhs == *this); }
-};
-
-struct Word {
-  std::vector<Glyph> Glyphs{};
-  std::vector<Symbol> Symbols{};
-#ifdef DEBUG
-  std::string Text{};
-#endif
-  int Length{0};
-
-  void Append(Glyph glyph);
-  bool operator==(const Word& rhs) const {
-    return Glyphs == rhs.Glyphs && Symbols == rhs.Symbols && Text == rhs.Text &&
-           Length == rhs.Length;
-  }
-  bool operator!=(const Word& rhs) const { return !(rhs == *this); }
-};
-
-struct Line {
-  std::vector<Word> Words{};
-#ifdef DEBUG
-  std::string Text{};
-#endif
-  int Length{0};
-  void Append(const Word& word);
-  void Close();
-};
 
 class AbstractText : public DrawableComponent,
                      public video::render::draw::Drawable {
@@ -77,7 +22,7 @@ class AbstractText : public DrawableComponent,
     video::shader::Program* SymbolShader{nullptr};
     const file::Font* Font{nullptr};
     video::texture::Texture* FontTexture{nullptr};
-    std::unordered_map<std::string, Symbol> SymbolMap{};
+    std::unordered_map<std::string, stage::text::Symbol> SymbolMap{};
   };
 
   explicit AbstractText(const std::string& prefab,
@@ -127,7 +72,7 @@ class AbstractText : public DrawableComponent,
   virtual void SetPositionOffset(const glm::vec3& positionOffset);
   [[nodiscard]] virtual glm::vec3 GetPositionOffset() const;
 
-  const std::vector<Line>& GetLines() const;
+  const std::vector<stage::text::Line>& GetLines() const;
 
   [[nodiscard]] const video::render::StateIdentifier& StateId() const override;
   void Draw(video::render::State& state) override;
@@ -138,27 +83,27 @@ class AbstractText : public DrawableComponent,
   void UpdateState(const video::render::StateDef& state);
 
   virtual void SetupCharacter(const file::Font::Character& character,
-                              const glm::vec3& worldPos,
+                              const glm::vec3& worldPos, const glm::vec4& color,
                               video::shader::Program* shader) = 0;
 
-  virtual void SetupSymbol(const text::Symbol* symbol,
-                           const glm::vec3& worldPos,
+  virtual void SetupSymbol(const stage::text::Symbol& symbol,
+                           const glm::vec3& worldPos, const glm::vec4& color,
                            video::shader::Program* shader) = 0;
 
   virtual void SetupText(video::render::State& state) {};
 
-  static std::unordered_map<std::string, Symbol> MakeSymbolMap(
+  static std::unordered_map<std::string, stage::text::Symbol> MakeSymbolMap(
       const file::SpriteSheet& spriteSheet, const file::Font& font,
       const video::texture::Texture* symbolTexture);
 
  protected:
   struct SymbolPosition {
-    const text::Symbol* Symbol{nullptr};
+    const stage::text::Glyph& SymbolGlyph;
     glm::vec3 Position{};
   };
   float DrawCharacter(const glm::vec3& at,
-                      const file::Font::Character& character);
-  float DrawSymbol(glm::vec2& cursorPos, const text::Symbol* symbol);
+                      const file::Font::Character& character,
+                      const glm::vec4& color);
   const PrefabData& Data();
 
   PrefabData* data_;
@@ -181,7 +126,7 @@ class AbstractText : public DrawableComponent,
   glm::vec4 color_;
   glm::vec3 borderColor_;
 
-  std::vector<Line> lines_;
+  std::vector<stage::text::Line> lines_;
   video::render::StateIdentifier stateId_;
 };
 }  // namespace soil::stage::scene::component::text

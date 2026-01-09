@@ -1,7 +1,7 @@
 #include "stage/scene/component/text/abstract_text.h"
 
-#include "stage/scene/component/text/parser.h"
 #include "stage/scene/gui/rectangle.h"
+#include "stage/text/parser.h"
 
 namespace soil::stage::scene::component::text {
 std::unordered_map<std::string, AbstractText::PrefabData>
@@ -56,7 +56,9 @@ void AbstractText::SetText(const std::string& text) {
 
 std::string AbstractText::GetText() const { return text_; }
 
-const std::vector<Line>& AbstractText::GetLines() const { return lines_; }
+const std::vector<stage::text::Line>& AbstractText::GetLines() const {
+  return lines_;
+}
 
 void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
   positionOffset_ = positionOffset;
@@ -66,8 +68,8 @@ void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
 glm::vec3 AbstractText::GetPositionOffset() const { return positionOffset_; }
 
 void AbstractText::updateText() {
-  lines_ = Parser::Parse(GetText(), data_->Font->Characters, data_->SymbolMap,
-                         maxLineLength_);
+  lines_ = stage::text::Parser::Parse(GetText(), data_->Font->Characters,
+                                      data_->SymbolMap, maxLineLength_);
   const auto effectiveLineHeight =
       static_cast<float>(data_->Font->LineHeight -
                          (data_->Font->Padding[0] + data_->Font->Padding[2])) *
@@ -173,9 +175,9 @@ void AbstractText::Draw(video::render::State& state) {
     cursorPosition.x = GetSize().x * -0.5F;
 
     for (auto& word : line.Words) {
-      for (auto glyph : word.Glyphs) {
+      for (auto& glyph : word.Glyphs) {
         switch (glyph.Type) {
-          case Glyph::Type::Character: {
+          case stage::text::Glyph::Type::Character: {
             const glm::vec2 halfSize =
                 (glm::vec2(glyph.Character->Size) * glm::vec2(0.5F)) *
                 GetCharacterSize();
@@ -192,10 +194,11 @@ void AbstractText::Draw(video::render::State& state) {
             const auto worldPos = glm::vec3(
                 localPosition.x + parentPos.x, localPosition.y + parentPos.y,
                 parentPos.z + GetPositionOffset().z);
-            cursorPosition.x += DrawCharacter(worldPos, *glyph.Character);
+            cursorPosition.x += DrawCharacter(worldPos, *glyph.Character,
+                                              glyph.Color.value_or(GetColor()));
             break;
           }
-          case Glyph::Type::Symbol: {
+          case stage::text::Glyph::Type::Symbol: {
             auto halfSize =
                 static_cast<float>(glyph.SizeX()) * 0.5F * GetCharacterSize();
             auto worldPos =
@@ -206,7 +209,7 @@ void AbstractText::Draw(video::render::State& state) {
                               data_->Font->Padding[1] * GetCharacterSize(),
                           0.F);
             symbolPositions.push_back(
-                SymbolPosition{.Symbol = glyph.Symbol, .Position = worldPos});
+                SymbolPosition{.SymbolGlyph = glyph, .Position = worldPos});
             cursorPosition.x +=
                 static_cast<float>(glyph.AdvanceX()) * GetCharacterSize();
             break;
@@ -223,7 +226,9 @@ void AbstractText::Draw(video::render::State& state) {
   state.SetShader(data_->SymbolShader);
   data_->SymbolShader->Prepare(state);
   for (auto& symPos : symbolPositions) {
-    SetupSymbol(symPos.Symbol, symPos.Position, data_->SymbolShader);
+    SetupSymbol(*symPos.SymbolGlyph.Symbol, symPos.Position,
+                symPos.SymbolGlyph.Color.value_or(GetColor()),
+                data_->SymbolShader);
     const auto* ebo = stateId_.Vao->GetEbo();
     soil::video::shader::Program::DrawElements(
         static_cast<uint>(video::render::DrawMode::TriangleStrip),
@@ -231,18 +236,15 @@ void AbstractText::Draw(video::render::State& state) {
   }
 }
 float AbstractText::DrawCharacter(const glm::vec3& at,
-                                  const file::Font::Character& character) {
-  SetupCharacter(character, at, data_->CharacterShader);
+                                  const file::Font::Character& character,
+                                  const glm::vec4& color) {
+  SetupCharacter(character, at, color, data_->CharacterShader);
   const auto* ebo = stateId_.Vao->GetEbo();
   soil::video::shader::Program::DrawElements(
       static_cast<uint>(video::render::DrawMode::TriangleStrip),
       ebo->GetIndexCount(), ebo->GetIndexType());
 
   return static_cast<float>(character.AdvanceX) * GetCharacterSize();
-}
-
-float AbstractText::DrawSymbol(glm::vec2& at, const text::Symbol* symbol) {
-  return 0.F;
 }
 
 float AbstractText::DistanceTo(const glm::vec3& point) {
@@ -261,13 +263,14 @@ const video::render::StateIdentifier& AbstractText::StateId() const {
 
 video::render::draw::Drawable* AbstractText::Drawable() { return this; }
 
-std::unordered_map<std::string, Symbol> AbstractText::MakeSymbolMap(
-    const file::SpriteSheet& spriteSheet, const file::Font& font,
-    const video::texture::Texture* symbolTexture) {
-  auto map = std::unordered_map<std::string, Symbol>();
+std::unordered_map<std::string, stage::text::Symbol>
+AbstractText::MakeSymbolMap(const file::SpriteSheet& spriteSheet,
+                            const file::Font& font,
+                            const video::texture::Texture* symbolTexture) {
+  auto map = std::unordered_map<std::string, stage::text::Symbol>();
   for (auto& pair : spriteSheet.Frames) {
     map.insert({pair.first,
-                soil::stage::scene::component::text::Symbol{
+                stage::text::Symbol{
                     .Name = pair.first,
                     .Texture = symbolTexture,
                     .TileIndex = pair.second,
@@ -278,47 +281,4 @@ std::unordered_map<std::string, Symbol> AbstractText::MakeSymbolMap(
   return map;
 }
 
-int Glyph::AdvanceX() const {
-  switch (Type) {
-    case Type::Character:
-      return Character->AdvanceX;
-    case Type::Symbol:
-      return Symbol->AdvanceX;
-  }
-}
-int Glyph::SizeX() const {
-  switch (Type) {
-    case Type::Character:
-      return Character->Size.x;
-    case Type::Symbol:
-      return Symbol->SizeX;
-  }
-}
-
-void Word::Append(Glyph glyph) {
-  Glyphs.push_back(glyph);
-#ifdef DEBUG
-  if (glyph.Type == Glyph::Type::Character) {
-    Text += static_cast<char>(glyph.Character->Id);
-  } else {
-    Text += "¶";
-  }
-
-#endif
-  Length += glyph.AdvanceX();
-}
-
-void Line::Append(const Word& word) {
-  Words.push_back(word);
-#ifdef DEBUG
-  Text += word.Text;
-#endif
-  Length += word.Length;
-}
-void Line::Close() {
-  if (!Words.empty() && !Words.back().Glyphs.empty()) {
-    Length -= Words.back().Glyphs.back().AdvanceX() -
-              Words.back().Glyphs.back().SizeX();
-  }
-}
 }  // namespace soil::stage::scene::component::text

@@ -1,10 +1,10 @@
-#include "stage/scene/component/text/parser.h"
+#include "stage/text/parser.h"
 
 #include <gtest/gtest.h>
 
 #include "resources.h"
 
-namespace soil::stage::scene::component::text {
+namespace soil::stage::text {
 class ParserTest : public testing::Test {
  protected:
   static Glyph CharacterGlyph(const file::Font& font, char c) {
@@ -93,4 +93,37 @@ TEST_F(ParserTest, ParseSymbols) {
       lines[0].Length,
       2300);  // 35 * 64 + 1 * 60 (:knownSymbol: = 1 glyph, :word: = 1 glyph)
 }
-}  // namespace soil::stage::scene::component::text
+
+TEST_F(ParserTest, ParseColorMark) {
+  auto text =
+      "{color=#ff0000}Color{color=#00ff0066}ful {color}test{color=#ffffffff}";
+  auto font = file::Font::Load(resources::GetPath("file/Symmetric.fnt"));
+  auto lines = Parser::Parse(text, font->Characters);
+
+  EXPECT_EQ(lines.size(), 1);
+  ASSERT_EQ(lines[0].Text, "Colorful test");
+  auto i = 0;
+  for (; i < std::string("Color").size(); i++) {
+    ASSERT_EQ(lines[0].Words[0].Glyphs[i].Color.has_value(), true)
+        << "at: " << i;
+    EXPECT_EQ(lines[0].Words[0].Glyphs[i].Color.value(),
+              glm::vec4(1.F, 0.F, 0.F, 1.F))
+        << "at: " << i;
+  }
+  for (; i < std::string("Colorful").size(); i++) {
+    ASSERT_EQ(lines[0].Words[0].Glyphs[i].Color.has_value(), true)
+        << "at: " << i;
+    EXPECT_EQ(lines[0].Words[0].Glyphs[i].Color.value(),
+              glm::vec4(0.F, 1.F, 0.F, 0.4F))
+        << "at: " << i;
+  }
+  // space between the words: spaces never have color
+  ASSERT_EQ(lines[0].Words[0].Glyphs[i].Color.has_value(), false)
+      << "at: " << i;
+
+  i = 0;
+  for (; i < std::string("test").size(); i++) {
+    EXPECT_EQ(lines[0].Words[1].Glyphs[i].Color.has_value(), false);
+  }
+}
+}  // namespace soil::stage::text

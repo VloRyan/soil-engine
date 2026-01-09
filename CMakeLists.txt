@@ -54,7 +54,6 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/render/update_matrices_ubo_component.cc
         src/stage/scene/component/sound.cc
         src/stage/scene/component/text/abstract_text.cc
-        src/stage/scene/component/text/parser.cc
         src/stage/scene/component/transform_component.cc
         src/stage/scene/component/update_graph_component.cc
         src/stage/scene/component/world/collision_object_component.cc
@@ -66,14 +65,13 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/root.cc
         src/stage/scene/node.cc
         src/stage/scene/scene.cc
-        src/stage/scene/text/parser.cc
         src/stage/scene/viewer/node.cc
         src/stage/scene/viewer/ortho.cc
         src/stage/scene/viewer/perspective.cc
         src/stage/scene/volume/frustum_culling.cc
         src/stage/stage.cc
+        src/stage/text/parser.cc
         src/util/files.cc
-        src/util/strings.cc
         src/util/strings.cc
         src/video/adapter.cc
         src/video/buffer/cursor.cc
@@ -91,7 +89,6 @@ add_library(${PROJECT_NAME}
         src/video/mesh/prefab.cc
         src/video/model/letter.cc
         src/video/open_gl_context.cc
-        src/video/render/data/buffer_writer.cc
         src/video/render/data/buffer_writer.cc
         src/video/render/draw/drawable_container.cc
         src/video/render/draw/instance_data_buffer.cc
@@ -173,7 +170,6 @@ target_sources(
         include/stage/scene/component/render/update_matrices_ubo_component.h
         include/stage/scene/component/sound.h
         include/stage/scene/component/text/abstract_text.h
-        include/stage/scene/component/text/parser.h
         include/stage/scene/component/transform_component.h
         include/stage/scene/component/update_graph_component.h
         include/stage/scene/component/world/collision_object_component.h
@@ -185,12 +181,13 @@ target_sources(
         include/stage/scene/gui/root.h
         include/stage/scene/node.h
         include/stage/scene/scene.h
-        include/stage/scene/text/parser.h
         include/stage/scene/viewer/node.h
         include/stage/scene/viewer/ortho.h
         include/stage/scene/viewer/perspective.h
         include/stage/scene/volume/frustum_culling.h
         include/stage/stage.h
+        include/stage/text/parser.h
+        include/stage/text/types.hpp
         include/util/cache.hpp
         include/util/files.h
         include/util/pointer_cache.hpp
