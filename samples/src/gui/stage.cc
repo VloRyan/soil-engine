@@ -137,8 +137,8 @@ void Stage::initGui() {
   mainMenu_->SetAnchor(
       soil::stage::scene::gui::Rectangle::HorizontalAnchors::Center,
       soil::stage::scene::gui::Rectangle::VerticalAnchors::Middle);
-  mainMenu_->SetRelativeSize(glm::vec2(0.0F, 0.8F));
-  mainMenu_->SetAspectRatio(glm::vec2(3.F / 4.F, 0.F));
+  mainMenu_->SetRelativeSize(glm::vec2(0.F, 0.8F));
+  mainMenu_->SetAspectRatio(3.F / 4.F);
 }
 
 menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
@@ -146,8 +146,8 @@ menu::Item* Stage::createMenuItem(const MenuItemDefinition& def) const {
   item->Background().SetTileIndex(
       spriteSheet_.FrameByName(def.BackgroundTileName));
   item->SetStyle(def.BackgroundStyle);
-  item->SetRelativeSize(glm::vec2(0.95F, 0.0F));
-  item->SetAspectRatio(glm::vec2(0.F, 6.F / 1.F));
+  item->SetRelativeSize(glm::vec2(0.95F, 0.F));
+  item->SetAspectRatio(6.F / 1.F);
   item->SetOnClick(def.OnClick);
 
   auto* label = item->AddChild(

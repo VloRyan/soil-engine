@@ -11,7 +11,7 @@ Rectangle::Rectangle()
       minSize_(glm::ivec2(10)),
       maxSize_(glm::ivec2(0)),
       relativeSize_(glm::vec2(0.F)),
-      aspectRatio_(glm::vec2(0.F)),
+      aspectRatio_(0.F),
       padding_(0.F),
       horizontalAnchors_(HorizontalAnchors::None),
       verticalAnchors_(VerticalAnchors::None),
@@ -115,9 +115,9 @@ void Rectangle::SetAnchor(const HorizontalAnchors horizontal,
   MarkDirtyWith(DirtyImpact::Dependents);
 }
 
-const glm::vec2& Rectangle::GetAspectRatio() const { return aspectRatio_; }
+float Rectangle::GetAspectRatio() const { return aspectRatio_; }
 
-void Rectangle::SetAspectRatio(const glm::vec2& aspectRatio) {
+void Rectangle::SetAspectRatio(float aspectRatio) {
   aspectRatio_ = aspectRatio;
 }
 
@@ -216,12 +216,15 @@ void Rectangle::UpdateSize(const glm::ivec2& parentSize) {
                                     relativeSize_[i]);
     }
   }
-  if (aspectRatio_.x > 0.F) {
-    newSize.x =
-        static_cast<int>(static_cast<float>(newSize.y) * aspectRatio_.x);
-  } else if (aspectRatio_.y > 0.F) {
-    newSize.y =
-        static_cast<int>(static_cast<float>(newSize.x) / aspectRatio_.y);
+  if (aspectRatio_ > 0.F) {
+    if (relativeSize_.x > 0.F && relativeSize_.y <= 0.F) {
+      newSize.y =
+          static_cast<int>(static_cast<float>(newSize.x) / aspectRatio_);
+    }
+    if (relativeSize_.y > 0.F && relativeSize_.x <= 0.F) {
+      newSize.x =
+          static_cast<int>(static_cast<float>(newSize.y) * aspectRatio_);
+    }
   }
   SetSize(newSize);
 }

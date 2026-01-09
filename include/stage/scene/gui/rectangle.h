@@ -38,9 +38,9 @@ class Rectangle : public Node {
 
   void SetAnchor(HorizontalAnchors horizontal, VerticalAnchors vertical);
 
-  [[nodiscard]] virtual const glm::vec2& GetAspectRatio() const;
+  [[nodiscard]] virtual float GetAspectRatio() const;
 
-  virtual void SetAspectRatio(const glm::vec2& aspectRatio);
+  virtual void SetAspectRatio(float aspectRatio);
 
   [[nodiscard]] virtual bool IsMouseOver() const;
 
@@ -111,7 +111,7 @@ class Rectangle : public Node {
   glm::ivec2 minSize_;
   glm::ivec2 maxSize_;
   glm::vec2 relativeSize_;
-  glm::vec2 aspectRatio_;
+  float aspectRatio_;
   video::render::Rect scissorRect_;
   video::render::Rect childScissorRect_;
 

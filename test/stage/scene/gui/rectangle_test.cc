@@ -1,8 +1,5 @@
 #include "stage/scene/gui/rectangle.h"
 
-#include <utility>
-
-#include "gmock/gmock-matchers.h"
 #include "gtest/gtest.h"
 #include "stage/scene/gui/root.h"
 #include "testing.h"
@@ -20,7 +17,7 @@ TEST_F(RectangleTest, Contruct) {
 
   EXPECT_VEC_EQ(rect.GetPosition(), glm::vec3(0.F, 0.F, 0.1F));
   EXPECT_VEC_EQ(rect.GetRelativeSize(), glm::vec2(0.F));
-  EXPECT_VEC_EQ(rect.GetAspectRatio(), glm::vec2(0.F));
+  EXPECT_VEC_EQ(rect.GetAspectRatio(), 0.F);
   EXPECT_VEC_EQ(rect.GetChildSize(), rect.GetSize());
 }
 
@@ -114,7 +111,7 @@ TEST_F(RectangleTest, UpdateVisibility) {
   EXPECT_EQ(rect->IsVisible(), false);
 }
 
-TEST_F(RectangleTest, UpdateSize) {
+TEST_F(RectangleTest, UpdateSizeWithPadding) {
   auto root = Root(glm::ivec2(800, 600));
   const auto rect = root.AddChild(new Rectangle());
 
@@ -125,6 +122,20 @@ TEST_F(RectangleTest, UpdateSize) {
   root.SetPadding(glm::ivec4(50));
   root.Update();
   EXPECT_VEC_EQ(rect->GetSize(), glm::ivec2(350, 250));
+}
+
+TEST_F(RectangleTest, UpdateSizeWithAspectRatio) {
+  auto rect = Rectangle();
+
+  rect.SetRelativeSize(glm::vec2(1.F, 0.F));
+  rect.SetAspectRatio(2.F / 1.F);
+  rect.UpdateSize(glm::ivec2(100, 100));
+  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(100, 50))
+
+  rect.SetRelativeSize(glm::vec2(0.F, 1.F));
+  rect.SetAspectRatio(2.F / 1.F);
+  rect.UpdateSize(glm::ivec2(100, 100));
+  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(200, 100))
 }
 
 class DerivedRect : public Rectangle {};
