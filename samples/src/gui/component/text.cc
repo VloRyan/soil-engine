@@ -3,7 +3,7 @@
 #include <bits/fs_fwd.h>
 
 #include "stage/scene/gui/rectangle.h"
-#include "stage/scene/text/parser.h"
+#include "stage/text/parser.h"
 
 namespace soil_samples::gui::component {
 Text::Text(const std::string& prefab, const std::string& text)
@@ -22,9 +22,9 @@ void Text::SetupText(soil::video::render::State& state) {
 }
 
 void Text::SetupCharacter(const soil::file::Font::Character& character,
-                          const glm::vec3& worldPos,
+                          const glm::vec3& worldPos, const glm::vec4& color,
                           soil::video::shader::Program* shader) {
-  shader->SetUniform("uPositionWorldspace", worldPos);
+  shader->SetUniform("uPositionWorldSpace", worldPos);
 
   shader->SetUniform("uSize", glm::vec2(character.Size) * GetCharacterSize());
   const auto texCoords =
@@ -37,20 +37,19 @@ void Text::SetupCharacter(const soil::file::Font::Character& character,
   shader->SetUniform("uTexCoordsMax", glm::vec2(texCoords.x + relSize.x,
                                                 texCoords.y - relSize.y));
 
-  shader->SetUniform("uColor", GetColor());
+  shader->SetUniform("uColor", color);
   shader->SetUniform("uBorderColor", GetBorderColor());
   shader->SetUniform("uBorderOutline", GetBorderOutline());
   shader->SetUniform("uCharacterOutline", GetCharacterOutline());
 }
-void Text::SetupSymbol(
-    const soil::stage::scene::component::text::Symbol* symbol,
-    const glm::vec3& worldPos, soil::video::shader::Program* shader) {
+void Text::SetupSymbol(const soil::stage::text::Symbol& symbol,
+                       const glm::vec3& worldPos, const glm::vec4& color,
+                       soil::video::shader::Program* shader) {
   shader->SetUniform("uPositionWorldSpace", worldPos);
-  shader->SetUniform("uSize", glm::vec2(symbol->SizeX) * GetCharacterSize());
-  // shader->SetUniform("uColor", GetColor());
-  shader->SetUniform("uColor", glm::vec4(1.F));
-  shader->SetUniform("uTexture", symbol->Texture->GetSlot());
-  shader->SetUniform("uTileIndex", symbol->TileIndex);
+  shader->SetUniform("uSize", glm::vec2(symbol.SizeX) * GetCharacterSize());
+  shader->SetUniform("uColor", color);
+  shader->SetUniform("uTexture", symbol.Texture->GetSlot());
+  shader->SetUniform("uTileIndex", symbol.TileIndex);
 }
 
 }  // namespace soil_samples::gui::component

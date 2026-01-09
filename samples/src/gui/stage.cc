@@ -102,7 +102,7 @@ void Stage::GenerateMenu(const std::vector<MenuItemDefinition>& items) const {
       .Caption = "Exit",
       .Value = "exit",
       .BackgroundTileName = "button",
-      /*.IconName = "exit",*/
+      .IconName = "exit",
       .ToolTip = "Exit the program",
       .LetterSize = 0.8f,
       .OnClick = [this](menu::Item&) { GetResources().GetWindow()->Close(); }};

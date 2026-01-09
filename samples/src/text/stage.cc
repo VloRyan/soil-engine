@@ -100,7 +100,7 @@ void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   text_ = scene->AddChild(new Node("TextCalibri", "Hello world!"));
   text_->Text().SetCharacterSize(1);
   text_->Text().SetMaxLineLength(1080);
-  text_->Text().SetColor(glm::vec4(0.0, .4F, .4F, .5F));
+  text_->Text().SetColor(glm::vec4(0.F, 0.4F, 0.4F, 0.5F));
   text_->Text().SetBorderColor(glm::vec3(0.0, .6F, .6F));
   text_->Text().SetCharacterOutline(glm::vec2(0.5F, 0.2F));
   text_->Text().SetBorderOutline(glm::vec2(0.5F, 0.2F));
@@ -112,6 +112,7 @@ void Stage::OnLoad(soil::stage::scene::Scene* scene) {
                                "    1 - Show statistics and FPS\n"
                                "    2 - Toggle long text (lorem ipsum)\n"
                                "    3 - Text with symbols\n"
+                               "    4 - Text with colors\n"
                                "    + - Increase text size\n"
                                "    - - Decrease text size\n"));
   description_->Text().SetCharacterSize(0.2);
@@ -153,7 +154,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                        if (text_->Text().GetCharacterSize() > 0.1F) {
                          text_->Text().SetCharacterSize(
                              text_->Text().GetCharacterSize() - 0.1F);
-                       };
+                       }
                      })
       .AddKeyMapping(soil::input::Keys::Key_1,
                      soil::input::Event::StateType::Release,
@@ -162,6 +163,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                        if (!printStatistics_) {
                          text_->Text().SetText("Hallo world!");
                        }
+                       text_->Text().SetColor(glm::vec4(0.F, 0.4F, 0.4F, 0.5F));
                      })
       .AddKeyMapping(
           soil::input::Keys::Key_2, soil::input::Event::StateType::Release,
@@ -187,6 +189,7 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                   "clita kasd gubergren, no sea "
                   "takimata sanctus est Lorem ipsum dolor sit amet.");
             }
+            text_->Text().SetColor(glm::vec4(0.F, 0.4F, 0.4F, 0.5F));
           })
       .AddKeyMapping(soil::input::Keys::Key_3,
                      soil::input::Event::StateType::Release,
@@ -195,7 +198,21 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
                            "Text with :smiley:_symbols:party_popper:"
                            "\n"
                            "\n:love: this :hot: feature");
+                       text_->Text().SetColor(glm::vec4(1.F, 1.F, 1.F, 0.5F));
                      })
+      .AddKeyMapping(
+          soil::input::Keys::Key_4, soil::input::Event::StateType::Release,
+          [this](const soil::input::Event&) {
+            text_->Text().SetText(
+                "{color=#03fcd3}C{color=#03dbfc}o{color=#8cfc03}l{"
+                "color=#fc5a03}o{color=#fc03f8}r{color=#3503fc}f{"
+                "color=#03fc24}u{color=#fc0303}l{color} text"
+                "\n"
+                "\n{color=#ffffffff}f{color=#ffffffd6}a{color=#"
+                "ffffff6e}d{color=#ffffff5e}e "
+                "{color=#ffffff2e}o{color=#ffffff1e}u{color=#ffffff0e}t");
+            text_->Text().SetColor(glm::vec4(1.F, 1.F, 1.F, 0.5F));
+          })
       .AddKeyMapping(soil::input::Keys::F,
                      soil::input::Event::StateType::Release,
                      [this](const soil::input::Event&) {
