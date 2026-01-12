@@ -70,7 +70,8 @@ void Root::addToOverlayContainer(Rectangle* rect) {
   if (overlayContainer_ == nullptr) {
     overlayContainer_ = AddChild(new Rectangle());
     overlayContainer_->SetRelativeSize(glm::vec2(1.F));
-    overlayContainer_->SetPosition(glm::vec3(0.F, 0.F, -10.F));
+    overlayContainer_->SetLocalPosition(
+        glm::vec3(0.F, 0.F, TOP_Z_LAYER - 10.F));
   }
   overlayContainer_->AddChild(rect);
 }
@@ -83,7 +84,7 @@ void Root::RemoveOverlay(Rectangle* rect) {
 
 void Root::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
                           bool onlyVisible) {
-  for (auto* child : children_) {
+  for (auto* child : childRects_) {
     if (onlyVisible && !child->IsVisible() || !child->Contains(pos)) {
       continue;
     }

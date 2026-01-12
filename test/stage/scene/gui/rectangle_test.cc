@@ -1,5 +1,7 @@
 #include "stage/scene/gui/rectangle.h"
 
+#include <gmock/gmock-matchers.h>
+
 #include "gtest/gtest.h"
 #include "stage/scene/gui/root.h"
 #include "testing.h"
@@ -10,6 +12,10 @@ class RectangleTest : public testing::Test {
  protected:
   static inline float LAYER_Z_BOTTOM =
       -Rectangle::TOP_Z_LAYER + Rectangle::LAYER_Z_INCREMENT;
+  class RectSpy : public Rectangle {
+   public:
+    const std::vector<Rectangle*>& ChildRects() const { return childRects_; }
+  };
 };
 
 TEST_F(RectangleTest, Contruct) {
@@ -138,13 +144,28 @@ TEST_F(RectangleTest, UpdateSizeWithAspectRatio) {
   EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(200, 100))
 }
 
-class DerivedRect : public Rectangle {};
+TEST_F(RectangleTest, SetParent) {
+  auto rect = RectSpy();
+  auto childRect = rect.AddChild(new Rectangle());
+
+  EXPECT_THAT(rect.ChildRects(), testing::ElementsAre(childRect));
+  EXPECT_EQ(childRect->GetParentRect(), &rect);
+
+  childRect->SetParent(nullptr);
+  EXPECT_TRUE(rect.ChildRects().empty());
+  EXPECT_EQ(childRect->GetParentRect(), nullptr);
+
+  childRect->SetParent(&rect);
+  EXPECT_THAT(rect.ChildRects(), testing::ElementsAre(childRect));
+  EXPECT_EQ(childRect->GetParentRect(), &rect);
+}
+
 TEST_F(RectangleTest, GuiRoot) {
   auto root = Root(glm::ivec2(800, 600));
   const auto rect = root.AddChild(new Rectangle());
   const auto childRect = rect->AddChild(new Rectangle());
   const auto nonRootedRect = Rectangle();
-  const auto derivedRect = root.AddChild(new DerivedRect());
+  const auto derivedRect = root.AddChild(new RectSpy());
 
   EXPECT_EQ(rect->GuiRoot(), &root);
   EXPECT_EQ(childRect->GuiRoot(), &root);

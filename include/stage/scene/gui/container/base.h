@@ -29,7 +29,7 @@ class Base : public Rectangle, public soil::event::Handler<event::Node> {
 
   void addChild(Node* node) override;
 
-  void BeforeNodeUpdate() override;
+  void AfterNodeUpdate() override;
 
   virtual void arrangeItems() = 0;
 

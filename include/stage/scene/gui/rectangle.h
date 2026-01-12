@@ -89,7 +89,8 @@ class Rectangle : public Node {
 
   void UpdateDirty() override;
 
-  virtual void BeforeNodeUpdate();
+  virtual void BeforeNodeUpdate() {};
+  virtual void AfterNodeUpdate() {};
 
   virtual void UpdateScissor(const video::render::Rect& parentRect);
 
@@ -103,8 +104,9 @@ class Rectangle : public Node {
                              input::Event::StateType state);
 
   virtual void OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset);
+  void removeChild(Node* node) override;
 
-  std::vector<Rectangle*> children_;
+  std::vector<Rectangle*> childRects_;
   bool isMouseOver_;
 
   glm::ivec2 size_;

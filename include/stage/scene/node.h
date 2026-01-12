@@ -66,6 +66,7 @@ class Node : public event::ComponentEventHandler,
   virtual void SetState(State state);
 
   virtual void SetDirty(DirtyImpact cause);
+  void SetParent(Node* parent);
 
   [[nodiscard]] bool IsState(State state) const;
 
@@ -143,11 +144,11 @@ class Node : public event::ComponentEventHandler,
  protected:
   void MarkDirtyWith(DirtyImpact cause);
 
-  virtual void SetParent(Node* parent);
-
   virtual void UpdateDirty();
 
   virtual void addChild(Node* node);
+  virtual void removeChild(Node* node);
+  virtual void updateParent(Node* parent);
 
   void addComponent(component::Component* comp);
 

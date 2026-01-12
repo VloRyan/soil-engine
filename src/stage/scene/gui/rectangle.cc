@@ -7,7 +7,7 @@ namespace soil::stage::scene::gui {
 Rectangle::Rectangle()
     : Node(Type::Game),
       isMouseOver_(false),
-      size_(glm::ivec2(10)),
+      size_(glm::ivec2(0)),
       minSize_(glm::ivec2(10)),
       maxSize_(glm::ivec2(0)),
       relativeSize_(glm::vec2(0.F)),
@@ -63,7 +63,7 @@ void Rectangle::OnMouseOver(const glm::ivec2& pos) {
   if (onMouseOverFunc_ != nullptr) {
     onMouseOverFunc_(pos);
   }
-  for (auto* child : children_) {
+  for (auto* child : childRects_) {
     if (child->Contains(pos)) {
       child->OnMouseOver(pos);
     } else {
@@ -79,7 +79,7 @@ void Rectangle::OnMouseOut() {
     return;
   }
   isMouseOver_ = false;
-  for (auto* child : children_) {
+  for (auto* child : childRects_) {
     child->OnMouseOut();
   }
   if (onMouseOutFunc_ != nullptr) {
@@ -90,7 +90,10 @@ void Rectangle::OnMouseOut() {
 void Rectangle::OnMouseButton(const glm::ivec2& pos,
                               const input::MouseButton button,
                               input::Event::StateType state) {
-  for (auto* child : children_) {
+  if (!IsVisible()) {
+    return;
+  }
+  for (auto* child : childRects_) {
     if (child->Contains(pos)) {
       child->OnMouseButton(pos, button, state);
     }
@@ -101,7 +104,7 @@ void Rectangle::OnMouseWheel(const glm::ivec2& pos, const glm::vec2 offset) {
   if (!IsVisible()) {
     return;
   }
-  for (auto* child : children_) {
+  for (auto* child : childRects_) {
     if (child->Contains(pos)) {
       child->OnMouseWheel(pos, offset);
     }
@@ -134,21 +137,29 @@ void Rectangle::addChild(Node* node) {
   }
 }
 
-void Rectangle::addChildRect(Rectangle* rect) { children_.push_back(rect); }
+void Rectangle::addChildRect(Rectangle* rect) { childRects_.push_back(rect); }
+
+void Rectangle::removeChild(Node* node) {
+  Node::removeChild(node);
+  auto* rect = dynamic_cast<Rectangle*>(node);
+  if (rect != nullptr) {
+    removeChildRect(rect);
+  }
+}
 
 void Rectangle::removeChildRect(const Rectangle* rect) {
-  for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
+  for (auto itr = childRects_.begin(); itr != childRects_.end(); ++itr) {
     if (*itr == rect) {
-      children_.erase(itr);
+      childRects_.erase(itr);
       return;
     }
   }
 }
 
 void Rectangle::RemoveChild(Node* node) {
-  for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
+  for (auto itr = childRects_.begin(); itr != childRects_.end(); ++itr) {
     if (*itr == node) {
-      children_.erase(itr);
+      childRects_.erase(itr);
       break;
     }
   }
@@ -171,11 +182,11 @@ void Rectangle::UpdateDirty() {
       UpdateScissor(parent->childScissorRect_);
     }
   }
+
   BeforeNodeUpdate();
   Node::UpdateDirty();
+  AfterNodeUpdate();
 }
-
-void Rectangle::BeforeNodeUpdate() {}
 
 void Rectangle::UpdateScissor(const video::render::Rect& parentRect) {
   auto size = glm::ivec2(GetSize());
@@ -355,7 +366,7 @@ class Root* Rectangle::GuiRoot() const {
 }
 void Rectangle::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
                                bool onlyVisible) {
-  for (auto* child : children_) {
+  for (auto* child : childRects_) {
     if (onlyVisible && !child->IsVisible() || !child->Contains(pos)) {
       continue;
     }

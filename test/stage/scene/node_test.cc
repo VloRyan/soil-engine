@@ -43,6 +43,22 @@ TEST_F(NodeTest, AddChild) {
   EXPECT_THAT(parent.AddedChildren, testing::ElementsAre(&child));
 }
 
+TEST_F(NodeTest, SetParent) {
+  auto node = NodeMock();
+  auto childNode = node.AddChild(new NodeMock());
+
+  EXPECT_THAT(node.GetChildren(), testing::ElementsAre(childNode));
+  EXPECT_EQ(childNode->GetParent(), &node);
+
+  childNode->SetParent(nullptr);
+  EXPECT_TRUE(node.GetChildren().empty());
+  EXPECT_EQ(childNode->GetParent(), nullptr);
+
+  childNode->SetParent(&node);
+  EXPECT_THAT(node.GetChildren(), testing::ElementsAre(childNode));
+  EXPECT_EQ(childNode->GetParent(), &node);
+}
+
 TEST_F(NodeTest, ChildDestructor) {
   auto parent = NodeMock();
   auto* child = new Node(Node::Type::Transform);
@@ -50,7 +66,7 @@ TEST_F(NodeTest, ChildDestructor) {
   ASSERT_FALSE(parent.GetChildren().empty());
 
   delete child;
-  
+
   EXPECT_TRUE(parent.GetChildren().empty());
 }
 
@@ -297,31 +313,62 @@ TEST_F(NodeTest, HandleTransformChanges) {
 
 TEST_F(NodeTest, FireEvents) {
   auto node = new Node(Node::Type::Game);
+  auto nodeListener = NodeEventMockListener();
+  node->AddListener(&nodeListener);
   auto stage = stage::StageMock();
   auto scene = stage.AddScene(new Scene());
+  auto sceneListener = NodeEventMockListener();
+  scene->AddListener(&sceneListener);
 
   scene->AddChild(node);
   EXPECT_THAT(
       stage.NodeEvents,
       testing::ElementsAre(event::Node::MakeChildAddedEvent(scene, node)));
+  EXPECT_THAT(
+      sceneListener.Events,
+      testing::ElementsAre(event::Node::MakeChildAddedEvent(scene, node)));
+  EXPECT_TRUE(nodeListener.Events.empty());
   stage.ResetMocks();
+  sceneListener.ResetMocks();
+  nodeListener.ResetMocks();
 
   node->SetDirty(Node::DirtyImpact::Self);
   EXPECT_THAT(stage.NodeEvents, testing::ElementsAre(event::Node(
                                     node, event::Node::ChangeType::State)));
+  EXPECT_TRUE(sceneListener.Events.empty());
+  EXPECT_THAT(nodeListener.Events, testing::ElementsAre(event::Node(
+                                       node, event::Node::ChangeType::State)));
   stage.ResetMocks();
+  sceneListener.ResetMocks();
+  nodeListener.ResetMocks();
 
   scene->RemoveChild(node);
   EXPECT_THAT(stage.NodeEvents,
               testing::ElementsAre(event::Node(
                   scene, event::Node::ChangeType::ChildRemoved, node)));
+  EXPECT_THAT(sceneListener.Events,
+              testing::ElementsAre(event::Node(
+                  scene, event::Node::ChangeType::ChildRemoved, node)));
+  EXPECT_TRUE(nodeListener.Events.empty());
   stage.ResetMocks();
+  sceneListener.ResetMocks();
+  nodeListener.ResetMocks();
 
   scene->AddChild(node);
   stage.ResetMocks();
+  sceneListener.ResetMocks();
+  nodeListener.ResetMocks();
+
   delete node;
-  EXPECT_THAT(stage.NodeEvents, testing::ElementsAre(event::Node(
-                                    node, event::Node::ChangeType::Deleted)));
+  EXPECT_THAT(stage.NodeEvents,
+              testing::ElementsAre(event::Node(
+                  scene, event::Node::ChangeType::ChildRemoved, node)));
+  EXPECT_THAT(sceneListener.Events,
+              testing::ElementsAre(event::Node(
+                  scene, event::Node::ChangeType::ChildRemoved, node)));
+  EXPECT_THAT(nodeListener.Events,
+              testing::ElementsAre(
+                  event::Node(node, event::Node::ChangeType::Deleted)));
 }
 
 TEST_F(NodeTest, GetComponents) {

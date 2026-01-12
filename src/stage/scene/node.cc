@@ -23,12 +23,11 @@ Node::Node(const Type type)
 }
 
 Node::~Node() {
-  Node::fire(event::Node::MakeNodeDeletedEvent(this));
+  SetParent(nullptr);
   for (auto* child : children_) {
-    child->SetParent(nullptr);  // prevent child events
+    child->parent_ = nullptr;  // prevent child events
     delete child;
   }
-  children_.clear();
   transform_->RemoveListener(this);
   for (const auto& comps : components_ | std::views::values) {
     for (auto* comp : comps) {
@@ -36,33 +35,33 @@ Node::~Node() {
       delete comp;
     }
   }
-  components_.clear();
-  if (auto* parent = GetParent(); parent != nullptr) {
-    for (auto itr = parent->children_.begin(); itr != parent->children_.end();
-         ++itr) {
-      if (*itr != this) {
-        continue;
-      }
-      parent->children_.erase(itr);
-      break;
-    }
-  }
+  Node::fire(event::Node::MakeNodeDeletedEvent(this));
 }
 
 void Node::SetParent(Node* parent) {
   if (parent_ == parent) {
     return;
   }
-  auto* prevScene = Root();
-  auto* prevStage = prevScene != nullptr ? prevScene->Stage() : nullptr;
-  class Stage* stage = nullptr;
+  if (parent_ != nullptr) {
+    parent_->RemoveChild(this);
+  }
+  if (parent != nullptr) {
+    parent->addChild(this);
+  }
+}
+
+void Node::updateParent(Node* parent) {
+  if (parent_ == parent) {
+    return;
+  }
+  auto* prevStage = Stage();
   parent_ = parent;
   if (parent_ != nullptr) {
     transform_->UpdateTransform(parent_->transform_->GetMatrix());
-    stage = Stage();
   }
-  if (prevStage != stage) {
-    OnStageChanged(stage, prevStage);
+  auto currentStage = Stage();
+  if (prevStage != currentStage) {
+    OnStageChanged(currentStage, prevStage);
   }
 }
 
@@ -79,7 +78,10 @@ void Node::addChild(Node* node) {
   if (node->GetParent() == this) {
     return;
   }
-  node->SetParent(this);
+  if (node->GetParent() != nullptr) {
+    throw std::runtime_error("already child");
+  }
+  node->updateParent(this);
   children_.push_back(node);
   fire(event::Node::MakeChildAddedEvent(this, node));
 }
@@ -90,10 +92,22 @@ void Node::RemoveChild(Node* node) {
       continue;
     }
     fire(event::Node::MakeChildRemovedEvent(this, node));
-    node->SetParent(nullptr);
+    node->parent_ = nullptr;
+    node->OnStageChanged(nullptr, Stage());
     children_.erase(itr);
-    break;
+    return;
   }
+  throw std::runtime_error("unknown child");
+}
+
+void Node::removeChild(Node* node) {
+  for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
+    if (*itr == node) {
+      children_.erase(itr);
+      return;
+    }
+  }
+  throw std::runtime_error("unknown child");
 }
 
 Node::Type Node::GetType() const { return type_; }

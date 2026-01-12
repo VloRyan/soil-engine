@@ -7,7 +7,7 @@ Base::Base(const int margin, const glm::ivec4 padding)
   Rectangle::SetPadding(padding);
 }
 
-const std::vector<Rectangle*>& Base::GetItems() const { return children_; }
+const std::vector<Rectangle*>& Base::GetItems() const { return childRects_; }
 
 void Base::Handle(const event::Node& event) {
   if (event.ChangeType == event::Node::ChangeType::State &&
@@ -51,12 +51,6 @@ void Base::RemoveChild(Node* node) {
   SetDirty(Node::DirtyImpact::Dependents);
 }
 
-void Base::BeforeNodeUpdate() {
-  auto cs = GetChildSize();
-  for (auto* item : children_) {
-    item->UpdateSize(cs);
-  }
-  arrangeItems();
-}
+void Base::AfterNodeUpdate() { arrangeItems(); }
 
 }  // namespace soil::stage::scene::gui::container

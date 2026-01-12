@@ -17,18 +17,18 @@ void VBox::SetAlignItems(const AlignItems alignItems) {
 
 void VBox::arrangeItems() {
   itemsSize_ = glm::vec2(0.F);
-  if (children_.empty()) {
+  if (childRects_.empty()) {
     return;
   }
 
   auto offset = glm::ivec2(GetOffset().x, -padding_[1] + GetOffset().y);
   const auto halfHeight = GetSize().y / 2;
-  for (auto* item : children_) {
+  for (auto* item : childRects_) {
     auto pos = item->GetLocalPosition();
-    pos.z = 0.F;
     pos.x = static_cast<float>(offset.x);
     pos.y = static_cast<float>(offset.y) + static_cast<float>(halfHeight) -
             static_cast<float>(item->GetSize().y) / 2.F;
+    pos.z = 0.F;
     switch (alignItems_) {
       case AlignItems::Left:
         pos.x -= static_cast<float>(GetSize().x) / 2.F -
@@ -52,6 +52,6 @@ void VBox::arrangeItems() {
       itemsSize_.x = item->GetSize().x;
     }
   }
-  itemsSize_.y += (static_cast<int>(children_.size()) - 1) * margin_;
+  itemsSize_.y += (static_cast<int>(childRects_.size()) - 1) * margin_;
 }
 }  // namespace soil::stage::scene::gui::container

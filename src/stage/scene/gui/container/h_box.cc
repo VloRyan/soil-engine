@@ -17,13 +17,13 @@ void HBox::SetAlignItems(const AlignItems alignItems) {
 
 void HBox::arrangeItems() {
   itemsSize_ = glm::vec2(0.F);
-  if (children_.empty()) {
+  if (childRects_.empty()) {
     return;
   }
 
   auto offset = glm::ivec2(padding_[0] + GetOffset().x, GetOffset().y);
   const auto halfWidth = GetSize().x / 2;
-  for (auto* item : children_) {
+  for (auto* item : childRects_) {
     auto pos = item->GetLocalPosition();
     pos.z = 0.F;
     pos.x = static_cast<float>(offset.x) - static_cast<float>(halfWidth) +
@@ -52,6 +52,6 @@ void HBox::arrangeItems() {
       itemsSize_.y = item->GetSize().y;
     }
   }
-  itemsSize_.x += (static_cast<int>(children_.size()) - 1) * margin_;
+  itemsSize_.x += (static_cast<int>(childRects_.size()) - 1) * margin_;
 }
 }  // namespace soil::stage::scene::gui::container
