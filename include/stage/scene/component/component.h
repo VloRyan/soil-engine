@@ -50,7 +50,7 @@ class Component : public soil::event::Observable<event::Component> {
 
  protected:
   virtual void SetParent(Node* parent);
-  virtual void SignalChanged();
+  virtual void SignalChanged(int changeDetail);
   virtual void OnStageChanged(Stage* stage, Stage* prevStage);
   Node* parent_;
 

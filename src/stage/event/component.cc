@@ -11,8 +11,11 @@ Component::Component(stage::scene::component::Component* origin,
       Trigger(trigger),
       Changed(changed) {}
 
-Component Component::MakeDataChangedEvent(scene::component::Component* origin) {
-  return Component(origin, TriggerType::Changed, ChangeType::Data);
+Component Component::MakeDataChangedEvent(scene::component::Component* origin,
+                                          int changeDetail) {
+  auto event = Component(origin, TriggerType::Changed, ChangeType::Data);
+  event.ChangeDetail = changeDetail;
+  return event;
 }
 
 Component Component::MakeUpdateTypeChangedEvent(

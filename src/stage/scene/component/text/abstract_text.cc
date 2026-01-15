@@ -62,7 +62,6 @@ const std::vector<stage::text::Line>& AbstractText::GetLines() const {
 
 void AbstractText::SetPositionOffset(const glm::vec3& positionOffset) {
   positionOffset_ = positionOffset;
-  SignalChanged();
 }
 
 glm::vec3 AbstractText::GetPositionOffset() const { return positionOffset_; }
@@ -81,7 +80,6 @@ void AbstractText::updateText() {
       size_.x = static_cast<float>(line.Length) * GetCharacterSize();
     }
   }
-  SignalChanged();
 }
 
 glm::vec2 AbstractText::GetSize() const { return size_; }
@@ -91,7 +89,6 @@ void AbstractText::SetBorderOutline(const glm::vec2& borderOutline) {
     return;
   }
   borderOutline_ = borderOutline;
-  SignalChanged();
 }
 
 glm::vec2 AbstractText::GetBorderOutline() const { return borderOutline_; }
@@ -105,7 +102,6 @@ void AbstractText::SetCharacterOutline(const glm::vec2& characterOutline) {
     return;
   }
   characterOutline_ = characterOutline;
-  SignalChanged();
 }
 
 int AbstractText::GetMaxLineLength() const { return maxLineLength_; }
@@ -129,7 +125,6 @@ void AbstractText::SetColor(const glm::vec4 color) {
     return;
   }
   color_ = color;
-  SignalChanged();
 }
 
 glm::vec3 AbstractText::GetBorderColor() const { return borderColor_; }
@@ -139,7 +134,6 @@ void AbstractText::SetBorderColor(const glm::vec3 color) {
     return;
   }
   borderColor_ = color;
-  SignalChanged();
 }
 
 float AbstractText::GetCharacterSize() const { return characterSize_; }
@@ -202,7 +196,7 @@ void AbstractText::Draw(video::render::State& state) {
             auto halfSize =
                 static_cast<float>(glyph.SizeX()) * 0.5F * GetCharacterSize();
             auto worldPos =
-                parentPos +
+                parentPos + GetPositionOffset() +
                 glm::vec3(cursorPosition.x + halfSize,
                           cursorPosition.y - effectiveLineHeight * 0.5 -
                               halfSize -
@@ -248,7 +242,8 @@ float AbstractText::DrawCharacter(const glm::vec3& at,
 }
 
 float AbstractText::DistanceTo(const glm::vec3& point) {
-  return GetParent()->GetPosition().z + GetPositionOffset().z;  // sort by z
+  return glm::distance(point.z, GetParent()->GetPosition().z +
+                                    GetPositionOffset().z);  // sort by z
 }
 
 bool AbstractText::IsSortable() { return true; }

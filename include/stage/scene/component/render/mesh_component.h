@@ -18,11 +18,9 @@ class MeshComponent : public DrawableComponent,
 
   void SetOpaque(bool opaque) override;
   float DistanceTo(const glm::vec3& point) override;
-  void SetVisible(bool visible) override;
-  void SetCulled(bool culled) override;
 
  protected:
-  void SignalChanged() override;
+  void SignalChanged(DrawableComponent::ChangeDetails detail) override;
 
  protected:
   video::render::draw::VaoElements* mesh_;

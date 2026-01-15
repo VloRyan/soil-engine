@@ -33,7 +33,9 @@ video::render::draw::Drawable* MeshInstanceComponent::Drawable() {
   return pile_;
 }
 
-void MeshInstanceComponent::SetOpaque(bool opaque) { /*NOOP*/ }
+void MeshInstanceComponent::SetOpaque(
+    bool opaque) { /*NOOP:  MeshInstances are always opaque*/ }
+
 void MeshInstanceComponent::SetVisible(bool visible) {
   if (visible_ == visible) {
     return;
@@ -42,7 +44,8 @@ void MeshInstanceComponent::SetVisible(bool visible) {
   if (visible_ && !IsCulled()) {
     pile_->Insert(this);
     if (pile_->Container() == nullptr) {
-      DrawableComponent::SignalChanged();
+      DrawableComponent::SignalChanged(
+          DrawableComponent::ChangeDetails::Visibility);
     }
   } else {
     pile_->Remove(this);
@@ -58,17 +61,16 @@ void MeshInstanceComponent::SetCulled(bool culled) {
   } else {
     pile_->Insert(this);
     if (pile_->Container() == nullptr) {
-      DrawableComponent::SignalChanged();
+      DrawableComponent::SignalChanged(
+          DrawableComponent::ChangeDetails::Visibility);
     }
   }
 }
 
 bool MeshInstanceComponent::IsDrawablePile() { return true; }
-void MeshInstanceComponent::SignalChanged() {
-  // Component::SignalChanged();
+void MeshInstanceComponent::SignalChanged(ChangeDetails detail) {
   if (IsVisible() && !IsCulled()) {
     pile_->SetDirty(this);
   }
-  //}
 }
 }  // namespace soil::stage::scene::component::render

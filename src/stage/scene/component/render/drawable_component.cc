@@ -14,7 +14,7 @@ void DrawableComponent::SetVisible(const bool visible) {
     return;
   }
   visible_ = visible;
-  SignalChanged();
+  SignalChanged(DrawableComponent::ChangeDetails::Visibility);
 }
 
 bool DrawableComponent::IsOpaque() const { return opaque_; }
@@ -24,7 +24,7 @@ void DrawableComponent::SetOpaque(const bool opaque) {
     return;
   }
   opaque_ = opaque;
-  SignalChanged();
+  SignalChanged(DrawableComponent::ChangeDetails::Opaque);
 }
 
 bool DrawableComponent::IsCulled() const { return culled_; }
@@ -34,9 +34,13 @@ void DrawableComponent::SetCulled(const bool culled) {
     return;
   }
   culled_ = culled;
-  SignalChanged();
+  SignalChanged(DrawableComponent::ChangeDetails::Visibility);
 }
 
 bool DrawableComponent::IsDrawablePile() { return false; }
+
+void DrawableComponent::SignalChanged(DrawableComponent::ChangeDetails detail) {
+  Component::SignalChanged(static_cast<int>(detail));
+}
 
 }  // namespace soil::stage::scene::component

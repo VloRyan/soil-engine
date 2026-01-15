@@ -37,7 +37,8 @@ struct Component : soil::event::Event {
     return !(lhs == rhs);
   }
 
-  static Component MakeDataChangedEvent(scene::component::Component* origin);
+  static Component MakeDataChangedEvent(scene::component::Component* origin,
+                                        int ChangeDetail = -1);
 
   static Component MakeUpdateTypeChangedEvent(
       scene::component::Component* origin);
@@ -45,6 +46,7 @@ struct Component : soil::event::Event {
   scene::component::Component* Origin{nullptr};
   TriggerType Trigger{TriggerType::Changed};
   ChangeType Changed{ChangeType::None};
+  int ChangeDetail{-1};
 };
 
 using ComponentEventHandler = soil::event::Handler<Component>;

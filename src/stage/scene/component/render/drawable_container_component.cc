@@ -56,57 +56,47 @@ void DrawableContainerComponent::RemoveAllDependentDrawableComponents(
 }
 
 void DrawableContainerComponent::Handle(const stage::event::Component &event) {
-  auto *renderComp = dynamic_cast<DrawableComponent *>(event.Origin);
-  auto *renderable = renderComp != nullptr ? renderComp->Drawable() : nullptr;
-  if (renderable == nullptr) {
+  auto *drawableComp = dynamic_cast<DrawableComponent *>(event.Origin);
+  auto *drawable = drawableComp != nullptr ? drawableComp->Drawable() : nullptr;
+  if (drawable == nullptr) {
     return;
   }
   switch (event.Trigger) {
     case stage::event::Component::TriggerType::Added:
-      /* if (renderComp->IsDrawablePile()) {
-         if (renderable->Container() != nullptr) {
-           return;
-         }
-         container_->Insert(renderable);
-       } else {*/
-      if (!renderComp->IsVisible() || renderComp->IsCulled() ||
-          renderable->Container() != nullptr) {
+      if (!drawableComp->IsVisible() || drawableComp->IsCulled() ||
+          drawable->Container() != nullptr) {
         return;
       }
-      container_->Insert(renderable);
+      container_->Insert(drawable);
       //}
       break;
     case stage::event::Component::TriggerType::Removed:
-      if (renderComp->IsDrawablePile()) {
+      if (drawableComp->IsDrawablePile()) {
         return;
       }
-      container_->Remove(renderable);
+      container_->Remove(drawable);
       break;
     case stage::event::Component::TriggerType::Changed:
-      if (renderComp->IsDrawablePile()) {
-        if (renderable->Container() == nullptr) {
-          if (renderComp->IsVisible() && !renderComp->IsCulled()) {
-            container_->Insert(renderable);
+      // TODO: use change detail
+      /*auto changeDetail =
+          static_cast<DrawableComponent::ChangeDetails>(event.ChangeDetail);*/
+      if (drawableComp->IsDrawablePile()) {
+        if (drawable->Container() == nullptr) {
+          if (drawableComp->IsVisible() && !drawableComp->IsCulled()) {
+            container_->Insert(drawable);
           }
           return;
         }
       } else {
-        if (renderComp->IsVisible() && !renderComp->IsCulled() &&
-            renderable->Container() == nullptr) {
-          container_->Insert(renderable);
+        if (drawableComp->IsVisible() && !drawableComp->IsCulled() &&
+            drawable->Container() == nullptr) {
+          container_->Insert(drawable);
         }
-        if ((!renderComp->IsVisible() || renderComp->IsCulled()) &&
-            renderable->Container() == container_) {
-          container_->Remove(renderable);
+        if ((!drawableComp->IsVisible() || drawableComp->IsCulled()) &&
+            drawable->Container() == container_) {
+          container_->Remove(drawable);
         }
       }
-      /* if (renderComp->IsDrawablePile() && renderable->Container() != nullptr)
-       { return;
-       }
-       container_->Remove(renderable);
-       if (renderComp->IsVisible() && !renderComp->IsCulled()) {
-         container_->Insert(renderable);
-       }*/
       break;
     default:;
   }

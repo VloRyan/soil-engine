@@ -35,22 +35,10 @@ void MeshComponent::SetOpaque(bool opaque) {
   mesh_->UpdateState(state);
   DrawableComponent::SetOpaque(opaque);
 }
-
-void MeshComponent::SignalChanged() { /*No need*/ }
-
-void MeshComponent::SetVisible(bool visible) {
-  if (visible_ == visible) {
-    return;
+void MeshComponent::SignalChanged(DrawableComponent::ChangeDetails detail) {
+  if (detail == DrawableComponent::ChangeDetails::Other) {
+    return;  // not important for propagation
   }
-  visible_ = visible;
-  DrawableComponent::SignalChanged();
-}
-
-void MeshComponent::SetCulled(bool culled) {
-  if (culled_ == culled) {
-    return;
-  }
-  culled_ = culled;
-  DrawableComponent::SignalChanged();
+  DrawableComponent::SignalChanged(detail);
 }
 }  // namespace soil::stage::scene::component::render

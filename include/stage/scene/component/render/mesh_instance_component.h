@@ -20,7 +20,7 @@ class MeshInstanceComponent
   void SetCulled(bool culled) override;
 
  protected:
-  void SignalChanged() override;
+  void SignalChanged(ChangeDetails detail) override;
 
  protected:
   video::render::draw::VaoElementsInstanced* pile_;

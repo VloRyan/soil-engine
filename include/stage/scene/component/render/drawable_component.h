@@ -16,8 +16,16 @@ class DrawableComponent : public Component {
   [[nodiscard]] virtual video::render::draw::Drawable* Drawable() = 0;
   [[nodiscard]] virtual bool IsDrawablePile();
 
+  enum class ChangeDetails {
+    Other = 0,
+    Visibility,
+    Opaque,
+    Data,
+  };
+
  protected:
   explicit DrawableComponent(bool opaque = true, bool visible = true);
+  virtual void SignalChanged(ChangeDetails detail);
   bool visible_;
   bool opaque_;
   bool culled_;
