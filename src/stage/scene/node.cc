@@ -48,6 +48,7 @@ void Node::SetParent(Node* parent) {
   if (parent != nullptr) {
     parent->addChild(this);
   }
+  SetDirty(DirtyImpact::Dependents);
 }
 
 void Node::updateParent(Node* parent) {

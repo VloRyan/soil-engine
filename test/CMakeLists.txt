@@ -12,21 +12,23 @@ add_executable(${PROJECT_NAME}
         file/font_test.cc
         file/sprite_sheet_test.cc
         stage/manager_test.cc
-        stage/scene/component/world/collision_object_component_test.cc
         stage/scene/component/component_test.cc
         stage/scene/component/event/event_component_test.cc
         stage/scene/component/event/hook_test.cc
         stage/scene/component/render/drawable_container_component_test.cc
         stage/scene/component/transform_component_test.cc
         stage/scene/component/update_graph_component_test.cc
+        stage/scene/component/world/collision_object_component_test.cc
         stage/scene/gui/container/h_box_test.cc
         stage/scene/gui/container/v_box_test.cc
+        stage/scene/gui/layout/anchor_test.cc
         stage/scene/gui/rectangle_test.cc
         stage/scene/gui/root_test.cc
         stage/scene/mocks.hpp
         stage/scene/node_test.cc
         stage/scene/scene_test.cc
         stage/stage_test.cc
+        stage/text/parser_test.cc
         util/files_test.cc
         video/buffer/mocks.hpp
         video/render/draw/drawable_container_test.cc
@@ -37,6 +39,7 @@ add_executable(${PROJECT_NAME}
         video/render/mocks.hpp
         video/render/state_identifier_test.cc
         video/shader/mocks.hpp
+        video/texture/animation_test.cc
         world/intersection_test.cc
         world/ray_test.cc
         world/volume/aabb_test.cc
@@ -45,8 +48,6 @@ add_executable(${PROJECT_NAME}
         world/volume/quad_tree_perf_test.cc
         world/volume/quad_tree_test.cc
         world/world_test.cc
-        video/texture/animation_test.cc
-        stage/text/parser_test.cc
 
 )
 

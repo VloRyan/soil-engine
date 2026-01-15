@@ -2,19 +2,14 @@
 
 namespace soil::stage::scene::gui::container {
 
-Base::Base(const int margin, const glm::ivec4 padding)
-    : margin_(margin), offset_(glm::ivec2(0)), itemsSize_(glm::ivec2(0)) {
+Base::Base(const int margin, const glm::ivec4 padding, SizeTypes sizeType)
+    : Rectangle(glm::ivec2(0), sizeType),
+      margin_(margin),
+      offset_(glm::ivec2(0)) {
   Rectangle::SetPadding(padding);
 }
 
 const std::vector<Rectangle*>& Base::GetItems() const { return childRects_; }
-
-void Base::Handle(const event::Node& event) {
-  if (event.ChangeType == event::Node::ChangeType::State &&
-      event.Origin->GetState() == State::Dirty) {
-    SetDirty(DirtyImpact::Dependents);
-  }
-}
 
 const glm::ivec2& Base::GetOffset() const { return offset_; }
 
@@ -36,13 +31,8 @@ void Base::SetMargin(const int margin) {
   SetDirty(DirtyImpact::Dependents);
 }
 
-const glm::ivec2& Base::GetItemsSize() const { return itemsSize_; }
-
-void Base::addChild(Node* node) {
-  if (node->GetParent() == this) {
-    return;
-  }
-  Rectangle::addChild(node);
+void Base::addChildRect(Rectangle* rect) {
+  Rectangle::addChildRect(rect);
   SetDirty(Node::DirtyImpact::Dependents);
 }
 
@@ -51,6 +41,6 @@ void Base::RemoveChild(Node* node) {
   SetDirty(Node::DirtyImpact::Dependents);
 }
 
-void Base::AfterNodeUpdate() { arrangeItems(); }
+Rectangle* Base::Child(int index) { return childRects_.at(index); }
 
 }  // namespace soil::stage::scene::gui::container

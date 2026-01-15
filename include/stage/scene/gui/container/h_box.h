@@ -3,27 +3,25 @@
 #include "base.h"
 
 namespace soil::stage::scene::gui::container {
+/**
+ * HBox orders items horizontally (left to right).
+ */
 class HBox : public Base {
  public:
-  enum class AlignItems : std::int8_t {
-    Top = 0,
-    Center,
-    Bottom,
-  };
-
   explicit HBox(int margin = 0, glm::ivec4 padding = glm::ivec4(0));
 
   ~HBox() override = default;
 
-  [[nodiscard]] virtual AlignItems GetAlignItems() const;
-
-  virtual void SetAlignItems(AlignItems alignItems);
+  [[nodiscard]] virtual layout::Anchor::VerticalAlignments GetItemAlignment()
+      const;
+  virtual void SetItemAlignment(layout::Anchor::VerticalAlignments alignment);
 
  protected:
-  void arrangeItems() override;
+  void Layout() override;
+  glm::ivec2 CalculateChildrenSize(const glm::ivec2& maxSize) override;
 
  private:
-  AlignItems alignItems_;
+  layout::Anchor itemAnchor_;
 };
 }  // namespace soil::stage::scene::gui::container
 

@@ -14,85 +14,90 @@ class RectangleTest : public testing::Test {
       -Rectangle::TOP_Z_LAYER + Rectangle::LAYER_Z_INCREMENT;
   class RectSpy : public Rectangle {
    public:
+    RectSpy(const glm::ivec2 size = glm::ivec2(0)) : Rectangle(size) {}
     const std::vector<Rectangle*>& ChildRects() const { return childRects_; }
+    void Layout() override { Rectangle::Layout(); };
+    void UpdateScissor(const video::render::Rect& parentRect) override {
+      Rectangle::UpdateScissor(parentRect);
+    };
+    video::render::Rect CalculateChildScissorRect() const override {
+      return Rectangle::CalculateChildScissorRect();
+    }
   };
 };
 
 TEST_F(RectangleTest, Contruct) {
   const auto rect = Rectangle();
 
-  EXPECT_VEC_EQ(rect.GetPosition(), glm::vec3(0.F, 0.F, 0.1F));
+  EXPECT_VEC_EQ(rect.GetPosition(), glm::vec3(0.F));
   EXPECT_VEC_EQ(rect.GetRelativeSize(), glm::vec2(0.F));
-  EXPECT_VEC_EQ(rect.GetAspectRatio(), 0.F);
-  EXPECT_VEC_EQ(rect.GetChildSize(), rect.GetSize());
+  EXPECT_EQ(rect.GetAspectRatio(), 0.F);
+  EXPECT_VEC_EQ(rect.GetPadding(), glm::ivec4(0));
+  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(0));
+  EXPECT_VEC_EQ(rect.GetChildrenSize(), glm::ivec2(0));
+  EXPECT_VEC_EQ(rect.GetMaxSize(), glm::ivec2(std::numeric_limits<int>::max()));
+  EXPECT_VEC_EQ(rect.GetMinSize(), glm::ivec2(0));
+  EXPECT_EQ(rect.GetSizeType(), Rectangle::SizeTypes::Fixed);
 }
 
 TEST_F(RectangleTest, UpdateScissor) {
-  auto root = Root(glm::ivec2(800, 600));
-  const auto rect = root.AddChild(new Rectangle());
-  rect->SetSize(glm::vec2(400, 400));
-  rect->SetPosition(glm::vec3(0.F, 0.F, 0.F));
+  auto parentRect = video::render::Rect{
+      .LowerLeftPosition = glm::ivec2(0),
+      .Size = glm::ivec2(800, 600),
+  };
+  auto rect = RectSpy(glm::ivec2(400, 400));
+  rect.SetPosition(glm::vec3(0.F, 0.F, 0.F));
 
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
-  EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(200, 200))
+  rect.UpdateScissor(parentRect);
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(200, 200));
 
-  rect->SetPosition(glm::vec3(0.F, 200.F, 0.F));
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
-  EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(200, 400))
+  rect.SetPosition(glm::vec3(0.F, 200.F, 0.F));
+  rect.UpdateScissor(parentRect);
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(200, 400));
 
-  rect->SetPosition(glm::vec3(200.F, 200.F, 0.F));
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
-  EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(400, 400))
+  rect.SetPosition(glm::vec3(200.F, 200.F, 0.F));
+  rect.UpdateScissor(parentRect);
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(400, 400));
 
-  rect->SetPosition(glm::vec3(400.F, 500.F, 0.F));
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(200, 300))
-  EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(400, 300))
+  rect.SetPosition(glm::vec3(400.F, 500.F, 0.F));
+  rect.UpdateScissor(parentRect);
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(200, 300));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(400, 300));
 }
 
 TEST_F(RectangleTest, UpdateScissorWithPadding) {
-  auto root = Root(glm::ivec2(800, 600));
-  const auto rect = root.AddChild(new Rectangle());
-  rect->SetPosition(glm::vec3(200.F, 200.F, 0.F));
-  rect->SetSize(glm::vec2(400, 400));
+  auto parentRect = video::render::Rect{
+      .LowerLeftPosition = glm::ivec2(-100),
+      .Size = glm::ivec2(200),
+  };
 
-  const auto childRect = rect->AddChild(new Rectangle());
-  childRect->SetSize(glm::vec2(100, 100));
-  rect->Update();
+  auto rect = RectSpy(glm::vec2(100, 100));
 
-  EXPECT_VEC_EQ(rect->GetScissorRect().LowerLeftPosition, glm::ivec2(0, 0))
-  EXPECT_VEC_EQ(rect->GetScissorRect().Size, glm::ivec2(400, 400))
+  const auto childRect = rect.AddChild(new RectSpy(glm::vec2(94, 94)));
+  rect.UpdateScissor(parentRect);
+  childRect->UpdateScissor(rect.CalculateChildScissorRect());
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(-50));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(100));
+  EXPECT_VEC_EQ(childRect->GetScissorRect().LowerLeftPosition, glm::ivec2(-47));
+  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(94));
+
+  rect.SetPadding(glm::vec4(5, 10, 15, 20));
+  rect.UpdateScissor(parentRect);
+  childRect->UpdateScissor(rect.CalculateChildScissorRect());
+  EXPECT_VEC_EQ(rect.GetScissorRect().LowerLeftPosition, glm::ivec2(-50));
+  EXPECT_VEC_EQ(rect.GetScissorRect().Size, glm::ivec2(100));
   EXPECT_VEC_EQ(childRect->GetScissorRect().LowerLeftPosition,
-                glm::ivec2(150, 150))
-  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(100, 100))
-
-  rect->SetPadding(glm::vec4(50));
-  rect->Update();
-  EXPECT_VEC_EQ(childRect->GetScissorRect().LowerLeftPosition,
-                glm::ivec2(150, 150))
-  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(100, 100))
-
-  rect->SetPadding(glm::vec4(200, 200, 0, 0));
-  rect->Update();
-  EXPECT_VEC_EQ(childRect->GetScissorRect().LowerLeftPosition,
-                glm::ivec2(200, 150))
-  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(50, 50))
-
-  rect->SetPadding(glm::vec4(0, 0, 200, 200));
-  rect->Update();
-  EXPECT_VEC_EQ(childRect->GetScissorRect().LowerLeftPosition,
-                glm::ivec2(150, 200))
-  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(50, 50))
+                glm::ivec2(-45, -30));
+  EXPECT_VEC_EQ(childRect->GetScissorRect().Size, glm::ivec2(80, 70));
 }
 
 TEST_F(RectangleTest, UpdateVisibility) {
   auto root = Root(glm::ivec2(800, 600));
   const auto rect = root.AddChild(new Rectangle());
 
-  root.Update();
   EXPECT_EQ(root.IsVisible(), true);
   EXPECT_EQ(rect->IsVisible(), true);
 
@@ -123,7 +128,7 @@ TEST_F(RectangleTest, UpdateSizeWithPadding) {
 
   rect->SetRelativeSize(glm::vec2(0.5F, 0.5F));
   root.Update();
-  EXPECT_VEC_EQ(rect->GetSize(), glm::ivec2(400, 300))
+  EXPECT_VEC_EQ(rect->GetSize(), glm::ivec2(400, 300));
 
   root.SetPadding(glm::ivec4(50));
   root.Update();
@@ -136,12 +141,12 @@ TEST_F(RectangleTest, UpdateSizeWithAspectRatio) {
   rect.SetRelativeSize(glm::vec2(1.F, 0.F));
   rect.SetAspectRatio(2.F / 1.F);
   rect.UpdateSize(glm::ivec2(100, 100));
-  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(100, 50))
+  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(100, 50));
 
   rect.SetRelativeSize(glm::vec2(0.F, 1.F));
   rect.SetAspectRatio(2.F / 1.F);
   rect.UpdateSize(glm::ivec2(100, 100));
-  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(200, 100))
+  EXPECT_VEC_EQ(rect.GetSize(), glm::ivec2(200, 100));
 }
 
 TEST_F(RectangleTest, SetParent) {
@@ -173,45 +178,20 @@ TEST_F(RectangleTest, GuiRoot) {
   EXPECT_EQ(nonRootedRect.GuiRoot(), nullptr);
 }
 
-TEST_F(RectangleTest, ApplyAnchor) {
-  auto root = Root(glm::ivec2(400, 400));
-  const auto rect = root.AddChild(new Rectangle());
-  rect->SetSize(glm::vec2(10, 10));
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Center,
-                  Rectangle::VerticalAnchors::Middle);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(200.F, 200.F, LAYER_Z_BOTTOM))
+TEST_F(RectangleTest, Layout) {
+  auto rect = RectSpy();
+  const auto childRect = rect.AddChild(new Rectangle());
+  const auto childRect2 = rect.AddChild(new Rectangle());
 
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Left,
-                  Rectangle::VerticalAnchors::Top);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(5.F, 395.F, LAYER_Z_BOTTOM))
+  EXPECT_VEC_EQ(childRect->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(childRect2->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
 
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Right,
-                  Rectangle::VerticalAnchors::Bottom);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(395.F, 5.F, LAYER_Z_BOTTOM))
+  rect.Layout();
+  EXPECT_VEC_EQ(childRect->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(childRect2->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
 }
-
-TEST_F(RectangleTest, ApplyAnchorWithPadding) {
-  auto root = Root(glm::ivec2(400, 400));
-  root.SetPadding(glm::vec4(10.F, 5.F, 15.F, 2.F));
-  const auto rect = root.AddChild(new Rectangle());
-  rect->SetSize(glm::vec2(10, 10));
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Center,
-                  Rectangle::VerticalAnchors::Middle);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(195.F, 197.F, LAYER_Z_BOTTOM))
-
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Left,
-                  Rectangle::VerticalAnchors::Top);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(15.F, 390.F, LAYER_Z_BOTTOM))
-
-  rect->SetAnchor(Rectangle::HorizontalAnchors::Right,
-                  Rectangle::VerticalAnchors::Bottom);
-  rect->Update();
-  EXPECT_VEC_EQ(rect->GetPosition(), glm::vec3(380.F, 7.F, LAYER_Z_BOTTOM))
-}
-
 }  // namespace soil::stage::scene::gui

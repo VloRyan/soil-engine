@@ -7,7 +7,6 @@ namespace soil::stage::scene::gui {
 Root::Root(const glm::ivec2 windowSize) : overlayContainer_(nullptr) {
   size_ = windowSize;
   scissorRect_.Size = size_;
-  childScissorRect_.Size = size_;
   const auto parentHalfSize = size_ / glm::ivec2(2);
   Node::SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
 }
@@ -60,7 +59,6 @@ void Root::OnEvent(const soil::video::event::WindowEvent& event) {
   }
   size_ = event.Window->GetSize();
   scissorRect_.Size = size_;
-  childScissorRect_.Size = size_;
   const auto parentHalfSize = size_ / glm::ivec2(2);
   SetPosition(glm::vec3(parentHalfSize, -TOP_Z_LAYER));
   SetDirty(DirtyImpact::Dependents);
@@ -93,6 +91,24 @@ void Root::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
       continue;
     }
     result.push_back(child);
+  }
+}
+void Root::Layout() {
+  /*for (auto* child : childRects_) {
+    child->UpdateScissor(scissorRect_);
+    if (child == overlayContainer_) {
+      continue;
+    }
+    auto pos = child->GetLocalPosition();
+    if (pos.z == LAYER_Z_INCREMENT) {
+      continue;
+    }
+    child->SetLocalPosition(glm::vec3(pos.x, pos.y, LAYER_Z_INCREMENT));
+  }*/
+  Rectangle::Layout();
+  if (overlayContainer_ != nullptr) {
+    overlayContainer_->SetLocalPosition(
+        glm::vec3(0.F, 0.F, TOP_Z_LAYER - 10.F));
   }
 }
 }  // namespace soil::stage::scene::gui

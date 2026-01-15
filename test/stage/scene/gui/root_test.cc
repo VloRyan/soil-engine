@@ -18,13 +18,13 @@ TEST_F(RootTest, Contructor) {
 
 TEST_F(RootTest, MouseOver) {
   auto root = Root(glm::ivec2(800, 600));
-  auto* item1 = root.AddChild(new Rectangle());
+  auto* item1 = root.AddChild(new Rectangle(glm::ivec2(10)));
   item1->SetPosition(glm::vec3(100, 500, 0));
-  auto* item2 = root.AddChild(new Rectangle());
+  auto* item2 = root.AddChild(new Rectangle(glm::ivec2(10)));
   item2->SetPosition(glm::vec3(700, 500, 0));
-  auto* item3 = root.AddChild(new Rectangle());
+  auto* item3 = root.AddChild(new Rectangle(glm::ivec2(10)));
   item3->SetPosition(glm::vec3(100, 100, 0));
-  auto* subItem = item3->AddChild(new Rectangle());
+  auto* subItem = item3->AddChild(new Rectangle(glm::ivec2(10)));
   root.Update();
 
   root.OnEvent(input::Event::MakeMousePositionEvent(glm::vec2(

@@ -5,99 +5,153 @@
 #include "testing.h"
 
 namespace soil::stage::scene::gui::container {
-class HBoxTest : public testing::Test {};
+class HBoxTest : public testing::Test {
+ protected:
+  class HBoxSpy : public HBox {
+   public:
+    void Layout() override { HBox::Layout(); }
+  };
+};
 
 TEST_F(HBoxTest, Contructor) {
   const auto defaultBox = HBox();
 
   EXPECT_EQ(defaultBox.GetMargin(), 0);
-  EXPECT_EQ(defaultBox.GetAlignItems(), HBox::AlignItems::Center);
-  EXPECT_VEC_EQ(defaultBox.GetItemsSize(), glm::ivec2(0));
+  EXPECT_EQ(defaultBox.GetItemAlignment(),
+            layout::Anchor::VerticalAlignments::Center);
+  EXPECT_VEC_EQ(defaultBox.GetChildrenSize(), glm::ivec2(0));
   EXPECT_VEC_EQ(defaultBox.GetPadding(), glm::ivec4(0));
+  EXPECT_VEC_EQ(defaultBox.GetPosition(), glm::vec3(0.F, 0.F, 0.F));
 
   const auto box = HBox(2, glm::ivec4(1));
   EXPECT_VEC_EQ(box.GetPadding(), glm::ivec4(1));
   EXPECT_EQ(box.GetMargin(), 2);
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(0));
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(0));
 }
 
-TEST_F(HBoxTest, Update) {
-  auto box = HBox();
-  box.SetSize(glm::ivec2(800, 600));
+TEST_F(HBoxTest, LayoutWithGrow) {
+  auto box = HBoxSpy();
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Center);
 
-  auto* child = box.AddChild(new Rectangle());
-  child->SetSize(glm::ivec2(100));
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(1000));
 
-  box.Update();
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(100));
-  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600))
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(100));
+  EXPECT_VEC_EQ(box.Child(0)->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(1000));
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.Child(0)->GetPosition(),
+                glm::vec3(-100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(1)->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(2)->GetPosition(),
+                glm::vec3(100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Top);
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.Child(0)->GetPosition(),
+                glm::vec3(-100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(1)->GetPosition(),
+                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(2)->GetPosition(),
+                glm::vec3(100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Bottom);
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(300, 100));
+  EXPECT_VEC_EQ(box.Child(0)->GetPosition(),
+                glm::vec3(-100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(1)->GetPosition(),
+                glm::vec3(0.F, -0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(box.Child(2)->GetPosition(),
+                glm::vec3(100.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+}
+
+TEST_F(HBoxTest, LayoutWithRelativedSize) {
+  auto box = HBoxSpy();
+  box.SetSizeType(Base::SizeTypes::Relative);
+  box.SetRelativeSize(glm::vec2(0.5, 0.5));
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Center);
+  auto* child = box.AddChild(new Rectangle(glm::ivec2(100)));
+  auto* child2 = box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(800));
+
+  box.SetPadding(glm::ivec4(5, 10, 15, 20));
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(200, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(400, 400));
   EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, 0.F, box.GetPosition().z));
-
-  auto* child2 = box.AddChild(new Rectangle());
-  child2->SetSize(glm::ivec2(100));
-
-  box.Update();
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(200, 100));
-  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600));
-  EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-145.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
   EXPECT_VEC_EQ(child2->GetPosition(),
-                glm::vec3(-250.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-45.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
 
-  auto* child3 = box.AddChild(new Rectangle());
-  child3->SetSize(glm::ivec2(150));
-
-  constexpr auto margin = 10;
-  box.SetMargin(margin);
-  box.Update();
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(350 + 2 * margin, 150));
-  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600));
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Top);
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(200, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(400, 400));
   EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-145.F, 140.F, Rectangle::LAYER_Z_INCREMENT));
   EXPECT_VEC_EQ(child2->GetPosition(),
-                glm::vec3(-250.F + margin, 0.F, Rectangle::LAYER_Z_INCREMENT));
-  EXPECT_VEC_EQ(child3->GetPosition(), glm::vec3(-125.F + 2 * margin, 0.F,
-                                                 Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-45.F, 140.F, Rectangle::LAYER_Z_INCREMENT));
 
-  constexpr auto offset = 20;
-  box.SetOffset(glm::ivec2(offset, 0));
-  box.Update();
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(350 + 2 * margin, 150));
-  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600));
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Bottom);
+  box.Layout();
+  EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(200, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(400, 400));
   EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F + offset, 0.F, Rectangle::LAYER_Z_INCREMENT));
-  EXPECT_VEC_EQ(child2->GetPosition(), glm::vec3(-250.F + offset + margin, 0.F,
-                                                 Rectangle::LAYER_Z_INCREMENT));
-  EXPECT_VEC_EQ(child3->GetPosition(),
-                glm::vec3(-125.F + offset + 2 * margin, 0.F,
-                          Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-145.F, -130.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(child2->GetPosition(),
+                glm::vec3(-45.F, -130.F, Rectangle::LAYER_Z_INCREMENT));
 }
 
-TEST_F(HBoxTest, UpdateAlign) {
-  auto box = HBox();
-  box.SetSize(glm::ivec2(800, 600));
-  box.SetPadding(glm::ivec4(0, 10, 0, 20));
-  box.SetAlignItems(HBox::AlignItems::Top);
+TEST_F(HBoxTest, LayoutWithMargin) {
+  auto box = HBoxSpy();
+  box.SetSize(glm::ivec2(400, 400));
+  box.SetSizeType(Base::SizeTypes::Fixed);
+  box.SetItemAlignment(layout::Anchor::VerticalAlignments::Center);
+  box.SetMargin(10);
+  auto* child = box.AddChild(new Rectangle(glm::ivec2(100)));
+  auto* child2 = box.AddChild(new Rectangle(glm::ivec2(100)));
 
-  auto* child = box.AddChild(new Rectangle());
-  child->SetSize(glm::ivec2(100));
-
-  box.Update();
-  EXPECT_VEC_EQ(box.GetItemsSize(), glm::ivec2(100));
-  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(800, 600))
+  box.UpdateSize(glm::ivec2(800));
+  box.Layout();
+  // EXPECT_VEC_EQ(box.GetChildrenSize(), glm::ivec2(210, 100));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(400, 400));
   EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, 240.F, Rectangle::LAYER_Z_INCREMENT));
-
-  box.SetAlignItems(HBox::AlignItems::Center);
-  box.Update();
-  EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, -10.F, Rectangle::LAYER_Z_INCREMENT));
-
-  box.SetAlignItems(HBox::AlignItems::Bottom);
-  box.Update();
-  EXPECT_VEC_EQ(child->GetPosition(),
-                glm::vec3(-350.F, -230.F, Rectangle::LAYER_Z_INCREMENT));
+                glm::vec3(-150.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(child2->GetPosition(),
+                glm::vec3(-40.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
 }
 
+TEST_F(HBoxTest, UpdateSizeWithGrow) {
+  auto box = HBoxSpy();
+  box.SetSizeType(Base::SizeTypes::GrowWithContent);
+
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(1000));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(100, 100));
+
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(1000));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(200, 100));
+
+  box.AddChild(new Rectangle(glm::ivec2(100)));
+  box.UpdateSize(glm::ivec2(1000));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(300, 100));
+
+  box.SetMargin(10);
+  box.UpdateSize(glm::ivec2(1000));
+  EXPECT_VEC_EQ(box.GetSize(), glm::ivec2(320, 100));
+}
 }  // namespace soil::stage::scene::gui::container

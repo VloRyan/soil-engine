@@ -156,7 +156,8 @@ void AbstractText::Draw(video::render::State& state) {
 
   state.SetShader(data_->CharacterShader);
   data_->CharacterShader->Prepare(state);
-  SetupText(state);
+  SetupText(state,
+            dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent()));
   std::vector<SymbolPosition> symbolPositions;
   glm::vec2 cursorPosition;
   const auto effectiveLineHeight =

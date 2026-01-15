@@ -5,6 +5,7 @@
 #include "file/font.h"
 #include "file/sprite_sheet.h"
 #include "stage/scene/component/render/mesh_component.h"
+#include "stage/scene/gui/rectangle.h"
 #include "stage/scene/node.h"
 #include "stage/text/types.hpp"
 #include "video/manager.h"
@@ -90,7 +91,8 @@ class AbstractText : public DrawableComponent,
                            const glm::vec3& worldPos, const glm::vec4& color,
                            video::shader::Program* shader) = 0;
 
-  virtual void SetupText(video::render::State& state) {};
+  virtual void SetupText(video::render::State& state,
+                         soil::stage::scene::gui::Rectangle* parentRect) {};
 
   static std::unordered_map<std::string, stage::text::Symbol> MakeSymbolMap(
       const file::SpriteSheet& spriteSheet, const file::Font& font,

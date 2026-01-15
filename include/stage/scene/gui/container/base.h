@@ -4,38 +4,26 @@
 #include "stage/scene/gui/rectangle.h"
 
 namespace soil::stage::scene::gui::container {
-class Base : public Rectangle, public soil::event::Handler<event::Node> {
+class Base : public Rectangle {
  public:
   ~Base() override = default;
 
   [[nodiscard]] const std::vector<Rectangle*>& GetItems() const;
-
-  void Handle(const event::Node& event) override;
-
   [[nodiscard]] virtual const glm::ivec2& GetOffset() const;
-
   virtual void SetOffset(const glm::ivec2& offset);
-
   [[nodiscard]] virtual int GetMargin() const;
-
   virtual void SetMargin(int margin);
-
-  [[nodiscard]] virtual const glm::ivec2& GetItemsSize() const;
-
   void RemoveChild(Node* node) override;
 
+  Rectangle* Child(int index);
+
  protected:
-  explicit Base(int margin = 0, glm::ivec4 padding = glm::ivec4(0));
-
-  void addChild(Node* node) override;
-
-  void AfterNodeUpdate() override;
-
-  virtual void arrangeItems() = 0;
+  explicit Base(int margin = 0, glm::ivec4 padding = glm::ivec4(0),
+                SizeTypes sizeType = SizeTypes::GrowWithContent);
+  void addChildRect(Rectangle* rect) override;
 
   int margin_;
   glm::ivec2 offset_;
-  glm::ivec2 itemsSize_;
 };
 }  // namespace soil::stage::scene::gui::container
 

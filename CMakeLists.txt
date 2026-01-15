@@ -61,6 +61,8 @@ add_library(${PROJECT_NAME}
         src/stage/scene/gui/container/base.cc
         src/stage/scene/gui/container/h_box.cc
         src/stage/scene/gui/container/v_box.cc
+        src/stage/scene/gui/layout/anchor.cc
+        src/stage/scene/gui/layout/sizer.cc
         src/stage/scene/gui/rectangle.cc
         src/stage/scene/gui/root.cc
         src/stage/scene/node.cc
@@ -177,6 +179,8 @@ target_sources(
         include/stage/scene/gui/container/base.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
+        include/stage/scene/gui/layout/anchor.h
+        include/stage/scene/gui/layout/sizer.h
         include/stage/scene/gui/rectangle.h
         include/stage/scene/gui/root.h
         include/stage/scene/node.h

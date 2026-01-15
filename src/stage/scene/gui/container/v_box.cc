@@ -1,57 +1,56 @@
 #include "stage/scene/gui/container/v_box.h"
 
+#include "stage/scene/gui/rectangle.h"
 namespace soil::stage::scene::gui::container {
 
-VBox::VBox(const int margin, const glm::ivec4 padding)
-    : Base(margin, padding), alignItems_(AlignItems::Center) {}
+VBox::VBox(const int margin, const glm::ivec4 padding) : Base(margin, padding) {
+  itemAnchor_.SetAlignment(
+      {.Horizontal = layout::Anchor::HorizontalAlignments::Center});
+}
 
-VBox::AlignItems VBox::GetAlignItems() const { return alignItems_; }
+layout::Anchor::HorizontalAlignments VBox::GetItemAlignment() const {
+  return itemAnchor_.GetAlignment().Horizontal;
+}
 
-void VBox::SetAlignItems(const AlignItems alignItems) {
-  if (alignItems_ == alignItems) {
+void VBox::SetItemAlignment(
+    const layout::Anchor::HorizontalAlignments alignment) {
+  if (itemAnchor_.GetAlignment().Horizontal == alignment) {
     return;
   }
-  alignItems_ = alignItems;
+  itemAnchor_.SetAlignment({.Horizontal = alignment});
   SetDirty(DirtyImpact::Dependents);
 }
 
-void VBox::arrangeItems() {
-  itemsSize_ = glm::vec2(0.F);
+void VBox::Layout() {
   if (childRects_.empty()) {
     return;
   }
-
-  auto offset = glm::ivec2(GetOffset().x, -padding_[1] + GetOffset().y);
-  const auto halfHeight = GetSize().y / 2;
-  for (auto* item : childRects_) {
-    auto pos = item->GetLocalPosition();
-    pos.x = static_cast<float>(offset.x);
-    pos.y = static_cast<float>(offset.y) + static_cast<float>(halfHeight) -
-            static_cast<float>(item->GetSize().y) / 2.F;
-    pos.z = 0.F;
-    switch (alignItems_) {
-      case AlignItems::Left:
-        pos.x -= static_cast<float>(GetSize().x) / 2.F -
-                 static_cast<float>(padding_[0]) -
-                 static_cast<float>(item->GetSize().x) / 2.F;
-        break;
-      case AlignItems::Center:
-        pos.x +=
-            static_cast<float>(padding_[0]) - static_cast<float>(padding_[2]);
-        break;
-      case AlignItems::Right:
-        pos.x += static_cast<float>(GetSize().x) / 2.F -
-                 static_cast<float>(padding_[2]) -
-                 static_cast<float>(item->GetSize().x) / 2.F;
-        break;
-    }
-    item->SetLocalPosition(pos);
-    offset.y -= item->GetSize().y + margin_;
-    itemsSize_.y += item->GetSize().y;
-    if (item->GetSize().x > itemsSize_.x) {
-      itemsSize_.x = item->GetSize().x;
-    }
+  const auto halfSize = glm::vec2(GetSize()) / glm::vec2(2.F);
+  auto offset =
+      glm::vec3(GetOffset().x,
+                halfSize.y - static_cast<float>(GetOffset().y + padding_[1]),
+                Rectangle::LAYER_Z_INCREMENT);
+  for (auto* child : childRects_) {
+    auto halfItemSize = glm::vec2(child->GetSize()) / glm::vec2(2.F);
+    auto pos = offset + glm::vec3(0.F, -halfItemSize.y, 0.F);
+    child->SetLocalPosition(
+        itemAnchor_.Align(pos, child->GetSize(), GetSize(), GetPadding()));
+    offset.y -= static_cast<float>(child->GetSize().y + margin_);
   }
-  itemsSize_.y += (static_cast<int>(childRects_.size()) - 1) * margin_;
+}
+
+glm::ivec2 VBox::CalculateChildrenSize(const glm::ivec2& maxSize) {
+  glm::ivec2 size(0);
+  if (childRects_.empty()) {
+    return size;
+  }
+  auto maxChildSize = glm::clamp(maxSize, minSize_, maxSize_) - Paddings();
+  for (auto* child : childRects_) {
+    auto childSize = child->CalculateSize(maxChildSize);
+    size.x = std::max(childSize.x, size.x);
+    size.y += childSize.y;
+  }
+  size.y += (static_cast<int>(childRects_.size()) - 1) * margin_;
+  return size;
 }
 }  // namespace soil::stage::scene::gui::container

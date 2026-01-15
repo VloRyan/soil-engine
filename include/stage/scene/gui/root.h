@@ -30,6 +30,7 @@ class Root final : public Rectangle,
  protected:
   void OnStageChanged(soil::stage::Stage* stage,
                       soil::stage::Stage* prevStage) override;
+  void Layout() override;
 
  private:
   void addToOverlayContainer(Rectangle* rect);

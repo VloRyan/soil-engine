@@ -2,8 +2,8 @@
 
 #include "../mocks.hpp"
 #include "gtest/gtest.h"
-#include "mocks.hpp"
 #include "stage/scene/component/component.h"
+#include "testing.h"
 
 namespace soil::stage::scene::component {
 class TransformComponentTest : public testing::Test {};
@@ -11,18 +11,41 @@ class TransformComponentTest : public testing::Test {};
 TEST_F(TransformComponentTest, SetPosition) {
   auto component = TransformComponent();
   ASSERT_EQ(component.GetPosition(), glm::vec3(0.F));
+  ASSERT_EQ(component.GetLocalPosition(), glm::vec3(0.F));
 
   component.SetPosition(glm::vec3(100.F));
-  EXPECT_EQ(component.GetPosition(), glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(100.F));
 
   component.UpdateTransform(glm::mat4(1.F));
-  EXPECT_EQ(component.GetPosition(), glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(100.F));
 
-  auto parent = component.GetMatrix();
-  component.UpdateTransform(parent);
-  EXPECT_EQ(component.GetPosition(), glm::vec3(200.F));
+  component.UpdateTransform(glm::translate(glm::mat4(1.f), glm::vec3(100.F)));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(200.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(100.F));
+
+  component.SetPosition(glm::vec3(0.F));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(0.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(-100.F));
 }
-/*
+
+TEST_F(TransformComponentTest, SetLocalPosition) {
+  auto component = TransformComponent();
+  ASSERT_EQ(component.GetPosition(), glm::vec3(0.F));
+  ASSERT_EQ(component.GetLocalPosition(), glm::vec3(0.F));
+
+  component.SetLocalPosition(glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(100.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(100.F));
+
+  component.UpdateTransform(glm::translate(glm::mat4(1.f), glm::vec3(100.F)));
+  component.SetLocalPosition(glm::vec3(-100.F));
+  EXPECT_VEC_EQ(component.GetPosition(), glm::vec3(0.F));
+  EXPECT_VEC_EQ(component.GetLocalPosition(), glm::vec3(-100.F));
+}
+
+/* TODO: Tests
 TEST_F(TransformComponentTest, SetDirection) {
   auto node = Node(Node::Type::Transform);
   node.SetDirection(glm::vec3(0.F, 1.F, 0.F));
