@@ -10,19 +10,14 @@
 namespace soil::stage::scene::gui {
 class RectangleTest : public testing::Test {
  protected:
-  static inline float LAYER_Z_BOTTOM =
-      -Rectangle::TOP_Z_LAYER + Rectangle::LAYER_Z_INCREMENT;
   class RectSpy : public Rectangle {
    public:
     RectSpy(const glm::ivec2 size = glm::ivec2(0)) : Rectangle(size) {}
     const std::vector<Rectangle*>& ChildRects() const { return childRects_; }
     void Layout() override { Rectangle::Layout(); };
-    void UpdateScissor(const video::render::Rect& parentRect) override {
-      Rectangle::UpdateScissor(parentRect);
-    };
-    video::render::Rect CalculateChildScissorRect() const override {
-      return Rectangle::CalculateChildScissorRect();
-    }
+    void UpdateScissor(const video::render::Rect& parentRect) override { Rectangle::UpdateScissor(parentRect); };
+    video::render::Rect CalculateChildScissorRect() const override { return Rectangle::CalculateChildScissorRect(); }
+    void UpdateSize(const glm::ivec2& maxSize) override { Rectangle::UpdateSize(maxSize); }
   };
 };
 
@@ -136,7 +131,7 @@ TEST_F(RectangleTest, UpdateSizeWithPadding) {
 }
 
 TEST_F(RectangleTest, UpdateSizeWithAspectRatio) {
-  auto rect = Rectangle();
+  auto rect = RectSpy();
 
   rect.SetRelativeSize(glm::vec2(1.F, 0.F));
   rect.SetAspectRatio(2.F / 1.F);

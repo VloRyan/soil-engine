@@ -12,8 +12,7 @@ class HBox : public Base {
 
   ~HBox() override = default;
 
-  [[nodiscard]] virtual layout::Anchor::VerticalAlignments GetItemAlignment()
-      const;
+  [[nodiscard]] virtual layout::Anchor::VerticalAlignments GetItemAlignment() const;
   virtual void SetItemAlignment(layout::Anchor::VerticalAlignments alignment);
 
  protected:

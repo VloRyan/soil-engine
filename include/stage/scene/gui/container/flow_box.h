@@ -5,7 +5,7 @@ namespace soil::stage::scene::gui::container {
 class FlowBox : public Base {
  public:
   FlowBox(int margin = 0, glm::ivec4 padding = glm::ivec4(0));
-  virtual ~FlowBox() override = default;
+  ~FlowBox() override = default;
 
  protected:
   void Layout() override;

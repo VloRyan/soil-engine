@@ -185,7 +185,7 @@ void Rectangle::UpdateDirty() {
 
 void Rectangle::UpdateScissor(const video::render::Rect& parentRect) {
   auto size = glm::ivec2(GetSize());
-  const auto halfSize = GetSize() / 2;
+  const auto halfSize = size / 2;
   const auto maxParentPos = parentRect.LowerLeftPosition + parentRect.Size;
   const auto bottomLeftPos = glm::ivec2(GetPosition()) - halfSize;
 
@@ -210,27 +210,27 @@ void Rectangle::UpdateScissor(const video::render::Rect& parentRect) {
 glm::ivec2 Rectangle::CalculateSize(const glm::ivec2& maxSize) {
   switch (sizeType_) {
     case Rectangle::SizeTypes::Fixed:
-      childrenSize_ = CalculateChildrenSize(size_);
-      return size_;
+      return glm::clamp(size_, minSize_, maxSize_);
     case Rectangle::SizeTypes::Relative: {
       auto ownMaxSize = glm::min(maxSize_, maxSize);
       auto relativeMaxSize = layout::Sizer::CalculateRelativeSize(
           GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
-      childrenSize_ = CalculateChildrenSize(relativeMaxSize);
+      auto childrenSize = CalculateChildrenSize(relativeMaxSize);
       return glm::clamp(layout::Sizer::CalculateRelativeSize(
                             GetRelativeSize(), GetAspectRatio(), maxSize,
-                            glm::max(childrenSize_ + Paddings(), minSize_)),
+                            glm::max(childrenSize + Paddings(), minSize_)),
                         minSize_, maxSize_);
     }
     case Rectangle::SizeTypes::GrowWithContent: {
-      childrenSize_ = CalculateChildrenSize(maxSize);
-      return glm::clamp(childrenSize_ + Paddings(), minSize_, maxSize_);
+      auto childrenSize = CalculateChildrenSize(maxSize);
+      return glm::clamp(childrenSize + Paddings(), minSize_, maxSize_);
     }
   }
 }
 
 void Rectangle::UpdateSize(const glm::ivec2& maxSize) {
   auto prevSize = GetSize();
+  UpdateChildrenSize(maxSize);
   SetSize(CalculateSize(maxSize));
   if (prevSize != GetSize()) {
     auto maxChildSize = glm::ivec2(0);
@@ -258,7 +258,24 @@ void Rectangle::UpdateSize(const glm::ivec2& maxSize) {
     }
   }
 }
-
+void Rectangle::UpdateChildrenSize(const glm::ivec2& maxSize) {
+  switch (sizeType_) {
+    case Rectangle::SizeTypes::Fixed:
+      childrenSize_ = CalculateChildrenSize(size_);
+      break;
+    case Rectangle::SizeTypes::Relative: {
+      auto ownMaxSize = glm::min(maxSize_, maxSize);
+      auto relativeMaxSize = layout::Sizer::CalculateRelativeSize(
+          GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
+      childrenSize_ = CalculateChildrenSize(relativeMaxSize);
+      break;
+    }
+    case Rectangle::SizeTypes::GrowWithContent: {
+      childrenSize_ = CalculateChildrenSize(maxSize);
+      break;
+    }
+  }
+}
 const glm::ivec4& Rectangle::GetPadding() const { return padding_; }
 
 void Rectangle::SetPadding(const glm::ivec4& padding) {
@@ -285,10 +302,6 @@ void Rectangle::SetVisible(const bool visible) {
 }
 
 bool Rectangle::IsVisible() const { return visibleEffective_; }
-
-glm::vec2 Rectangle::GetCenter() const {
-  return {padding_[0] - padding_[2], padding_[3] - padding_[1]};
-}
 
 void Rectangle::SetOnMouseOverFunc(
     const std::function<void(const glm::ivec2& pos)>& onMouseOverFunc) {
@@ -340,18 +353,28 @@ bool Rectangle::Contains(const Rectangle* other) const {
 glm::ivec2 Rectangle::GetMinSize() const { return minSize_; }
 
 void Rectangle::SetMinSize(const glm::ivec2& minSize) {
-  minSize_ = glm::max(glm::ivec2(0), minSize);
+  auto size = glm::max(glm::ivec2(0), minSize);
+  if (minSize_ == size) {
+    return;
+  }
+  minSize_ = size;
+  SetDirty(DirtyImpact::Dependents);
 }
 
 glm::ivec2 Rectangle::GetMaxSize() const { return maxSize_; }
 
 void Rectangle::SetMaxSize(const glm::ivec2& maxSize) {
-  maxSize_ = maxSize;
+  auto size = maxSize;
   for (auto i = 0; i < 2; i++) {
-    if (maxSize_[i] < 0) {
-      maxSize_[i] = std::numeric_limits<int>::max();
+    if (size[i] < 0) {
+      size[i] = std::numeric_limits<int>::max();
     }
   }
+  if (maxSize_ == size) {
+    return;
+  }
+  maxSize_ = size;
+  SetDirty(DirtyImpact::Dependents);
 }
 
 class Root* Rectangle::GuiRoot() const {
@@ -408,10 +431,9 @@ const glm::ivec2& Rectangle::GetChildrenSize() const { return childrenSize_; }
 
 video::render::Rect Rectangle::CalculateChildScissorRect() const {
   return video::render::Rect{
-      .LowerLeftPosition =
-      scissorRect_.LowerLeftPosition + glm::ivec2(padding_[0], padding_[3]),
-      .Size = scissorRect_.Size -
-          glm::ivec2(padding_[0] + padding_[2], padding_[1] + padding_[3])};
+      .LowerLeftPosition = scissorRect_.LowerLeftPosition + glm::ivec2(padding_[0], padding_[3]),
+      .Size = scissorRect_.Size - Paddings(),
+  };
 }
 
 glm::ivec2 Rectangle::Paddings() const {

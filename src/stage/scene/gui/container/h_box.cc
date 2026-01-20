@@ -26,9 +26,12 @@ void HBox::Layout() {
   }
   const auto halfSize = glm::vec2(GetSize()) / glm::vec2(2.F);
   auto offset =
-      glm::vec3(static_cast<float>(padding_[0] + GetOffset().x) - halfSize.x,
-                GetOffset().y, Rectangle::LAYER_Z_INCREMENT);
+      glm::vec3(static_cast<float>(padding_[0] - GetOffset().x) - halfSize.x,
+                -GetOffset().y, Rectangle::LAYER_Z_INCREMENT);
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto halfItemSize = glm::vec2(child->GetSize()) / glm::vec2(2.F);
     auto pos = offset + glm::vec3(halfItemSize.x, 0.F, 0.F);
     child->SetLocalPosition(
@@ -38,12 +41,15 @@ void HBox::Layout() {
 }
 
 glm::ivec2 HBox::CalculateChildrenSize(const glm::ivec2& maxSize) {
-  glm::ivec2 size(0);
+  glm::ivec2 size(0, minSize_.y);
   if (childRects_.empty()) {
     return size;
   }
-  auto maxChildSize = glm::clamp(maxSize, minSize_, maxSize_) - Paddings();
+  auto maxChildSize = glm::min(maxSize, maxSize_) - Paddings();
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto childSize = child->CalculateSize(maxChildSize);
     size.x += childSize.x;
     size.y = std::max(childSize.y, size.y);

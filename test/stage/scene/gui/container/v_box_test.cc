@@ -11,9 +11,8 @@ class VBoxTest : public testing::Test {
    public:
     void Layout() override { VBox::Layout(); }
     void UpdateDirty() override { VBox::UpdateDirty(); }
-    void UpdateScissor(const video::render::Rect& parentRect) override {
-      VBox::UpdateScissor(parentRect);
-    }
+    void UpdateScissor(const video::render::Rect& parentRect) override { VBox::UpdateScissor(parentRect); }
+    void UpdateSize(const glm::ivec2& maxSize) override { VBox::UpdateSize(maxSize); }
   };
 };
 
@@ -152,9 +151,6 @@ TEST_F(VBoxTest, UpdateSizeWithGrow) {
 }
 
 TEST_F(VBoxTest, UpdateScissor) {
-  auto parentRect = Rectangle();
-  parentRect.SetPosition(glm::vec3(0.F, 0.F, -Rectangle::LAYER_Z_INCREMENT));
-
   auto box = VBoxSpy();
   box.SetSize(glm::ivec2(100));
   box.SetItemAlignment(layout::Anchor::HorizontalAlignments::Center);
@@ -162,9 +158,9 @@ TEST_F(VBoxTest, UpdateScissor) {
   box.AddChild(new Rectangle(glm::ivec2(100)));
 
   box.UpdateScissor({
-      .LowerLeftPosition = glm::ivec2(-400),
-      .Size = glm::ivec2(800),
-  });
+                        .LowerLeftPosition = glm::ivec2(-400),
+                        .Size = glm::ivec2(800),
+                    });
   box.Update();
 
   EXPECT_VEC_EQ(box.GetScissorRect().Size, glm::ivec2(100));

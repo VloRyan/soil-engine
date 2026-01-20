@@ -9,6 +9,7 @@ class FlowBoxTest : public testing::Test {
   class FlowBoxSpy : public FlowBox {
    public:
     void Layout() override { FlowBox::Layout(); }
+    void UpdateSize(const glm::ivec2& maxSize) override { FlowBox::UpdateSize(maxSize); }
   };
 };
 

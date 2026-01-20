@@ -34,8 +34,6 @@ class Rectangle : public Node {
   [[nodiscard]] virtual const glm::vec2& GetRelativeSize() const;
   virtual void SetRelativeSize(const glm::vec2& relativeSize);
 
-  [[nodiscard]] virtual glm::vec2 GetCenter() const;
-
   void SetAnchor(const layout::Anchor::Alignment& alignment);
 
   [[nodiscard]] virtual float GetAspectRatio() const;
@@ -63,7 +61,6 @@ class Rectangle : public Node {
   [[nodiscard]] virtual const video::render::Rect& GetScissorRect() const;
 
   virtual glm::ivec2 CalculateSize(const glm::ivec2& maxSize);
-  virtual void UpdateSize(const glm::ivec2& maxSize);
 
   [[nodiscard]] virtual const glm::ivec4& GetPadding() const;
   virtual void SetPadding(const glm::ivec4& padding);
@@ -94,6 +91,8 @@ class Rectangle : public Node {
   virtual void UpdateScissor(const video::render::Rect& parentRect);
 
   virtual void UpdateVisibility(bool parentVisible);
+  virtual void UpdateSize(const glm::ivec2& maxSize);
+  virtual void UpdateChildrenSize(const glm::ivec2& maxSize);
 
   void ApplyAnchors();
 

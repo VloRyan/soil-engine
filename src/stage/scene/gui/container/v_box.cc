@@ -27,8 +27,8 @@ void VBox::Layout() {
   }
   const auto halfSize = glm::vec2(GetSize()) / glm::vec2(2.F);
   auto offset =
-      glm::vec3(GetOffset().x,
-                halfSize.y - static_cast<float>(GetOffset().y + padding_[1]),
+      glm::vec3(-GetOffset().x,
+                halfSize.y - static_cast<float>(-GetOffset().y + padding_[1]),
                 Rectangle::LAYER_Z_INCREMENT);
   for (auto* child : childRects_) {
     auto halfItemSize = glm::vec2(child->GetSize()) / glm::vec2(2.F);
@@ -40,12 +40,15 @@ void VBox::Layout() {
 }
 
 glm::ivec2 VBox::CalculateChildrenSize(const glm::ivec2& maxSize) {
-  glm::ivec2 size(0);
+  glm::ivec2 size(minSize_.x, 0);
   if (childRects_.empty()) {
     return size;
   }
-  auto maxChildSize = glm::clamp(maxSize, minSize_, maxSize_) - Paddings();
+  auto maxChildSize = glm::min(maxSize, maxSize_) - Paddings();
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto childSize = child->CalculateSize(maxChildSize);
     size.x = std::max(childSize.x, size.x);
     size.y += childSize.y;

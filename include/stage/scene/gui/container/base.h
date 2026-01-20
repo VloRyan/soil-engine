@@ -16,14 +16,19 @@ class Base : public Rectangle {
   void RemoveChild(Node* node) override;
 
   Rectangle* Child(int index);
+  const glm::ivec2& GetScrollStep() const;
+  void SetScrollStep(const glm::ivec2& scrollStep);
 
  protected:
   explicit Base(int margin = 0, glm::ivec4 padding = glm::ivec4(0),
                 SizeTypes sizeType = SizeTypes::GrowWithContent);
   void addChildRect(Rectangle* rect) override;
 
+  void OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset) override;
+
   int margin_;
   glm::ivec2 offset_;
+  glm::ivec2 scrollStep_;
 };
 }  // namespace soil::stage::scene::gui::container
 

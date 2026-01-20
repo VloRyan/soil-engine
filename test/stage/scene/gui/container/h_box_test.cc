@@ -10,6 +10,7 @@ class HBoxTest : public testing::Test {
   class HBoxSpy : public HBox {
    public:
     void Layout() override { HBox::Layout(); }
+    void UpdateSize(const glm::ivec2& maxSize) override { HBox::UpdateSize(maxSize); }
   };
 };
 
