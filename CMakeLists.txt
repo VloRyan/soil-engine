@@ -59,6 +59,7 @@ add_library(${PROJECT_NAME}
         src/stage/scene/component/world/collision_object_component.cc
         src/stage/scene/component/world/world_component.cc
         src/stage/scene/gui/container/base.cc
+        src/stage/scene/gui/container/flow_box.cc
         src/stage/scene/gui/container/h_box.cc
         src/stage/scene/gui/container/v_box.cc
         src/stage/scene/gui/layout/anchor.cc
@@ -177,6 +178,7 @@ target_sources(
         include/stage/scene/component/world/collision_object_component.h
         include/stage/scene/component/world/world_component.h
         include/stage/scene/gui/container/base.h
+        include/stage/scene/gui/container/flow_box.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
         include/stage/scene/gui/layout/anchor.h

@@ -93,6 +93,8 @@ class Rectangle : public Node {
 
   virtual void UpdateScissor(const video::render::Rect& parentRect);
 
+  virtual void UpdateVisibility(bool parentVisible);
+
   void ApplyAnchors();
 
   virtual void OnMouseOver(const glm::ivec2& pos);
@@ -105,6 +107,8 @@ class Rectangle : public Node {
 
   virtual glm::ivec2 CalculateChildrenSize(const glm::ivec2& maxSize);
   virtual video::render::Rect CalculateChildScissorRect() const;
+
+  glm::ivec2 CalculateMaxChildrenSize() const;
 
   std::vector<Rectangle*> childRects_;
   bool isMouseOver_;

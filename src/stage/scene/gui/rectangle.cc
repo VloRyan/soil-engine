@@ -165,17 +165,12 @@ void Rectangle::RemoveChild(Node* node) {
 
 void Rectangle::UpdateDirty() {
   if (const auto* parent = GetParentRect(); parent != nullptr) {
-    if (const auto visibleEffective = visible_ && parent->IsVisible();
-        visibleEffective_ != visibleEffective) {
-      visibleEffective_ = visibleEffective;
-      SetDirty(DirtyImpact::Dependents);
-    }
+    UpdateVisibility(parent->IsVisible());
     if (visibleEffective_) {
       if (IsDirtyImpact(DirtyImpact::Transform)) {
         transform_->UpdateTransform(parent->Transform().GetMatrix());
       }
-      auto parentMaxChildSize = parent->GetSize() - parent->Paddings();
-      UpdateSize(parentMaxChildSize);
+      UpdateSize(parent->CalculateMaxChildrenSize());
       ApplyAnchors();
       UpdateScissor(parent->CalculateChildScissorRect());
     }
@@ -199,7 +194,7 @@ void Rectangle::UpdateScissor(const video::render::Rect& parentRect) {
   for (auto i = 0; i < 2; i++) {
     if (scissorRect_.LowerLeftPosition[i] < parentRect.LowerLeftPosition[i]) {
       size[i] = std::max(size[i] - (parentRect.LowerLeftPosition[i] -
-                                    scissorRect_.LowerLeftPosition[i]),
+                             scissorRect_.LowerLeftPosition[i]),
                          0);
       scissorRect_.LowerLeftPosition[i] = parentRect.LowerLeftPosition[i];
     }
@@ -218,12 +213,13 @@ glm::ivec2 Rectangle::CalculateSize(const glm::ivec2& maxSize) {
       childrenSize_ = CalculateChildrenSize(size_);
       return size_;
     case Rectangle::SizeTypes::Relative: {
+      auto ownMaxSize = glm::min(maxSize_, maxSize);
       auto relativeMaxSize = layout::Sizer::CalculateRelativeSize(
-          GetRelativeSize(), GetAspectRatio(), maxSize, maxSize);
+          GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
       childrenSize_ = CalculateChildrenSize(relativeMaxSize);
       return glm::clamp(layout::Sizer::CalculateRelativeSize(
                             GetRelativeSize(), GetAspectRatio(), maxSize,
-                            childrenSize_ + Paddings()),
+                            glm::max(childrenSize_ + Paddings(), minSize_)),
                         minSize_, maxSize_);
     }
     case Rectangle::SizeTypes::GrowWithContent: {
@@ -237,10 +233,28 @@ void Rectangle::UpdateSize(const glm::ivec2& maxSize) {
   auto prevSize = GetSize();
   SetSize(CalculateSize(maxSize));
   if (prevSize != GetSize()) {
-    if (sizeType_ == SizeTypes::GrowWithContent) {
-      for (auto* child : childRects_) {
-        child->UpdateSize(childrenSize_);
+    auto maxChildSize = glm::ivec2(0);
+    switch (sizeType_) {
+      case Rectangle::SizeTypes::Fixed:
+        maxChildSize = size_;
+        break;
+      case Rectangle::SizeTypes::Relative: {
+        auto ownMaxSize = glm::min(maxSize_, maxSize);
+        maxChildSize = layout::Sizer::CalculateRelativeSize(
+            GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
+        break;
       }
+      case Rectangle::SizeTypes::GrowWithContent: {
+        maxChildSize = maxSize;
+        break;
+      }
+    }
+    maxChildSize = glm::min(maxChildSize, maxSize_) - Paddings();
+    for (auto* child : childRects_) {
+      if (!child->IsVisible()) {
+        continue;
+      }
+      child->UpdateSize(maxChildSize);
     }
   }
 }
@@ -263,13 +277,10 @@ void Rectangle::SetVisible(const bool visible) {
     OnMouseOut();
   }
   visible_ = visible;
-  auto visibleEffective = visible_;
   if (const auto* parent = GetParentRect(); parent != nullptr) {
-    visibleEffective = visible_ && parent->IsVisible();
-  }
-  if (visibleEffective != visibleEffective_) {
-    visibleEffective_ = visibleEffective;
-    SetDirty(DirtyImpact::Dependents);
+    UpdateVisibility(parent->IsVisible());
+  } else {
+    UpdateVisibility(visible);
   }
 }
 
@@ -305,9 +316,9 @@ bool Rectangle::Contains(const glm::ivec2 pos) const {
   const auto halfSize = glm::ivec2(GetSize()) / glm::ivec2(2);
   const auto cPos = glm::ivec2(GetPosition());
   return pos.x >= cPos.x - halfSize.x &&  //
-         pos.x <= cPos.x + halfSize.x &&  //
-         pos.y >= cPos.y - halfSize.y &&  //
-         pos.y <= cPos.y + halfSize.y;
+      pos.x <= cPos.x + halfSize.x &&  //
+      pos.y >= cPos.y - halfSize.y &&  //
+      pos.y <= cPos.y + halfSize.y;
 }
 
 bool Rectangle::Contains(const Rectangle* other) const {
@@ -316,23 +327,32 @@ bool Rectangle::Contains(const Rectangle* other) const {
   const auto pos = glm::ivec2(GetPosition());
   const auto otherPos = glm::ivec2(GetPosition());
   const bool betweenX = (otherPos.x + otherHalfSize.x >= pos.x - halfSize.x &&
-                         otherPos.x + otherHalfSize.x <= pos.x + halfSize.x) ||
-                        (otherPos.x - otherHalfSize.x <= pos.x + halfSize.x &&
-                         otherPos.x - otherHalfSize.x >= pos.x - halfSize.x);
+      otherPos.x + otherHalfSize.x <= pos.x + halfSize.x) ||
+      (otherPos.x - otherHalfSize.x <= pos.x + halfSize.x &&
+          otherPos.x - otherHalfSize.x >= pos.x - halfSize.x);
   const bool betweenY = (otherPos.y + otherHalfSize.y >= pos.y - halfSize.y &&
-                         otherPos.y + otherHalfSize.y <= pos.y + halfSize.y) ||
-                        (otherPos.y - otherHalfSize.y <= pos.y + halfSize.y &&
-                         otherPos.y - otherHalfSize.y >= pos.y - halfSize.y);
+      otherPos.y + otherHalfSize.y <= pos.y + halfSize.y) ||
+      (otherPos.y - otherHalfSize.y <= pos.y + halfSize.y &&
+          otherPos.y - otherHalfSize.y >= pos.y - halfSize.y);
   return betweenX && betweenY;
 }
 
 glm::ivec2 Rectangle::GetMinSize() const { return minSize_; }
 
-void Rectangle::SetMinSize(const glm::ivec2& minSize) { minSize_ = minSize; }
+void Rectangle::SetMinSize(const glm::ivec2& minSize) {
+  minSize_ = glm::max(glm::ivec2(0), minSize);
+}
 
 glm::ivec2 Rectangle::GetMaxSize() const { return maxSize_; }
 
-void Rectangle::SetMaxSize(const glm::ivec2& maxSize) { maxSize_ = maxSize; }
+void Rectangle::SetMaxSize(const glm::ivec2& maxSize) {
+  maxSize_ = maxSize;
+  for (auto i = 0; i < 2; i++) {
+    if (maxSize_[i] < 0) {
+      maxSize_[i] = std::numeric_limits<int>::max();
+    }
+  }
+}
 
 class Root* Rectangle::GuiRoot() const {
   auto p = const_cast<Rectangle*>(this);
@@ -354,6 +374,9 @@ void Rectangle::FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
 
 void Rectangle::Layout() {
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto localPos = child->GetLocalPosition();
     child->SetLocalPosition(
         glm::vec3(localPos.x, localPos.y, LAYER_Z_INCREMENT));
@@ -366,12 +389,15 @@ void Rectangle::SetSizeType(Rectangle::SizeTypes sizeType) {
 }
 
 glm::ivec2 Rectangle::CalculateChildrenSize(const glm::ivec2& maxSize) {
-  glm::ivec2 size(0);
+  auto size = minSize_;
   if (childRects_.empty()) {
     return size;
   }
-  auto maxChildSize = glm::clamp(maxSize, minSize_, maxSize_) - Paddings();
+  auto maxChildSize = glm::min(maxSize, maxSize_) - Paddings();
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto childSize = child->CalculateSize(maxChildSize);
     size = glm::max(childSize, size);
   }
@@ -379,15 +405,57 @@ glm::ivec2 Rectangle::CalculateChildrenSize(const glm::ivec2& maxSize) {
 }
 
 const glm::ivec2& Rectangle::GetChildrenSize() const { return childrenSize_; }
+
 video::render::Rect Rectangle::CalculateChildScissorRect() const {
   return video::render::Rect{
       .LowerLeftPosition =
-          scissorRect_.LowerLeftPosition + glm::ivec2(padding_[0], padding_[3]),
+      scissorRect_.LowerLeftPosition + glm::ivec2(padding_[0], padding_[3]),
       .Size = scissorRect_.Size -
-              glm::ivec2(padding_[0] + padding_[2], padding_[1] + padding_[3])};
+          glm::ivec2(padding_[0] + padding_[2], padding_[1] + padding_[3])};
 }
+
 glm::ivec2 Rectangle::Paddings() const {
   return {padding_[0] + padding_[2], padding_[1] + padding_[3]};
+}
+void Rectangle::UpdateVisibility(bool parentVisible) {
+  if (const auto visibleEffective = visible_ && parentVisible;
+      visibleEffective_ != visibleEffective) {
+    visibleEffective_ = visibleEffective;
+    for (auto* child : childRects_) {
+      child->UpdateVisibility(visibleEffective_);
+    }
+    SetDirty(DirtyImpact::Dependents);
+  }
+}
+glm::ivec2 Rectangle::CalculateMaxChildrenSize() const {
+  switch (sizeType_) {
+    case SizeTypes::Fixed:
+      return glm::min(GetSize() - Paddings(), maxSize_);
+    case SizeTypes::Relative: {
+      glm::ivec2 parentSize;
+      if (auto* parent = GetParentRect();parent != nullptr) {
+        parentSize = GetParentRect()->CalculateMaxChildrenSize();
+      } else {
+        parentSize = maxSize_ - Paddings();
+      }
+      auto childSize = glm::min(GetSize(), maxSize_);
+      if (aspectRatio_ == 0.F) {
+        if (relativeSize_.x == 0.F) {
+          childSize.x = std::min(parentSize.x, maxSize_.x - Paddings().x);
+        }
+        if (relativeSize_.y == 0.F) {
+          childSize.y = std::min(parentSize.y, maxSize_.y - Paddings().y);
+        }
+      }
+      return childSize;
+    }
+    case SizeTypes::GrowWithContent:
+      if (auto* parent = GetParentRect();parent != nullptr) {
+        return glm::min(GetParentRect()->CalculateMaxChildrenSize(), maxSize_) - Paddings();
+      }
+      return maxSize_ - Paddings();
+  }
+
 }
 
 }  // namespace soil::stage::scene::gui

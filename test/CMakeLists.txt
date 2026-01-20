@@ -21,6 +21,8 @@ add_executable(${PROJECT_NAME}
         stage/scene/component/world/collision_object_component_test.cc
         stage/scene/gui/container/h_box_test.cc
         stage/scene/gui/container/v_box_test.cc
+        stage/scene/gui/container/base_test.cc
+        stage/scene/gui/container/flow_box_test.cc
         stage/scene/gui/layout/anchor_test.cc
         stage/scene/gui/rectangle_test.cc
         stage/scene/gui/root_test.cc

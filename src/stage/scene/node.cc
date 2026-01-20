@@ -214,8 +214,8 @@ Node* Node::Root() const {
 
 void Node::UpdateDirty() {
   if (IsDirtyImpact(DirtyImpact::Transform)) {
-    if (GetParent() != nullptr) {
-      transform_->UpdateTransform(GetParent()->transform_->GetMatrix());
+    if (auto parent = GetParent(); parent != nullptr) {
+      transform_->UpdateTransform(parent->transform_->GetMatrix());
     }
     ForEachComponent([this](component::Component* component) {
       if (component == transform_) {
@@ -227,17 +227,14 @@ void Node::UpdateDirty() {
       child->MarkDirtyWith(DirtyImpact::Transform);
       child->UpdateDirty();
     }
-  } else {
-    if (IsDirtyImpact(DirtyImpact::Dependents)) {
-      ForEachComponent(
-          [](component::Component* component) { component->Update(); });
-      for (auto* child : children_) {
-        child->MarkDirtyWith(DirtyImpact::Dependents);
-        child->UpdateDirty();
-      }
+  } else if (IsDirtyImpact(DirtyImpact::Dependents)) {
+    ForEachComponent(
+        [](component::Component* component) { component->Update(); });
+    for (auto* child : children_) {
+      child->MarkDirtyWith(DirtyImpact::Dependents);
+      child->UpdateDirty();
     }
   }
-
   incorporateAddedComponents();
   SetState(State::Normal);
   dirtyImpacts_ = 0;
