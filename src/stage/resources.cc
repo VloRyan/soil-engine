@@ -1,7 +1,5 @@
 #include "stage/resources.h"
 
-#include "stage/manager.h"
-
 namespace soil::stage {
 Resources::Resources(video::Manager* videoManager, sound::Manager* soundManager,
                      input::Manager* inputManager)

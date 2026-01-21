@@ -27,6 +27,9 @@ class Scene : public Node {
   virtual void Render(video::render::State& state);
   void Update() override;
 
+  virtual void Activate() {}
+  virtual void Deactivate() {}
+
  protected:
   virtual void SetStage(class Stage* stage);
 

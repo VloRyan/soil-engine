@@ -21,10 +21,10 @@ struct StageEvent : soil::event::Event {
   ~StageEvent() override = default;
 
   static StageEvent MakeActiveStageChanged(Stage* current, Stage* previous);
-  ;
 
   TriggerType Trigger{TriggerType::StageChanged};
   class Stage* Stage{nullptr};
+  class Stage* PrevStage{nullptr};
 };
 
 using StageEventHandler = soil::event::Handler<StageEvent>;

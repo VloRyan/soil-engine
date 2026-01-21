@@ -6,7 +6,9 @@ StageEvent::StageEvent(class Stage* stage, StageEvent::TriggerType trigger)
 
 StageEvent StageEvent::MakeActiveStageChanged(class Stage* current,
                                               class Stage* previous) {
-  return StageEvent(current, TriggerType::ActiveStageChanged);
+  auto event = StageEvent(current, TriggerType::ActiveStageChanged);
+  event.PrevStage = previous;
+  return event;
 }
 
 }  // namespace soil::stage::event

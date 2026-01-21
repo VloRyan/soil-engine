@@ -19,13 +19,7 @@ Manager::~Manager() {
 void Manager::SetCurrent(const std::string& name) {
   nextStage_ = GetStage(name);
   if (nextStage_ == nullptr) {
-    throw std::runtime_error("Stage with name " + name + " not registered");
-  }
-  if (!nextStage_->IsLoaded()) {
-    nextStage_->Load();
-  }
-  if (currentStage_ == nullptr) {
-    currentStage_ = nextStage_;
+    throw std::runtime_error("Stage with name " + name + " is unknown");
   }
 }
 
@@ -42,9 +36,6 @@ void Manager::SetCurrent(Stage* stage) {
     throw std::runtime_error("Stage is unknown");
   }
 #endif
-  if (!nextStage_->IsLoaded()) {
-    nextStage_->Load();
-  }
 }
 
 Stage* Manager::GetCurrent() const { return currentStage_; }
@@ -78,9 +69,10 @@ void Manager::Update() {
     nextStage_ = nullptr;
     const auto stageChangedEvent =
         event::StageEvent::MakeActiveStageChanged(currentStage_, prevStage);
-    for (auto* stage : stages_ | std::views::values) {
-      stage->Handle(stageChangedEvent);
+    if (prevStage != nullptr) {
+      prevStage->Handle(stageChangedEvent);
     }
+    currentStage_->Handle(stageChangedEvent);
   }
   if (currentStage_ == nullptr) {
     return;

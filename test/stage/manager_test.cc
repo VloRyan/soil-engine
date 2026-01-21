@@ -36,10 +36,14 @@ TEST_F(ManagerTest, SetCurrent) {
   auto otherStage = Stage();
   manager.RegisterStage("stage", &stage);
 
+  EXPECT_EQ(manager.GetCurrent(), nullptr);
+
   manager.SetCurrent("stage");
+  manager.Update();
   EXPECT_EQ(manager.GetCurrent(), &stage);
 
   EXPECT_THROW(manager.SetCurrent("stage1"), std::runtime_error);
+  manager.Update();
   EXPECT_EQ(manager.GetCurrent(), &stage);
 
   manager.RegisterStage("other", &otherStage);
@@ -86,6 +90,7 @@ TEST_F(ManagerTest, Render) {
   EXPECT_EQ(stage->Calls.Render, 0);
 
   manager.SetCurrent("stage");
+  manager.Update();
   manager.Render(state);
   EXPECT_EQ(stage->Calls.Render, 1);
 }

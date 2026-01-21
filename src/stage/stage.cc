@@ -26,14 +26,14 @@ void Stage::Update() {
       {.TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene});
   for (auto* scene : scenes_) {
     triggerHooks({
-        .Root = scene,
-        .TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene,
-    });
+                     .Root = scene,
+                     .TriggerType = hook::TriggerHook::TriggerType::BeforeUpdateScene,
+                 });
     scene->Update();
     triggerHooks({
-        .Root = scene,
-        .TriggerType = hook::TriggerHook::TriggerType::AfterUpdateScene,
-    });
+                     .Root = scene,
+                     .TriggerType = hook::TriggerHook::TriggerType::AfterUpdateScene,
+                 });
   }
   triggerHooks(
       {.TriggerType = hook::TriggerHook::TriggerType::AfterUpdateScene});
@@ -43,9 +43,9 @@ void Stage::Render(video::render::State& state) {
   triggerHooks({.TriggerType = hook::TriggerHook::TriggerType::BeforeRender});
   for (auto* scene : scenes_) {
     triggerHooks({
-        .Root = scene,
-        .TriggerType = hook::TriggerHook::TriggerType::BeforeRender,
-    });
+                     .Root = scene,
+                     .TriggerType = hook::TriggerHook::TriggerType::BeforeRender,
+                 });
     scene->Render(state);
   }
 }
@@ -58,6 +58,7 @@ void Stage::_addScene(scene::Scene* scene) {
 std::vector<scene::Scene*> Stage::GetScenes() const { return scenes_; }
 
 IManager* Stage::Manager() const { return manager_; }
+
 void Stage::AddEventHook(scene::Node* root,
                          soil::stage::hook::EventHook<event::Node>* hook) {
   auto itr = nodeEventHooks_.find(root);
@@ -67,6 +68,7 @@ void Stage::AddEventHook(scene::Node* root,
     itr->second.push_back(hook);
   }
 }
+
 void Stage::AddEventHook(soil::stage::hook::EventHook<input::Event>* hook) {
   for (auto itr = inputEventHooks_.begin(); itr != inputEventHooks_.end();
        ++itr) {
@@ -197,11 +199,24 @@ void Stage::Handle(const soil::event::EngineEvent& event) {
 }
 
 void Stage::Handle(const event::StageEvent& event) {
-  if (event.Trigger == event::StageEvent::TriggerType::ActiveStageChanged &&
-      event.Stage == this && IsLoaded()) {
-    const auto winEvent = video::event::WindowEvent(
-        GetResources().GetWindow(), video::event::WindowEvent::SizeChanged);
-    Handle(winEvent);
+  if (event.Trigger == event::StageEvent::TriggerType::ActiveStageChanged) {
+    if (event.Stage == this) {
+      if (!IsLoaded()) {
+        Load();
+      }
+      // TODO: Workaround
+      const auto winEvent = video::event::WindowEvent(
+          GetResources().GetWindow(), video::event::WindowEvent::SizeChanged);
+      Handle(winEvent);
+      // ----
+      for (auto* scene : scenes_) {
+        scene->Activate();
+      }
+    } else if (event.PrevStage == this) {
+      for (auto* scene : scenes_) {
+        scene->Deactivate();
+      }
+    }
   }
 }
 
