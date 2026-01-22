@@ -31,6 +31,9 @@ void VBox::Layout() {
                 halfSize.y - static_cast<float>(-GetOffset().y + padding_[1]),
                 Rectangle::LAYER_Z_INCREMENT);
   for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
     auto halfItemSize = glm::vec2(child->GetSize()) / glm::vec2(2.F);
     auto pos = offset + glm::vec3(0.F, -halfItemSize.y, 0.F);
     child->SetLocalPosition(

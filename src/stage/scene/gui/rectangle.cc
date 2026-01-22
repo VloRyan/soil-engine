@@ -123,8 +123,7 @@ void Rectangle::addChild(Node* node) {
     return;
   }
   Node::addChild(node);
-  auto* rect = dynamic_cast<Rectangle*>(node);
-  if (rect != nullptr) {
+  if (auto* rect = dynamic_cast<Rectangle*>(node); rect != nullptr) {
     addChildRect(rect);
   }
 }
@@ -258,6 +257,7 @@ void Rectangle::UpdateSize(const glm::ivec2& maxSize) {
     }
   }
 }
+
 void Rectangle::UpdateChildrenSize(const glm::ivec2& maxSize) {
   switch (sizeType_) {
     case Rectangle::SizeTypes::Fixed:
@@ -276,6 +276,7 @@ void Rectangle::UpdateChildrenSize(const glm::ivec2& maxSize) {
     }
   }
 }
+
 const glm::ivec4& Rectangle::GetPadding() const { return padding_; }
 
 void Rectangle::SetPadding(const glm::ivec4& padding) {
@@ -294,8 +295,9 @@ void Rectangle::SetVisible(const bool visible) {
     OnMouseOut();
   }
   visible_ = visible;
-  if (const auto* parent = GetParentRect(); parent != nullptr) {
+  if (auto* parent = GetParentRect(); parent != nullptr) {
     UpdateVisibility(parent->IsVisible());
+    parent->SetDirty(Node::DirtyImpact::Dependents);
   } else {
     UpdateVisibility(visible);
   }
@@ -407,6 +409,7 @@ void Rectangle::Layout() {
 }
 
 Rectangle::SizeTypes Rectangle::GetSizeType() const { return sizeType_; }
+
 void Rectangle::SetSizeType(Rectangle::SizeTypes sizeType) {
   sizeType_ = sizeType;
 }
@@ -439,6 +442,7 @@ video::render::Rect Rectangle::CalculateChildScissorRect() const {
 glm::ivec2 Rectangle::Paddings() const {
   return {padding_[0] + padding_[2], padding_[1] + padding_[3]};
 }
+
 void Rectangle::UpdateVisibility(bool parentVisible) {
   if (const auto visibleEffective = visible_ && parentVisible;
       visibleEffective_ != visibleEffective) {
@@ -449,6 +453,7 @@ void Rectangle::UpdateVisibility(bool parentVisible) {
     SetDirty(DirtyImpact::Dependents);
   }
 }
+
 glm::ivec2 Rectangle::CalculateMaxChildrenSize() const {
   switch (sizeType_) {
     case SizeTypes::Fixed:
