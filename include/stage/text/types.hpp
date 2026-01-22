@@ -1,5 +1,5 @@
-#ifndef SOIL_STAGE_TEXT_TYPES_H
-#define SOIL_STAGE_TEXT_TYPES_H
+#ifndef SOIL_STAGE_TEXT_TYPES_HPP
+#define SOIL_STAGE_TEXT_TYPES_HPP
 #include <unordered_map>
 
 #include "file/font.h"
@@ -17,8 +17,9 @@ struct Symbol {
 
   bool operator==(const Symbol& rhs) const {
     return Name == rhs.Name && Texture == rhs.Texture &&
-           TileIndex == rhs.TileIndex;
+        TileIndex == rhs.TileIndex;
   }
+
   bool operator!=(const Symbol& rhs) const { return !(rhs == *this); }
 };
 
@@ -27,30 +28,31 @@ struct Glyph {
     Character = 0,
     Symbol,
   };
+
   [[nodiscard]] int AdvanceX() const {
     switch (Type) {
-      case Type::Character:
-        return Character->AdvanceX;
-      case Type::Symbol:
-        return Symbol->AdvanceX;
+      case Type::Character:return Character->AdvanceX;
+      case Type::Symbol:return Symbol->AdvanceX;
     }
   }
+
   [[nodiscard]] int SizeX() const {
     switch (Type) {
-      case Type::Character:
-        return Character->Size.x;
-      case Type::Symbol:
-        return Symbol->SizeX;
+      case Type::Character:return Character->Size.x;
+      case Type::Symbol:return Symbol->SizeX;
     }
   }
+
   Glyph::Type Type{Glyph::Type::Character};
   const file::Font::Character* Character{nullptr};
   const text::Symbol* Symbol{nullptr};
   const std::optional<glm::vec4> Color{};
+
   bool operator==(const Glyph& rhs) const {
     return Type == rhs.Type && Character == rhs.Character &&
-           Symbol == rhs.Symbol;
+        Symbol == rhs.Symbol;
   }
+
   bool operator!=(const Glyph& rhs) const { return !(rhs == *this); }
 };
 
@@ -73,9 +75,11 @@ struct Word {
 #endif
     Length += glyph.AdvanceX();
   }
+
   bool operator==(const Word& rhs) const {
     return Glyphs == rhs.Glyphs && Text == rhs.Text && Length == rhs.Length;
   }
+
   bool operator!=(const Word& rhs) const { return !(rhs == *this); }
 };
 
@@ -85,6 +89,7 @@ struct Line {
   std::string Text{};
 #endif
   int Length{0};
+
   void Append(const Word& word) {
     Words.push_back(word);
 #ifdef DEBUG
@@ -92,10 +97,11 @@ struct Line {
 #endif
     Length += word.Length;
   }
+
   void Close() {
     if (!Words.empty() && !Words.back().Glyphs.empty()) {
       Length -= Words.back().Glyphs.back().AdvanceX() -
-                Words.back().Glyphs.back().SizeX();
+          Words.back().Glyphs.back().SizeX();
     }
   }
 };

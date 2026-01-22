@@ -99,13 +99,13 @@ class AbstractText : public DrawableComponent,
       const video::texture::Texture* symbolTexture);
 
  protected:
-  struct SymbolPosition {
-    const stage::text::Glyph& SymbolGlyph;
-    glm::vec3 Position{};
+  struct GlyphData {
+    const stage::text::Glyph* Glyph;
+    glm::vec3 Position;
+    glm::vec4 Color;
   };
-  float DrawCharacter(const glm::vec3& at,
-                      const file::Font::Character& character,
-                      const glm::vec4& color);
+  void DrawGlyph(GlyphData& data, const glm::vec3& offset);
+
   const PrefabData& Data();
 
   PrefabData* data_;
@@ -114,6 +114,7 @@ class AbstractText : public DrawableComponent,
   static std::unordered_map<std::string, PrefabData> PREFABS;
 
   void updateText();
+  void parseText();
 
   glm::vec2 size_;
 
@@ -130,6 +131,9 @@ class AbstractText : public DrawableComponent,
 
   std::vector<stage::text::Line> lines_;
   video::render::StateIdentifier stateId_;
+
+  std::vector<GlyphData> characterGlyphs_;
+  std::vector<GlyphData> symbolGlyphs_;
 };
 }  // namespace soil::stage::scene::component::text
 

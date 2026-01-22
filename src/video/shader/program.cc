@@ -97,22 +97,7 @@ void Program::Create() {
 }
 
 uint Program::GetId() const { return id_; }
-/*
-void Shader::Use() {
-  if (id_ == 0) {
-    Create();
-  }
-  if (currentShaderId_ != GetId()) {
-    glUseProgram(GetId());
-    currentShaderId_ = GetId();
-  }
-}
 
-void Shader::Leave() {
-  glUseProgram(0);
-  currentShaderId_ = 0;
-}
-*/
 bool Program::UniformLocationExists(const std::string& name) {
   if (const UniformLocation location = GetUniformLocation(name);
       location == UNIFORM_NOT_FOUND) {
@@ -164,10 +149,6 @@ void Program::DrawArrays(const uint mode, const int count,
 }
 
 void Program::Prepare(render::State& state) {
-  /*if (id_ == 0) {
-    Create();
-  }
-  state.SetShader(this);*/
 }
 
 void Program::DrawElementsInstanced(const uint mode, const uint indexCount,
