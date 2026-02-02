@@ -23,7 +23,9 @@ Node::Node(const Type type)
 }
 
 Node::~Node() {
-  SetParent(nullptr);
+  if (parent_ != nullptr) {
+    parent_->RemoveChild(this);
+  }
   for (auto* child : children_) {
     child->parent_ = nullptr;  // prevent child events
     delete child;
@@ -39,27 +41,26 @@ Node::~Node() {
 }
 
 void Node::SetParent(Node* parent) {
-  if (parent_ == parent) {
-    return;
-  }
-  if (parent_ != nullptr) {
-    parent_->RemoveChild(this);
-  }
-  if (parent != nullptr) {
-    parent->addChild(this);
-  }
-  SetDirty(DirtyImpact::Dependents);
+  updateParent(parent);
 }
 
-void Node::updateParent(Node* parent) {
+void Node::updateParent(Node* parent, bool signalParent) {
   if (parent_ == parent) {
     return;
   }
   auto* prevStage = Stage();
-  parent_ = parent;
-  if (parent_ != nullptr) {
-    transform_->UpdateTransform(parent_->transform_->GetMatrix());
+  if (parent_ != nullptr && signalParent) {
+    parent_->RemoveChild(this);
   }
+  auto prevParent = parent_;
+  if (parent != nullptr) {
+    if (signalParent) {
+      parent->addChild(this);
+    }
+    transform_->UpdateTransform(parent->transform_->GetMatrix());
+  }
+  parent_ = parent;
+  OnParentChanged(parent_, prevParent);
   auto currentStage = Stage();
   if (prevStage != currentStage) {
     OnStageChanged(currentStage, prevStage);
@@ -75,6 +76,10 @@ void Node::OnStageChanged(class Stage* stage, class Stage* prevStage) {
   });
 }
 
+void Node::AddChildNode(Node* node) {
+  addChild(node);
+}
+
 void Node::addChild(Node* node) {
   if (node->GetParent() == this) {
     return;
@@ -82,33 +87,31 @@ void Node::addChild(Node* node) {
   if (node->GetParent() != nullptr) {
     throw std::runtime_error("already child");
   }
-  node->updateParent(this);
+  node->updateParent(this, false);
   children_.push_back(node);
+  OnChildAdded(node);
   fire(event::Node::MakeChildAddedEvent(this, node));
 }
 
 void Node::RemoveChild(Node* node) {
-  for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
-    if (*itr != node) {
-      continue;
-    }
+  auto removed = removeChild(node);
+  if (removed) {
+    node->updateParent(nullptr, false);
+    OnChildRemoved(node);
     fire(event::Node::MakeChildRemovedEvent(this, node));
-    node->parent_ = nullptr;
-    node->OnStageChanged(nullptr, Stage());
-    children_.erase(itr);
-    return;
+  } else {
+    throw std::runtime_error("unknown child");
   }
-  throw std::runtime_error("unknown child");
 }
 
-void Node::removeChild(Node* node) {
+bool Node::removeChild(Node* node) {
   for (auto itr = children_.begin(); itr != children_.end(); ++itr) {
     if (*itr == node) {
       children_.erase(itr);
-      return;
+      return true;
     }
   }
-  throw std::runtime_error("unknown child");
+  return false;
 }
 
 Node::Type Node::GetType() const { return type_; }
@@ -120,6 +123,7 @@ void Node::SetPosition(const glm::vec3& pos) { transform_->SetPosition(pos); }
 glm::vec3 Node::GetLocalPosition() const {
   return transform_->GetLocalPosition();
 }
+
 void Node::SetLocalPosition(const glm::vec3& pos) {
   transform_->SetLocalPosition(pos);
 }
@@ -283,6 +287,7 @@ void Node::SetDirty(DirtyImpact cause) {
   dirtyImpacts_[static_cast<std::int8_t>(cause)] = true;
   SetState(State::Dirty);
 }
+
 void Node::MarkDirtyWith(DirtyImpact cause) {
   dirtyImpacts_[static_cast<std::int8_t>(cause)] = true;
   state_ = State::Dirty;
@@ -474,7 +479,7 @@ void Node::ForEachChild(const Node* node,
   constexpr auto defaultBufferSize = 8;
   auto bufferSize =
       std::max(defaultBufferSize, static_cast<int>(node->GetChildren().size()));
-  auto buffer = new Node*[bufferSize];
+  auto buffer = new Node* [bufferSize];
   std::memcpy(buffer, &node->GetChildren().front(),
               node->GetChildren().size() * sizeof(Node*));
   auto cursor = 0;
@@ -502,7 +507,7 @@ void Node::ForEachChild(const Node* node,
       }
       if (freeCapacity < elemsToPush) {
         bufferSize += static_cast<int>(elemsToPush);
-        const auto newBuffer = new Node*[bufferSize];
+        const auto newBuffer = new Node* [bufferSize];
         memcpy(newBuffer, buffer, dataEnd * sizeof(Node*));
         delete[] buffer;
         buffer = newBuffer;
@@ -531,4 +536,5 @@ Stage* Node::Stage() const {
   }
   return parent_->Stage();
 }
+
 }  // namespace soil::stage::scene

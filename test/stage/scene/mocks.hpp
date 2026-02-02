@@ -18,6 +18,7 @@ class NodeMock : public Node {
   std::function<void()> UpdateFunc = nullptr;
   hook::EventHook<stage::event::Node>* NodeEventHook = nullptr;
   class Stage* StageOverride = nullptr;
+
   void Reset() {
     Calls = Calls_t{};
     AddedChildren.clear();
@@ -40,13 +41,11 @@ class NodeMock : public Node {
     Node::UpdateDirty();
   }
 
-  void addChild(Node* node) override {
-    Node::addChild(node);
+  void OnChildAdded(Node* node) override {
     AddedChildren.push_back(node);
   }
 
-  void RemoveChild(Node* node) override {
-    Node::RemoveChild(node);
+  void OnChildRemoved(Node* node) override {
     RemovedChildren.push_back(node);
   }
 
@@ -59,7 +58,7 @@ class NodeMock : public Node {
                        const bool value = true) override {
     Node::SetReceiverType(type, value);
   }
-  
+
   class Stage* Stage() const override {
     if (StageOverride != nullptr) {
       return StageOverride;
@@ -80,6 +79,7 @@ class NodeMock : public Node {
     int Update{0};
     int UpdateDirty{0};
     int HandleComponentEvent{0};
+
     void Reset() {
       Update = 0;
       UpdateDirty = 0;
@@ -107,6 +107,7 @@ class SceneMock : public Scene {
     HandleComponentEventCalledCount++;
     Scene::Handle(event);
   }
+
   void SetStage(class Stage* stage) override { Scene::SetStage(stage); }
 };
 }  // namespace soil::stage::scene

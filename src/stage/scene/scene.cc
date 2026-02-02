@@ -9,6 +9,7 @@
 
 namespace soil::stage::scene {
 Scene::Scene() : Scene(nullptr) {}
+
 Scene::Scene(const video::render::Algorythm* algorythm)
     : Node(Type::Scene), stage_(nullptr), renderAlgorythm_(algorythm) {
   updateGraphComponent_ = AddComponent(new component::UpdateGraphComponent());

@@ -78,7 +78,7 @@ class Node : public event::ComponentEventHandler,
 
   void ForEachComponent(const std::function<void(component::Component*)>& func,
                         component::Component::Type ofType =
-                            component::Component::Type::Any) const;
+                        component::Component::Type::Any) const;
 
   void GetComponents(
       std::vector<component::Component*>& comps,
@@ -87,7 +87,7 @@ class Node : public event::ComponentEventHandler,
   component::Component* GetFirstComponent(
       component::Component::Type type = component::Component::Type::Any) const;
 
-  template <class T>
+  template<class T>
   T AddComponent(T comp) {
     using type = std::remove_pointer_t<T>;
     static_assert(std::is_base_of_v<component::Component, type>,
@@ -123,12 +123,12 @@ class Node : public event::ComponentEventHandler,
 
   // void SetTransform(const glm::mat4& transform) override;
 
-  template <class T>
+  template<class T>
   T AddChild(T node) {
     using type = std::remove_pointer_t<T>;
     static_assert(std::is_base_of_v<Node, type>,
                   "node must be derived from scene::Node");
-    addChild(node);
+    AddChildNode(node);
     return node;
   }
 
@@ -142,15 +142,10 @@ class Node : public event::ComponentEventHandler,
   [[nodiscard]] virtual class Stage* Stage() const;
 
  protected:
+  virtual void AddChildNode(Node* node);
   void MarkDirtyWith(DirtyImpact cause);
 
   virtual void UpdateDirty();
-
-  virtual void addChild(Node* node);
-  virtual void removeChild(Node* node);
-  virtual void updateParent(Node* parent);
-
-  void addComponent(component::Component* comp);
 
   static bool IsDirtyImpact(const std::bitset<4>& dirtyImpacts,
                             DirtyImpact impact);
@@ -159,14 +154,23 @@ class Node : public event::ComponentEventHandler,
 
   [[nodiscard]] virtual std::bitset<4> GetDirtyImpacts() const;
 
+  virtual void OnParentChanged(Node* parent, Node* prevParent) {};
+
+  virtual void OnChildAdded(Node* child) {};
+
+  virtual void OnChildRemoved(Node* child) {};
   virtual void OnStageChanged(class Stage* stage, class Stage* prevStage);
 
   void fire(const event::Node& event) const override;
 
   component::TransformComponent* transform_;
   void incorporateAddedComponents();
-
  private:
+  void updateParent(Node* parent, bool signalParent = true);
+  void addChild(Node* node);
+  bool removeChild(Node* node);
+  void addComponent(component::Component* comp);
+
   Type type_;
   Node* parent_;
   State state_;
