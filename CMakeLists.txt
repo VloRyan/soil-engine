@@ -181,6 +181,7 @@ target_sources(
         include/stage/scene/gui/container/flow_box.h
         include/stage/scene/gui/container/h_box.h
         include/stage/scene/gui/container/v_box.h
+        include/stage/scene/gui/layout/alignment.hpp
         include/stage/scene/gui/layout/anchor.h
         include/stage/scene/gui/layout/sizer.h
         include/stage/scene/gui/rectangle.h

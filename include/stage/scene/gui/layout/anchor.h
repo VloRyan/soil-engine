@@ -1,21 +1,11 @@
 #ifndef SOIL_ENGINE_STAGE_SCENE_GUI_LAYOUT_ANCHOR_H
 #define SOIL_ENGINE_STAGE_SCENE_GUI_LAYOUT_ANCHOR_H
 #include <glm/glm.hpp>
+#include "alignment.hpp"
 
 namespace soil::stage::scene::gui::layout {
 class Anchor {
  public:
-  enum class HorizontalAlignments { None = 0, Left, Center, Right };
-  enum class VerticalAlignments { None = 0, Top, Center, Bottom };
-  struct Alignment {
-    HorizontalAlignments Horizontal{HorizontalAlignments::None};
-    VerticalAlignments Vertical{VerticalAlignments::None};
-    bool operator==(const Alignment& rhs) const {
-      return Horizontal == rhs.Horizontal && Vertical == rhs.Vertical;
-    }
-    bool operator!=(const Alignment& rhs) const { return !(rhs == *this); }
-  };
-
   Anchor() = default;
   Anchor(const Alignment& alignment);
   virtual ~Anchor() = default;
@@ -26,6 +16,9 @@ class Anchor {
   [[nodiscard]] const Alignment& GetAlignment() const;
   void SetAlignment(const struct Alignment& alignment);
 
+  [[nodiscard]]static glm::vec3 Align(const Alignment& alignment, const glm::vec3& pos, const glm::ivec2& size,
+                                      const glm::ivec2& parentSize,
+                                      const glm::ivec4& padding);
  private:
   Alignment alignment_;
 };

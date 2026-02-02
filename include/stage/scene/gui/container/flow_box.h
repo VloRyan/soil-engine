@@ -1,5 +1,5 @@
-#ifndef SOIL_STAGE_SCENE_GUI_CONTAINER_FLOW_BOX_H
-#define SOIL_STAGE_SCENE_GUI_CONTAINER_FLOW_BOX_H
+#ifndef SOIL_ENGINE_STAGE_SCENE_GUI_CONTAINER_FLOW_BOX_H
+#define SOIL_ENGINE_STAGE_SCENE_GUI_CONTAINER_FLOW_BOX_H
 #include "base.h"
 namespace soil::stage::scene::gui::container {
 class FlowBox : public Base {
@@ -10,6 +10,7 @@ class FlowBox : public Base {
  protected:
   void Layout() override;
   glm::ivec2 CalculateChildrenSize(const glm::ivec2& maxSize) override;
+  glm::ivec2 CalculateAlignedChildrenSize(const glm::ivec2& maxSize) const override;
 };
 }  // namespace soil::stage::scene::gui::container
 #endif

@@ -1,5 +1,5 @@
-#ifndef SOIL_STAGE_SCENE_GUI_CONTAINER_BASE_H
-#define SOIL_STAGE_SCENE_GUI_CONTAINER_BASE_H
+#ifndef SOIL_ENGINE_STAGE_SCENE_GUI_CONTAINER_BASE_H
+#define SOIL_ENGINE_STAGE_SCENE_GUI_CONTAINER_BASE_H
 
 #include "stage/scene/gui/rectangle.h"
 
@@ -19,6 +19,9 @@ class Base : public Rectangle {
   const glm::ivec2& GetScrollStep() const;
   void SetScrollStep(const glm::ivec2& scrollStep);
 
+  [[nodiscard]] virtual const layout::Alignment& GetItemAlignment() const;
+  virtual void SetItemAlignment(layout::Alignment alignment);
+
  protected:
   explicit Base(int margin = 0, glm::ivec4 padding = glm::ivec4(0),
                 SizeTypes sizeType = SizeTypes::GrowWithContent);
@@ -29,6 +32,7 @@ class Base : public Rectangle {
   int margin_;
   glm::ivec2 offset_;
   glm::ivec2 scrollStep_;
+  layout::Alignment itemAlignment_;
 };
 }  // namespace soil::stage::scene::gui::container
 

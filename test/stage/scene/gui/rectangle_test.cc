@@ -13,10 +13,15 @@ class RectangleTest : public testing::Test {
   class RectSpy : public Rectangle {
    public:
     RectSpy(const glm::ivec2 size = glm::ivec2(0)) : Rectangle(size) {}
+
     const std::vector<Rectangle*>& ChildRects() const { return childRects_; }
+
     void Layout() override { Rectangle::Layout(); };
+
     void UpdateScissor(const video::render::Rect& parentRect) override { Rectangle::UpdateScissor(parentRect); };
+
     video::render::Rect CalculateChildScissorRect() const override { return Rectangle::CalculateChildScissorRect(); }
+
     void UpdateSize(const glm::ivec2& maxSize) override { Rectangle::UpdateSize(maxSize); }
   };
 };
@@ -178,10 +183,8 @@ TEST_F(RectangleTest, Layout) {
   const auto childRect = rect.AddChild(new Rectangle());
   const auto childRect2 = rect.AddChild(new Rectangle());
 
-  EXPECT_VEC_EQ(childRect->GetPosition(),
-                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
-  EXPECT_VEC_EQ(childRect2->GetPosition(),
-                glm::vec3(0.F, 0.F, Rectangle::LAYER_Z_INCREMENT));
+  EXPECT_VEC_EQ(childRect->GetPosition(), glm::vec3(0.F));
+  EXPECT_VEC_EQ(childRect2->GetPosition(), glm::vec3(0.F));
 
   rect.Layout();
   EXPECT_VEC_EQ(childRect->GetPosition(),

@@ -34,7 +34,7 @@ class Rectangle : public Node {
   [[nodiscard]] virtual const glm::vec2& GetRelativeSize() const;
   virtual void SetRelativeSize(const glm::vec2& relativeSize);
 
-  void SetAnchor(const layout::Anchor::Alignment& alignment);
+  void SetAnchor(const layout::Alignment& alignment);
 
   [[nodiscard]] virtual float GetAspectRatio() const;
   virtual void SetAspectRatio(float aspectRatio);
@@ -65,8 +65,6 @@ class Rectangle : public Node {
   [[nodiscard]] virtual const glm::ivec4& GetPadding() const;
   virtual void SetPadding(const glm::ivec4& padding);
 
-  void RemoveChild(Node* node) override;
-
   class Root* GuiRoot() const;
 
   virtual void FindChildrenAt(std::vector<Rectangle*>& result, glm::ivec2 pos,
@@ -78,14 +76,15 @@ class Rectangle : public Node {
   glm::ivec2 Paddings() const;
 
  protected:
-  void addChild(Node* node) override;
 
   virtual void addChildRect(Rectangle* rect);
-  virtual void removeChildRect(const Rectangle* rect);
+  //virtual void removeChildRect(const Rectangle* rect);
 
   void UpdateDirty() override;
   virtual void Layout();
+
   virtual void BeforeNodeUpdate() {};
+
   virtual void AfterNodeUpdate() {};
 
   virtual void UpdateScissor(const video::render::Rect& parentRect);
@@ -102,14 +101,18 @@ class Rectangle : public Node {
                              input::Event::StateType state);
 
   virtual void OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset);
-  void removeChild(Node* node) override;
-
+  void OnChildRemoved(Node* node) override;
+  void OnChildAdded(Node* node) override;
   virtual glm::ivec2 CalculateChildrenSize(const glm::ivec2& maxSize);
   virtual video::render::Rect CalculateChildScissorRect() const;
 
   glm::ivec2 CalculateMaxChildrenSize() const;
 
+  virtual glm::ivec2 CalculateAlignedChildrenSize(const glm::ivec2& maxSize) const;
+  virtual void updateChildrenSize(const glm::ivec2& maxSize, std::vector<Rectangle*>& children);
+
   std::vector<Rectangle*> childRects_;
+  std::vector<Rectangle*> addedRects_;
   bool isMouseOver_;
 
   glm::ivec2 size_;

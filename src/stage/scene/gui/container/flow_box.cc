@@ -57,4 +57,26 @@ glm::ivec2 FlowBox::CalculateChildrenSize(const glm::ivec2& maxSize) {
   return size;
 }
 
+glm::ivec2 FlowBox::CalculateAlignedChildrenSize(const glm::ivec2& maxSize) const {
+  glm::ivec2 size(0);
+  if (childRects_.empty()) {
+    return size;
+  }
+  auto maxChildSize = glm::clamp(maxSize, minSize_, maxSize_) - Paddings();
+  auto rowSize = glm::ivec2(0);
+  for (auto* child : childRects_) {
+    auto childSize = child->GetSize();
+    if (rowSize.x + childSize.x + (rowSize.x == 0 ? 0 : margin_) >
+        maxChildSize.x) {
+      size.x = std::max(size.x, rowSize.x);
+      size.y += rowSize.y + (size.y == 0 ? 0 : margin_);
+      rowSize = glm::ivec2(0);
+    }
+    rowSize.x += childSize.x + (rowSize.x == 0 ? 0 : margin_);
+    rowSize.y = std::max(rowSize.y, childSize.y);
+  }
+  size.x = std::max(size.x, rowSize.x);
+  size.y += rowSize.y + (size.y == 0 ? 0 : margin_);
+  return size;
+}
 }  // namespace soil::stage::scene::gui::container

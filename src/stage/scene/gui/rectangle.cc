@@ -104,7 +104,7 @@ void Rectangle::OnMouseWheel(const glm::ivec2& pos, const glm::vec2 offset) {
   }
 }
 
-void Rectangle::SetAnchor(const layout::Anchor::Alignment& alignment) {
+void Rectangle::SetAnchor(const layout::Alignment& alignment) {
   anchor_.SetAlignment(alignment);
   MarkDirtyWith(DirtyImpact::Dependents);
 }
@@ -118,48 +118,42 @@ void Rectangle::SetAspectRatio(float aspectRatio) {
 
 bool Rectangle::IsMouseOver() const { return isMouseOver_; }
 
-void Rectangle::addChild(Node* node) {
-  if (node->GetParent() == this) {
-    return;
+void Rectangle::addChildRect(Rectangle* rect) {
+  childRects_.push_back(rect);
+  addedRects_.push_back(rect);
+  if (auto* parent = GetParentRect(); parent != nullptr) {
+    while (parent->GetParentRect() != nullptr) {
+      parent = parent->GetParentRect();
+    }
+    parent->SetDirty(Node::DirtyImpact::Dependents);
+  } else {
+    SetDirty(Node::DirtyImpact::Dependents);
   }
-  Node::addChild(node);
+}
+
+void Rectangle::OnChildAdded(Node* node) {
   if (auto* rect = dynamic_cast<Rectangle*>(node); rect != nullptr) {
     addChildRect(rect);
   }
 }
 
-void Rectangle::addChildRect(Rectangle* rect) {
-  auto posXY = glm::vec2(rect->GetLocalPosition());
-  rect->SetLocalPosition(glm::vec3(posXY, LAYER_Z_INCREMENT));
-  childRects_.push_back(rect);
-  SetDirty(DirtyImpact::Dependents);
-}
-
-void Rectangle::removeChild(Node* node) {
-  Node::removeChild(node);
-  auto* rect = dynamic_cast<Rectangle*>(node);
+void Rectangle::OnChildRemoved(Node* node) {
+  /*auto* rect = dynamic_cast<Rectangle*>(node);
   if (rect != nullptr) {
     removeChildRect(rect);
-  }
-}
-
-void Rectangle::removeChildRect(const Rectangle* rect) {
-  for (auto itr = childRects_.begin(); itr != childRects_.end(); ++itr) {
-    if (*itr == rect) {
-      childRects_.erase(itr);
-      return;
-    }
-  }
-}
-
-void Rectangle::RemoveChild(Node* node) {
+  }*/
   for (auto itr = childRects_.begin(); itr != childRects_.end(); ++itr) {
     if (*itr == node) {
       childRects_.erase(itr);
       break;
     }
   }
-  Node::RemoveChild(node);
+  for (auto itr = addedRects_.begin(); itr != addedRects_.end(); ++itr) {
+    if (*itr == node) {
+      addedRects_.erase(itr);
+      break;
+    }
+  }
 }
 
 void Rectangle::UpdateDirty() {
@@ -173,9 +167,13 @@ void Rectangle::UpdateDirty() {
       ApplyAnchors();
       UpdateScissor(parent->CalculateChildScissorRect());
     }
+  } else {
+    //UpdateChildrenSize(CalculateSize(GetSize()));
+    childrenSize_ = CalculateAlignedChildrenSize(GetSize() - Paddings());
   }
   if (visibleEffective_) {
     Layout();
+    addedRects_.clear();
   }
   BeforeNodeUpdate();
   Node::UpdateDirty();
@@ -211,6 +209,21 @@ glm::ivec2 Rectangle::CalculateSize(const glm::ivec2& maxSize) {
     case Rectangle::SizeTypes::Fixed:
       return glm::clamp(size_, minSize_, maxSize_);
     case Rectangle::SizeTypes::Relative: {
+      /*auto ownMaxSize = glm::max(minSize_, maxSize);//glm::min(maxSize_, maxSize);
+      for (auto i = 0; i < 2; i++) {
+        if (relativeSize_[i] > 0.F) {
+          ownMaxSize[i] = static_cast<int>(std::min(static_cast<float>(maxSize[i]) * relativeSize_[i],
+                                                    static_cast<float>(maxSize_[i])));
+        }
+        if (aspectRatio_ != 0.F) {
+          if (relativeSize_.x > 0.F && relativeSize_.y <= 0.F) {
+            ownMaxSize.y = static_cast<int>(static_cast<float>(ownMaxSize.x) / aspectRatio_);
+          }
+          if (relativeSize_.y > 0.F && relativeSize_.x <= 0.F) {
+            ownMaxSize.x = static_cast<int>(static_cast<float>(ownMaxSize.y) * aspectRatio_);
+          }
+        }
+      }*/
       auto ownMaxSize = glm::min(maxSize_, maxSize);
       auto relativeMaxSize = layout::Sizer::CalculateRelativeSize(
           GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
@@ -228,34 +241,41 @@ glm::ivec2 Rectangle::CalculateSize(const glm::ivec2& maxSize) {
 }
 
 void Rectangle::UpdateSize(const glm::ivec2& maxSize) {
-  auto prevSize = GetSize();
-  UpdateChildrenSize(maxSize);
+  //auto prevSize = GetSize();
+  //UpdateChildrenSize(maxSize);
+  // Update children size
+  auto& childrenToUpdate = childRects_;
+  updateChildrenSize(maxSize, childrenToUpdate);
   SetSize(CalculateSize(maxSize));
-  if (prevSize != GetSize()) {
-    auto maxChildSize = glm::ivec2(0);
-    switch (sizeType_) {
-      case Rectangle::SizeTypes::Fixed:
-        maxChildSize = size_;
-        break;
-      case Rectangle::SizeTypes::Relative: {
-        auto ownMaxSize = glm::min(maxSize_, maxSize);
-        maxChildSize = layout::Sizer::CalculateRelativeSize(
-            GetRelativeSize(), GetAspectRatio(), ownMaxSize, ownMaxSize);
-        break;
-      }
-      case Rectangle::SizeTypes::GrowWithContent: {
-        maxChildSize = maxSize;
-        break;
-      }
+  // TODO: Always update all children?
+
+
+}
+
+void Rectangle::updateChildrenSize(const glm::ivec2& maxSize, std::vector<Rectangle*>& children) {
+  auto maxChildSize = glm::ivec2(0);
+  switch (sizeType_) {
+    case Rectangle::SizeTypes::Fixed:
+      maxChildSize = size_;
+      break;
+    case Rectangle::SizeTypes::Relative: {
+      maxChildSize = glm::min(maxSize_, layout::Sizer::CalculateRelativeSize(
+          GetRelativeSize(), GetAspectRatio(), maxSize, maxSize));
+      break;
     }
-    maxChildSize = glm::min(maxChildSize, maxSize_) - Paddings();
-    for (auto* child : childRects_) {
-      if (!child->IsVisible()) {
-        continue;
-      }
-      child->UpdateSize(maxChildSize);
+    case Rectangle::SizeTypes::GrowWithContent: {
+      maxChildSize = maxSize;
+      break;
     }
   }
+  maxChildSize = glm::min(maxChildSize, maxSize_) - Paddings();
+  for (auto* child : children) {
+    if (!child->IsVisible()) {
+      continue;
+    }
+    child->UpdateSize(maxChildSize);
+  }
+  childrenSize_ = CalculateAlignedChildrenSize(maxChildSize);
 }
 
 void Rectangle::UpdateChildrenSize(const glm::ivec2& maxSize) {
@@ -297,7 +317,6 @@ void Rectangle::SetVisible(const bool visible) {
   visible_ = visible;
   if (auto* parent = GetParentRect(); parent != nullptr) {
     UpdateVisibility(parent->IsVisible());
-    parent->SetDirty(Node::DirtyImpact::Dependents);
   } else {
     UpdateVisibility(visible);
   }
@@ -403,8 +422,7 @@ void Rectangle::Layout() {
       continue;
     }
     auto localPos = child->GetLocalPosition();
-    child->SetLocalPosition(
-        glm::vec3(localPos.x, localPos.y, LAYER_Z_INCREMENT));
+    child->SetLocalPosition(glm::vec3(localPos.x, localPos.y, LAYER_Z_INCREMENT));
   }
 }
 
@@ -412,6 +430,20 @@ Rectangle::SizeTypes Rectangle::GetSizeType() const { return sizeType_; }
 
 void Rectangle::SetSizeType(Rectangle::SizeTypes sizeType) {
   sizeType_ = sizeType;
+}
+
+glm::ivec2 Rectangle::CalculateAlignedChildrenSize(const glm::ivec2& maxSize) const {
+  auto size = minSize_;
+  if (childRects_.empty()) {
+    return size;
+  }
+  for (auto* child : childRects_) {
+    if (!child->IsVisible()) {
+      continue;
+    }
+    size = glm::max(child->GetSize(), size);
+  }
+  return size;
 }
 
 glm::ivec2 Rectangle::CalculateChildrenSize(const glm::ivec2& maxSize) {
@@ -444,13 +476,21 @@ glm::ivec2 Rectangle::Paddings() const {
 }
 
 void Rectangle::UpdateVisibility(bool parentVisible) {
-  if (const auto visibleEffective = visible_ && parentVisible;
-      visibleEffective_ != visibleEffective) {
-    visibleEffective_ = visibleEffective;
-    for (auto* child : childRects_) {
-      child->UpdateVisibility(visibleEffective_);
+  const auto visibleEffective = visible_ && parentVisible;
+  if (visibleEffective_ == visibleEffective) {
+    return;
+  }
+  visibleEffective_ = visibleEffective;
+  for (auto* child : childRects_) {
+    child->UpdateVisibility(visibleEffective_);
+  }
+  if (auto* parent = GetParentRect(); parent != nullptr) {
+    while (parent->GetParentRect() != nullptr) {
+      parent = parent->GetParentRect();
     }
-    SetDirty(DirtyImpact::Dependents);
+    parent->SetDirty(Node::DirtyImpact::Dependents);
+  } else {
+    SetDirty(Node::DirtyImpact::Dependents);
   }
 }
 
@@ -465,7 +505,7 @@ glm::ivec2 Rectangle::CalculateMaxChildrenSize() const {
       } else {
         parentSize = maxSize_ - Paddings();
       }
-      auto childSize = glm::min(GetSize(), maxSize_);
+      auto childSize = glm::min(GetSize(), maxSize_ - Paddings());
       if (aspectRatio_ == 0.F) {
         if (relativeSize_.x == 0.F) {
           childSize.x = std::min(parentSize.x, maxSize_.x - Paddings().x);

@@ -52,6 +52,7 @@ void AbstractText::SetText(const std::string& text) {
   }
   text_ = text;
   updateText();
+
 }
 
 std::string AbstractText::GetText() const { return text_; }
@@ -78,6 +79,9 @@ void AbstractText::updateText() {
     }
   }
   parseText();
+  if (auto* parent = GetParent();parent != nullptr) {
+    parent->SetDirty(Node::DirtyImpact::Components);
+  }
 }
 
 glm::vec2 AbstractText::GetSize() const { return size_; }
@@ -123,6 +127,7 @@ void AbstractText::SetColor(const glm::vec4 color) {
     return;
   }
   color_ = color;
+  updateText();
 }
 
 glm::vec3 AbstractText::GetBorderColor() const { return borderColor_; }
@@ -132,6 +137,7 @@ void AbstractText::SetBorderColor(const glm::vec3 color) {
     return;
   }
   borderColor_ = color;
+  updateText();
 }
 
 float AbstractText::GetCharacterSize() const { return characterSize_; }
@@ -160,7 +166,7 @@ void AbstractText::Draw(video::render::State& state) {
   data_->CharacterShader->Prepare(state);
   SetupText(state, parent);
 
-  const auto parentPos = parent != nullptr ? parent->GetPosition() : glm::vec3(0);
+  const auto parentPos = parent != nullptr ? parent->GetPosition() : glm::vec3(0.F);
   for (auto& data : characterGlyphs_) {
     DrawGlyph(data, parentPos);
   }
@@ -178,13 +184,13 @@ void AbstractText::DrawGlyph(GlyphData& data, const glm::vec3& offset) {
   switch (data.Glyph->Type) {
     case stage::text::Glyph::Type::Character:
       SetupCharacter(*data.Glyph->Character,
-                     data.Position + offset,
+                     data.Position + GetPositionOffset() + offset,
                      data.Color,
                      data_->CharacterShader);
       break;
     case stage::text::Glyph::Type::Symbol:
       SetupSymbol(*data.Glyph->Symbol,
-                  data.Position + offset,
+                  data.Position + GetPositionOffset() + offset,
                   data.Color,
                   data_->SymbolShader);
     default:;
@@ -225,9 +231,9 @@ std::unordered_map<std::string, stage::text::Symbol> AbstractText::MakeSymbolMap
 
 void AbstractText::parseText() {
 
-  glm::vec2 cursorPosition;
+  auto cursorPosition = glm::vec3(0.F);
   const auto effectiveLineHeight = GetSize().y / static_cast<float>(GetLines().size());
-  cursorPosition.y = effectiveLineHeight * static_cast<float>(GetLines().size() + 1) * 0.5F;
+  cursorPosition.y += effectiveLineHeight * static_cast<float>(GetLines().size() + 1) * 0.5F;
 
   int charsCount = 0;
   int symbolCount = 0;
@@ -241,14 +247,12 @@ void AbstractText::parseText() {
             const glm::vec2 halfSize = (glm::vec2(glyph.Character->Size) * glm::vec2(0.5F)) * GetCharacterSize();
             const glm::vec2 fontOffset = glm::vec2(glyph.Character->Offset) * GetCharacterSize();
 
-            const glm::vec2
-                centerPosition(fontOffset.x + halfSize.x, effectiveLineHeight * -0.5F - (fontOffset.y + halfSize.y));
+            const glm::vec3 characterOffset(fontOffset.x + halfSize.x,
+                                            effectiveLineHeight * -0.5F - (fontOffset.y + halfSize.y),
+                                            0.F);
 
-            const auto localPosition = cursorPosition + centerPosition + glm::vec2(GetPositionOffset());
+            const auto worldPos = cursorPosition + characterOffset;
 
-            auto worldPos = glm::vec3(localPosition.x,
-                                      localPosition.y,
-                                      GetPositionOffset().z);
             if (characterGlyphs_.size() > charsCount) {
               characterGlyphs_[charsCount].Glyph = &glyph;
               characterGlyphs_[charsCount].Position = worldPos;
@@ -266,11 +270,11 @@ void AbstractText::parseText() {
           }
           case stage::text::Glyph::Type::Symbol: {
             auto halfSize = static_cast<float>(glyph.SizeX()) * 0.5F * GetCharacterSize();
-            auto worldPos = GetPositionOffset() + glm::vec3(cursorPosition.x + halfSize,
-                                                            cursorPosition.y - effectiveLineHeight * 0.5
-                                                                - halfSize - data_->Font->Padding[1]
-                                                                * GetCharacterSize(),
-                                                            0.F);
+            auto worldPos = cursorPosition + glm::vec3(halfSize,
+                                                       -effectiveLineHeight * 0.5
+                                                           - halfSize - data_->Font->Padding[1]
+                                                           * GetCharacterSize(),
+                                                       0.F);
 
             if (symbolGlyphs_.size() > symbolCount) {
               symbolGlyphs_[symbolCount].Glyph = &glyph;

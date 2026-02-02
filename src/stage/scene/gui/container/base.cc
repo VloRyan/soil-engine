@@ -5,7 +5,8 @@ namespace soil::stage::scene::gui::container {
 Base::Base(const int margin, const glm::ivec4 padding, SizeTypes sizeType)
     : Rectangle(glm::ivec2(0), sizeType),
       margin_(margin),
-      offset_(glm::ivec2(0)), scrollStep_(glm::ivec2(10)) {
+      offset_(glm::ivec2(0)), scrollStep_(glm::ivec2(10)), itemAlignment_({layout::Alignment::Horizontal::Center,
+                                                                           layout::Alignment::Vertical::Center}) {
   Rectangle::SetPadding(padding);
 }
 
@@ -70,6 +71,19 @@ void Base::OnMouseWheel(const glm::ivec2& pos, glm::vec2 offset) {
   const auto overflow = GetSize() - GetScissorRect().Size;
   newValue = glm::clamp(newValue, glm::ivec2(0), overflow);
   SetOffset(newValue);
+}
+
+const layout::Alignment& Base::GetItemAlignment() const {
+  return itemAlignment_;
+}
+
+void Base::SetItemAlignment(
+    const layout::Alignment alignment) {
+  if (itemAlignment_ == alignment) {
+    return;
+  }
+  itemAlignment_ = alignment;
+  SetDirty(DirtyImpact::Dependents);
 }
 
 }  // namespace soil::stage::scene::gui::container

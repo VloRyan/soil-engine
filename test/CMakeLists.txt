@@ -50,6 +50,7 @@ add_executable(${PROJECT_NAME}
         world/volume/quad_tree_perf_test.cc
         world/volume/quad_tree_test.cc
         world/world_test.cc
+        stage/scene/gui/gui_test.cc
 
 )
 
