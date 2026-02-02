@@ -1,19 +1,19 @@
-#ifndef SCROLLBAR_H
-#define SCROLLBAR_H
+#ifndef SOIL_EXAMPLES_GUI_SCROLLBAR_H
+#define SOIL_EXAMPLES_GUI_SCROLLBAR_H
+#include "common/node/pane.h"
 #include "file/sprite_sheet.h"
-#include "gui/plane.h"
 
 namespace soil_samples::gui::menu {
-class Scrollbar final : public Plane {
+class Scrollbar final : public common::node::Pane {
  public:
   struct ScrollerDefinition {
-    std ::string TileName{};
-    Plane::Style Style{};
+    std::string TileName{};
+    Pane::Style Style{};
   };
 
   struct Definition {
     soil::file::SpriteSheet* SpriteSheet{nullptr};
-    std ::string BackgroundTileName{};
+    std::string BackgroundTileName{};
     ScrollerDefinition Scroller{};
   };
   enum class Direction : std::int8_t {
@@ -38,11 +38,10 @@ class Scrollbar final : public Plane {
   void SetIncrement(float increment);
 
   void Scroll(Direction direction = Direction::Down);
-  void SetScissorFrom(Rectangle* rectangle) override;
 
  private:
   void UpdateScrollerPosition() const;
-  Plane* scroller_;
+  Pane* scroller_;
   float value_;
   float minValue_;
   float maxValue_;

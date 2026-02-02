@@ -5,10 +5,11 @@
 namespace soil_samples::text {
 Node::Node(const std::string& fontPrefab, const std::string& text)
     : soil::stage::scene::Node(Type::Visual), textComponent_(nullptr) {
-  textComponent_ = AddComponent(new gui::component::Text(fontPrefab, text));
+  textComponent_ =
+      AddComponent(new common::component::TextComponent(fontPrefab, text));
 }
 
-[[nodiscard]] gui::component::Text& Node::Text() const {
+[[nodiscard]] common::component::TextComponent& Node::Text() const {
   return *textComponent_;
 };
 }  // namespace soil_samples::text

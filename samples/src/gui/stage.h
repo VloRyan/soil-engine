@@ -1,39 +1,28 @@
-#ifndef GUI_STAGE_H
-#define GUI_STAGE_H
+#ifndef SOIL_EXAMPLES_GUI_STAGE_H
+#define SOIL_EXAMPLES_GUI_STAGE_H
+#include "common/node/pane.h"
 #include "common/stage.h"
 #include "file/font.h"
 #include "file/sprite_sheet.h"
-#include "menu/item.h"
+#include "menu/menu.h"
 #include "stage/scene/component/text/abstract_text.h"
+#include "stage/scene/gui/container/flow_box.h"
 #include "stage/scene/gui/root.h"
 #include "stage/stage.h"
+#include "stage/scene/component/sound.h"
 
 namespace soil_samples::gui {
 class Stage final : public common::Stage {
  public:
-  struct MenuItemDefinition {
-    std::string Caption{};
-    std::string Value{};
-    std::string BackgroundTileName{};
-    std::string IconName{};
-    std::string ToolTip{};
-    float LetterSize{1.F};
-    Plane::Style BackgroundStyle{HoverStyle};
-    const std::function<void(menu::Item& item)> OnClick;
-  };
-
-  static inline auto HoverStyle = Plane::Style{
-      .BackgroundColor = glm::vec4(0.8F, 0.8F, 0.8F, 1.F),
-      .BackgroundColorMouseOver = glm::vec4(1.F),
-  };
-
   explicit Stage();
   ~Stage() override = default;
   void Render(soil::video::render::State& state) override;
 
-  void GenerateMenu(const std::vector<MenuItemDefinition>& items) const;
+  void GenerateMenu(
+      const std::vector<menu::Menu::MenuItemDefinition>& items) const;
 
   void OnLoad(soil::stage::scene::Scene* scene) override;
+  void Handle(const soil::video::event::WindowEvent& event) override;
 
  protected:
   void RegisterInputEvents(soil::input::EventMap& eventMap) override;
@@ -41,11 +30,16 @@ class Stage final : public common::Stage {
  private:
   void initGui();
 
-  menu::Item* createMenuItem(const MenuItemDefinition& def) const;
   std::vector<soil::video::texture::Texture*> textures_;
   soil::stage::scene::gui::Root* root_;
   soil::file::SpriteSheet spriteSheet_;
   menu::Menu* mainMenu_;
+  menu::Menu* settingsMenu_;
+  common::node::Pane* bgIcons_;
+  common::node::Pane* iconPlane_;
+  inline static auto REPEAT_BG_TILES = 6.F;
+
+  soil::stage::scene::component::Sound* music_;
 };
 }  // namespace soil_samples::gui
 

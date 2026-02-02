@@ -1,8 +1,9 @@
-#ifndef WILD_SOIL_SCENE_GUI_MENU_MENU_H
-#define WILD_SOIL_SCENE_GUI_MENU_MENU_H
+#ifndef SOIL_EXAMPLES_GUI_MENU_MENU_H
+#define SOIL_EXAMPLES_GUI_MENU_MENU_H
 
+#include "common/node/label.h"
+#include "common/node/pane.h"
 #include "file/sprite_sheet.h"
-#include "gui/plane.h"
 #include "scrollbar.h"
 #include "stage/scene/gui/container/base.h"
 #include "stage/scene/gui/rectangle.h"
@@ -10,7 +11,7 @@
 namespace soil_samples::gui::menu {
 class Item;
 
-class Menu : public soil::stage::scene::gui::Rectangle {
+class Menu : public common::node::Pane {
  public:
   enum class Orientation : std::uint8_t {
     Vertical = 0,
@@ -29,7 +30,21 @@ class Menu : public soil::stage::scene::gui::Rectangle {
     ScrollBarDefinition Scrollbar{.Enabled = false};
     soil::file::SpriteSheet* SpriteSheet{nullptr};
     std::string BackgroundTileName;
-    Plane::Style Style{};
+    Pane::Style Style{};
+  };
+
+  struct MenuItemDefinition {
+    std::string Id{};
+    std::string Caption{};
+    const soil::file::SpriteSheet* SpriteSheet{nullptr};
+    std::string BackgroundTileName{};
+    std::string IconName{};
+    std::string ToolTip{};
+    float LetterSize{1.F};
+    common::node::Pane::Style BackgroundStyle{common::node::Pane::HoverStyle};
+    common::node::Label::TextStyle LabelStyle{common::node::Label::HoverStyle};
+    const std::function<void(soil::input::MouseButton button)> OnClick;
+    glm::vec4 Padding{0.F};
   };
 
   explicit Menu(const Definition& definition);
@@ -42,13 +57,13 @@ class Menu : public soil::stage::scene::gui::Rectangle {
   void OnSelectionChanged(
       const std::function<void(int current, int prev)>& onSelectionChanged);
   [[nodiscard]] virtual Item* GetItem(int index) const;
-  void SetSize(const glm::ivec2& size) override;
 
-  glm::ivec2 GetChildSize() const override;
-  glm::vec2 GetCenter() const override;
+  static menu::Item* CreateMenuItem(const MenuItemDefinition& def);
+  Item* AddMenuItem(const MenuItemDefinition& def);
+  Rectangle* AddItem(Rectangle* item);
 
  protected:
-  void addChild(Node* node) override;
+  void AddChildNode(Node* node) override;
 
   void OnMouseOver(const glm::ivec2& pos) override;
   void OnMouseOut() override;
@@ -56,15 +71,15 @@ class Menu : public soil::stage::scene::gui::Rectangle {
   void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
                      soil::input::Event::StateType state) override;
 
-  void BeforeNodeUpdate() override;
+  void AfterNodeUpdate() override;
   Definition definition_;
-  Plane* bgPlane_;
   glm::ivec2 scrollOffset_;
-  Scrollbar* verticalScrollbar_;
+  // Scrollbar* verticalScrollbar_;
   int selectedItemIndex_;
   int maxItems_;
   std::function<void(int current, int prev)> onSelectionChanged_;
   soil::stage::scene::gui::container::Base* container_;
+  std::unordered_map<std::string, Rectangle*> items_;
 };
 }  // namespace soil_samples::gui::menu
 

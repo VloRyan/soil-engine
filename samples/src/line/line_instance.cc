@@ -36,14 +36,16 @@ void LineInstance::Update() {
   data_.Start = localStartPoint_ + GetParent()->GetPosition();
   data_.End = localEndPoint_ + GetParent()->GetPosition();
   MeshInstanceComponent::Update();
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 glm::vec4 LineInstance::GetColor() const { return data_.Color; }
 
 void LineInstance::SetColor(const glm::vec4 color) {
   data_.Color = color;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 float LineInstance::GetLength() const {
@@ -55,7 +57,8 @@ void LineInstance::SetStartPoint(const glm::vec3 StartPoint) {
     return;
   }
   localStartPoint_ = StartPoint;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {
@@ -63,7 +66,8 @@ void LineInstance::SetEndPoint(const glm::vec3 EndPoint) {
     return;
   }
   localEndPoint_ = EndPoint;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 glm::vec3 LineInstance::GetEndPoint() const { return localEndPoint_; }

@@ -2,7 +2,7 @@
 #define BASIC_STAGE_H
 
 #include "common/stage.h"
-#include "shape.h"
+#include "common/component/shape.h"
 
 namespace soil_samples::basic {
 constexpr int SHAPES_PER_DIM = 8;
@@ -20,7 +20,7 @@ class Stage final : public common::Stage {
  private:
   void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
   void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
-  std::array<Shape*, SHAPES_PER_DIM * SHAPES_PER_DIM> shapes_;
+  std::array<common::component::Shape*, SHAPES_PER_DIM * SHAPES_PER_DIM> shapes_;
 };
 }  // namespace soil_samples::basic
 

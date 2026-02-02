@@ -8,21 +8,20 @@ Scrollbar::Scrollbar(const Definition& definition)
       maxValue_(0.F),
       increment_(0.F),
       onValueChange_(nullptr) {
-  Background().SetTileIndex(
-      definition.SpriteSheet->FrameByName(definition.BackgroundTileName));
-  scroller_ = AddChild(new Plane());
-  scroller_->Background().SetTileIndex(
-      definition.SpriteSheet->FrameByName(definition.Scroller.TileName));
+  Background().SetFeature(common::component::ShapeComponent::Features::TileIndex,
+                          definition.SpriteSheet->FrameByName(definition.BackgroundTileName));
+  scroller_ = AddChild(new Pane());
+  scroller_->Background().SetFeature(common::component::ShapeComponent::Features::TileIndex,
+                                     definition.SpriteSheet->FrameByName(definition.Scroller.TileName));
   scroller_->SetRelativeSize(glm::vec2(0.80F, 0.05F));
   scroller_->SetStyle(definition.Scroller.Style);
-  scroller_->SetScissorFrom(Plane::GetScissorFrom());
   UpdateScrollerPosition();
 }
 
 void Scrollbar::OnMouseButton(const glm::ivec2& pos,
                               const soil::input::MouseButton button,
                               const soil::input::Event::StateType state) {
-  Plane::OnMouseButton(pos, button, state);
+  Pane::OnMouseButton(pos, button, state);
   if (!scroller_->Contains(pos)) {
     auto direction = Direction::Down;
     if (pos.y > scroller_->GetPosition().y) {
@@ -52,7 +51,7 @@ void Scrollbar::SetValue(const float value) {
 }
 
 void Scrollbar::UpdateSize(const glm::ivec2& parentSize) {
-  Plane::UpdateSize(parentSize);
+  Pane::UpdateSize(parentSize);
   UpdateScrollerPosition();
 }
 
@@ -93,11 +92,6 @@ void Scrollbar::Scroll(Direction direction) {
     }
     UpdateScrollerPosition();
   }
-}
-
-void Scrollbar::SetScissorFrom(Rectangle* rectangle) {
-  Plane::SetScissorFrom(rectangle);
-  scroller_->SetScissorFrom(rectangle);
 }
 
 void Scrollbar::UpdateScrollerPosition() const {

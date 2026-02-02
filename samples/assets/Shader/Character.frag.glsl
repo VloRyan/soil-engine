@@ -10,12 +10,17 @@ uniform sampler2D uTexture;
 out vec4 FragColor;
 
 void main() {
-    float distance = 1.0f - texture(uTexture, UV).a;
-
+    float distance = 1.0 - texture(uTexture, UV).a;
+    if (distance == 1.0) {
+        discard;
+    }
     float alpha = smoothstep(uCharacterOutline.x + uCharacterOutline.y, uCharacterOutline.x, distance);
     float outlineAlpha = smoothstep(uBorderOutline.x + uBorderOutline.y, uBorderOutline.x, distance);
 
-    float overallAlpha = alpha + (1.0f - alpha) * outlineAlpha;
+    float overallAlpha = alpha + (1.0 - alpha) * outlineAlpha;
+    if (overallAlpha <= 0.1) {
+        discard;
+    }
     vec3 overallColor = mix(uBorderColor, uColor.rgb, alpha / overallAlpha);
     overallAlpha = min(overallAlpha, uColor.a);
     FragColor = vec4(overallColor, overallAlpha);

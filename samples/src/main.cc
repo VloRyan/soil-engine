@@ -7,6 +7,7 @@
 #include "sound/stage.h"
 #include "text/stage.h"
 #include "world/stage.h"
+#include "common/component/shape_tile.h"
 
 int parseIntOrDefault(const std::string& s, const int defaultValue) {
   try {
@@ -27,24 +28,24 @@ struct StageLoader {
 
 int main(const int argc, const char* argv[]) {
   auto engine = soil::Engine({.Context = {
-                                  .Size = glm::ivec2(1920, 1080),
-                                  .OpenGLVersion = glm::ivec2(3, 3),
-                              }});
+      .Size = glm::ivec2(1920, 1080),
+      .OpenGLVersion = glm::ivec2(3, 3),
+  }});
   auto* vidMgr = engine.GetVideoManager();
 
   vidMgr->PrepareShader(new soil::video::shader::Program(
-      soil_samples::basic::Shape::SHADER_NAME, asset::GetPath("Shader/")));
+      soil_samples::common::component::Shape::SHADER_NAME, asset::GetPath("Shader/")));
   vidMgr->PrepareShader(new soil::video::shader::Program(
       soil_samples::instancing::ShapeInstance::SHADER_NAME,
       asset::GetPath("Shader/")));
   vidMgr->PrepareShader(new soil::video::shader::Program(
-      soil_samples::gui::component::ShapeTile::SHADER_NAME,
+      soil_samples::common::component::ShapeTile::SHADER_NAME,
       asset::GetPath("Shader/")));
   vidMgr->PrepareShader(new soil::video::shader::Program(
-      soil_samples::gui::component::Text::CHARACTER_SHADER_NAME,
+      soil_samples::common::component::TextComponent::CHARACTER_SHADER_NAME,
       asset::GetPath("Shader/")));
   vidMgr->PrepareShader(new soil::video::shader::Program(
-      soil_samples::gui::component::Text::SYMBOL_SHADER_NAME,
+      soil_samples::common::component::TextComponent::SYMBOL_SHADER_NAME,
       asset::GetPath("Shader/")));
   vidMgr->PrepareShader(new soil::video::shader::Program(
       soil_samples::line::LineInstance::SHADER_NAME,
@@ -104,7 +105,7 @@ int main(const int argc, const char* argv[]) {
     stageIndex = parseIntOrDefault(argv[1], -1);
   }
   if (stageIndex == -1) {
-    std::vector<soil_samples::gui::Stage::MenuItemDefinition> menuItems;
+    std::vector<soil_samples::gui::menu::Menu::MenuItemDefinition> menuItems;
     soil_samples::gui::Stage* defaultStage = nullptr;
     std::vector<soil::stage::Stage*> stages;
     for (const auto& option : stagesWithDesc) {
@@ -121,6 +122,8 @@ int main(const int argc, const char* argv[]) {
     auto backToDefault = [&engine] {
       engine.GetStageManager()->SetCurrent("default");
     };
+    auto spriteSheet = soil::file::SpriteSheet::Load(
+        asset::GetPath("Textures/Tiles/Gui.json"));
     for (const auto& option : stagesWithDesc) {
       if (option.Id == "default") {
         continue;
@@ -129,17 +132,15 @@ int main(const int argc, const char* argv[]) {
       engine.GetStageManager()->RegisterStage(option.Id, stage);
       stage->SetBackAction(backToDefault);
       menuItems.push_back({
-          .Caption = option.Name,
-          .Value = option.Id,
-          .BackgroundTileName = "button",
-          .IconName = option.IconName,
-          .ToolTip = option.ToolTip,
-          .LetterSize = 0.8f,
-          .OnClick =
-              [stage](const soil_samples::gui::menu::Item& _) {
-                stage->SetCurrent();
-              },
-      });
+                              .Id = option.Id,
+                              .Caption = option.Name,
+                              .SpriteSheet = &spriteSheet,
+                              .BackgroundTileName = "button",
+                              .IconName = option.IconName,
+                              .ToolTip = option.ToolTip,
+                              .LetterSize = 0.6f,
+                              .OnClick = [stage](auto button) { stage->SetCurrent(); },
+                          });
     }
 
     defaultStage->Load();
@@ -153,4 +154,5 @@ int main(const int argc, const char* argv[]) {
   }
   engine.Run();
   return 0;
-}
+
+}  // namespace soil_samples

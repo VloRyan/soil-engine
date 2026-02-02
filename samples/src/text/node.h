@@ -1,6 +1,6 @@
-#ifndef TEXT_NODE_H
-#define TEXT_NODE_H
-#include "gui/component/text.h"
+#ifndef SOIL_EXAMPLES_TEXT_NODE_H
+#define SOIL_EXAMPLES_TEXT_NODE_H
+#include "common/component/text_component.h"
 #include "stage/scene/node.h"
 
 namespace soil_samples::text {
@@ -9,10 +9,10 @@ class Node final : public soil::stage::scene::Node {
   explicit Node(const std::string& fontPrefab, const std::string& text = "");
   ~Node() override = default;
 
-  [[nodiscard]] gui::component::Text& Text() const;
+  [[nodiscard]] common::component::TextComponent& Text() const;
 
  private:
-  gui::component::Text* textComponent_;
+  common::component::TextComponent* textComponent_;
 };
 }  // namespace soil_samples::text
 

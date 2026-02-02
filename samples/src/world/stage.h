@@ -1,10 +1,10 @@
 #ifndef WORLD_STAGE_H
 #define WORLD_STAGE_H
-#include "basic/shape.h"
 #include "common/stage.h"
 #include "engine.h"
 #include "stage/scene/component/world/world_component.h"
 #include "stage/stage.h"
+#include "common/component/shape.h"
 
 namespace soil_samples::world {
 class Stage final : public common::Stage {
@@ -21,7 +21,7 @@ class Stage final : public common::Stage {
  private:
   void initBackground(soil::stage::scene::Scene* scene, byte textureUnit) const;
   void initCarrots(soil::stage::scene::Scene* scene, byte textureUnit);
-  std::array<basic::Shape*, 4> shapes_;
+  std::array<common::component::Shape*, 4> shapes_;
   soil::stage::scene::component::world::WorldComponent* world_;
   soil::stage::scene::component::world::CollisionObjectComponent* colObj_;
 };

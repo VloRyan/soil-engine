@@ -39,7 +39,8 @@ void ShapeInstance::SetTextureIndex(const uint index) {
     return;
   }
   data_.TextureIndex = index;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 glm::vec2 ShapeInstance::GetSize() const { return data_.Size; }
@@ -49,7 +50,8 @@ void ShapeInstance::SetSize(const glm::vec2& size) {
     return;
   }
   data_.Size = size;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 glm::vec4 ShapeInstance::GetColor() const { return data_.Color; }
@@ -59,7 +61,8 @@ void ShapeInstance::SetColor(const glm::vec4& color) {
     return;
   }
   data_.Color = color;
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 
 void ShapeInstance::Update() {
@@ -67,7 +70,8 @@ void ShapeInstance::Update() {
     return;
   }
   data_.Matrix = GetParent()->Transform().GetMatrix();
-  SignalChanged();
+  SignalChanged(
+      soil::stage::scene::component::DrawableComponent::ChangeDetails::Data);
 }
 void ShapeInstance::Write(const soil::video::render::data::IWriter& writer) {
   writer.Write("aMatrix", data_.Matrix);

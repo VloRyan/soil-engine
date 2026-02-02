@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "basic/shape.h"
 #include "common/rotation_node.h"
 #include "glm/glm.hpp"
 #include "stage/scene/scene.h"
@@ -33,14 +32,16 @@ void Stage::Update() {
   }
   soil::stage::Stage::Update();
 }
+
 soil::stage::scene::viewer::Node* Stage::NewViewer(glm::ivec2 windowSize) {
   const auto viewer = new soil::stage::scene::viewer::Ortho(windowSize);
   viewer->SetOrthoType(soil::stage::scene::viewer::OrthoType::OrthoHeight);
   return viewer;
 }
+
 void Stage::OnLoad(soil::stage::scene::Scene* scene) {
   const std::vector textures = {GetResources().Textures().GetTexture2D(
-                                    asset::GetPath("Textures/soil_engine.png")),
+      asset::GetPath("Textures/soil_engine.png")),
                                 GetResources().Textures().GetTexture2D(
                                     asset::GetPath("Textures/carrot.png"))};
 
@@ -50,7 +51,7 @@ void Stage::OnLoad(soil::stage::scene::Scene* scene) {
         *texture);  // texture will be bound to next free slot
   }
 
-  auto* shader = GetResources().GetShader(basic::Shape::SHADER_NAME);
+  auto* shader = GetResources().GetShader(common::component::Shape::SHADER_NAME);
   renderState.SetShader(shader);
 
   world_ = scene->AddComponent(
@@ -60,6 +61,13 @@ void Stage::OnLoad(soil::stage::scene::Scene* scene) {
                   .Friction = 0.01F,
               },
               new soil::world::volume::QuadTree(64.F))));
+
+  auto* quadVao = GetResources().GetVao("quad");
+  common::component::Shape::PREFABS.Insert("shapeDefault",
+                                           {
+                                               .QuadVao = quadVao,
+                                               .Shader = shader,
+                                           });
 
   initBackground(scene, textures[0]->GetSlot());
   initCarrots(scene, textures[1]->GetSlot());
@@ -82,12 +90,9 @@ void Stage::RegisterInputEvents(soil::input::EventMap& eventMap) {
 
 void Stage::initBackground(soil::stage::scene::Scene* scene,
                            const byte textureUnit) const {
-  auto* shader = GetResources().GetShader(basic::Shape::SHADER_NAME);
-  auto* quadVao = GetResources().GetVao("quad");
-
   const auto bgNode = scene->AddChild(
       new soil::stage::scene::Node(soil::stage::scene::Node::Type::Visual));
-  auto* bgShape = bgNode->AddComponent(new basic::Shape(quadVao, shader));
+  auto* bgShape = bgNode->AddComponent(new common::component::Shape("shapeDefault"));
   bgShape->SetSize({10.F, 10.F});
   bgShape->SetTextureUnit(textureUnit);
   bgNode->SetPosition({0.F, 0.F, -1.F});
@@ -95,15 +100,12 @@ void Stage::initBackground(soil::stage::scene::Scene* scene,
 
 void Stage::initCarrots(soil::stage::scene::Scene* scene,
                         const byte textureUnit) {
-  auto* shader = GetResources().GetShader(basic::Shape::SHADER_NAME);
-
-  auto* quadVao = GetResources().GetVao("quad");
   constexpr std::array colors = {
       glm::vec3(1.F, 1.F, 1.F), glm::vec3(0.5F, 1.F, 1.F),
       glm::vec3(1.F, 0.5F, 1.F), glm::vec3(1.F, 1.F, 0.5F)};
   float initRotation = 0.0f;
   auto* shapeNode = scene->AddChild(new common::RotationNode(initRotation));
-  shapes_[0] = shapeNode->AddComponent(new basic::Shape(quadVao, shader));
+  shapes_[0] = shapeNode->AddComponent(new common::component::Shape("shapeDefault"));
   shapes_[0]->SetTextureUnit(textureUnit);
   shapes_[0]->SetSize(glm::vec2(1, 1));
   shapes_[0]->SetColor(glm::vec4(colors[0], 1.0F));

@@ -1,17 +1,16 @@
-#include "text.h"
+#include "text_component.h"
 
 #include <bits/fs_fwd.h>
 
 #include "stage/scene/gui/rectangle.h"
 #include "stage/text/parser.h"
 
-namespace soil_samples::gui::component {
-Text::Text(const std::string& prefab, const std::string& text)
+namespace soil_samples::common::component {
+TextComponent::TextComponent(const std::string& prefab, const std::string& text)
     : AbstractText(prefab, text) {}
 
-void Text::SetupText(soil::video::render::State& state) {
-  const auto* parentRect =
-      dynamic_cast<soil::stage::scene::gui::Rectangle*>(GetParent());
+void TextComponent::SetupText(soil::video::render::State& state,
+                              soil::stage::scene::gui::Rectangle* parentRect) {
   if (parentRect != nullptr) {
     state.SetScissorTest(true);
     state.SetScissor(parentRect->GetScissorRect());
@@ -21,9 +20,10 @@ void Text::SetupText(soil::video::render::State& state) {
   data_->CharacterShader->SetUniform("uTexture", GetTextureSlot());
 }
 
-void Text::SetupCharacter(const soil::file::Font::Character& character,
-                          const glm::vec3& worldPos, const glm::vec4& color,
-                          soil::video::shader::Program* shader) {
+void TextComponent::SetupCharacter(const soil::file::Font::Character& character,
+                                   const glm::vec3& worldPos,
+                                   const glm::vec4& color,
+                                   soil::video::shader::Program* shader) {
   shader->SetUniform("uPositionWorldSpace", worldPos);
 
   shader->SetUniform("uSize", glm::vec2(character.Size) * GetCharacterSize());
@@ -42,9 +42,10 @@ void Text::SetupCharacter(const soil::file::Font::Character& character,
   shader->SetUniform("uBorderOutline", GetBorderOutline());
   shader->SetUniform("uCharacterOutline", GetCharacterOutline());
 }
-void Text::SetupSymbol(const soil::stage::text::Symbol& symbol,
-                       const glm::vec3& worldPos, const glm::vec4& color,
-                       soil::video::shader::Program* shader) {
+void TextComponent::SetupSymbol(const soil::stage::text::Symbol& symbol,
+                                const glm::vec3& worldPos,
+                                const glm::vec4& color,
+                                soil::video::shader::Program* shader) {
   shader->SetUniform("uPositionWorldSpace", worldPos);
   shader->SetUniform("uSize", glm::vec2(symbol.SizeX) * GetCharacterSize());
   shader->SetUniform("uColor", color);
@@ -52,4 +53,4 @@ void Text::SetupSymbol(const soil::stage::text::Symbol& symbol,
   shader->SetUniform("uTileIndex", symbol.TileIndex);
 }
 
-}  // namespace soil_samples::gui::component
+}  // namespace soil_samples::common::component

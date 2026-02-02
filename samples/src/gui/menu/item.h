@@ -1,24 +1,18 @@
-#ifndef WILD_SOIL_SCENE_GUI_MENU_ITEM_H
-#define WILD_SOIL_SCENE_GUI_MENU_ITEM_H
-#include "gui/plane.h"
+#ifndef SOIL_EXAMPLES_GUI_MENU_ITEM_H
+#define SOIL_EXAMPLES_GUI_MENU_ITEM_H
+#include "common/node/pane.h"
 
 namespace soil_samples::gui::menu {
 class Menu;
 
-class Item : public Plane {
+class Item : public common::node::Pane {
  public:
-  explicit Item(std::string value = "");
+  explicit Item(const std::string& id = "");
   ~Item() override = default;
-  [[nodiscard]] virtual std::string GetValue() const;
-  void SetOnClick(const std::function<void(Item& item)>& onClick);
-
- protected:
-  void OnMouseButton(const glm::ivec2& pos, soil::input::MouseButton button,
-                     soil::input::Event::StateType state) override;
+  [[nodiscard]] virtual std::string Id() const;
 
  private:
-  std::string value_;
-  std::function<void(Item& item)> onClick_;
+  std::string id_;
 };
 
 }  // namespace soil_samples::gui::menu

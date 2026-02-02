@@ -1,20 +1,20 @@
 #include "menu.h"
 
+#include "common/node/label.h"
 #include "item.h"
-#include "scrollbar.h"
 #include "stage/scene/gui/container/h_box.h"
 #include "stage/scene/gui/container/v_box.h"
 
 namespace soil_samples::gui::menu {
 Menu::Menu(const Definition& definition)
     : definition_(definition),
-      bgPlane_(nullptr),
       scrollOffset_(0),
-      verticalScrollbar_(nullptr),
+      container_(nullptr),
+    /*verticalScrollbar_(nullptr),*/
       selectedItemIndex_(-1),
       maxItems_(3),
       onSelectionChanged_(nullptr) {
-  Rectangle::SetPadding(definition.Padding);
+  Pane::SetPadding(definition.Padding);
   if (definition.Orientation == Orientation::Vertical) {
     container_ = AddChild(new soil::stage::scene::gui::container::VBox(
         definition.Margin, glm::ivec4(0)));
@@ -22,16 +22,15 @@ Menu::Menu(const Definition& definition)
     container_ = AddChild(new soil::stage::scene::gui::container::HBox(
         definition.Margin, glm::ivec4(0)));
   }
-  container_->SetRelativeSize(glm::vec2(1.F));
-  container_->SetPosition(glm::vec3(Menu::GetCenter(), LAYER_Z_INCREMENT));
+  container_->SetAnchor(
+      {soil::stage::scene::gui::layout::Alignment::Horizontal::Left,
+       soil::stage::scene::gui::layout::Alignment::Vertical::Top});
 
-  bgPlane_ = AddChild(new Plane());
-  bgPlane_->SetLocalPosition(glm::vec3(0.F));  // no z-offset
-  bgPlane_->Background().SetTileIndex(
-      definition_.SpriteSheet->FrameByName(definition.BackgroundTileName));
-  bgPlane_->SetStyle(definition.Style);
-  bgPlane_->SetScissorFrom(this);
-  if (definition.Scrollbar.Enabled) {
+  Background().SetFeature(common::component::ShapeComponent::Features::TileIndex,
+                          definition_.SpriteSheet->FrameByName(definition.BackgroundTileName));
+  Pane::SetStyle(definition.Style);
+  Background().SetFeature(common::component::ShapeComponent::Features::RoundingRadius, 0.1F);
+  /*if (definition.Scrollbar.Enabled) {
     verticalScrollbar_ = AddChild(new Scrollbar({
         .SpriteSheet = definition.SpriteSheet,
         .BackgroundTileName = "test",
@@ -53,35 +52,35 @@ Menu::Menu(const Definition& definition)
       container_->SetOffset(glm::vec2(0, value));
     });
     verticalScrollbar_->SetScissorFrom(this);
-  }
+}*/
 }
 
 void Menu::OnMouseOver(const glm::ivec2& pos) {
   if (!IsVisible()) {
     return;
   }
-  Rectangle::OnMouseOver(pos);
+  Pane::OnMouseOver(pos);
 }
 
 void Menu::OnMouseOut() {
   if (!IsVisible()) {
     return;
   }
-  Rectangle::OnMouseOut();
+  Pane::OnMouseOut();
 }
 
 void Menu::OnMouseWheel(const glm::ivec2& pos, const glm::vec2 offset) {
   if (!IsVisible()) {
     return;
   }
-  Rectangle::OnMouseWheel(pos, offset);
-  if (verticalScrollbar_ != nullptr && verticalScrollbar_->IsVisible()) {
-    auto direction = Scrollbar::Direction::Down;
-    if (offset.y > 0.F) {
-      direction = Scrollbar::Direction::Up;
-    }
-    verticalScrollbar_->Scroll(direction);
-  }
+  Pane::OnMouseWheel(pos, offset);
+  /* if (verticalScrollbar_ != nullptr && verticalScrollbar_->IsVisible()) {
+     auto direction = Scrollbar::Direction::Down;
+     if (offset.y > 0.F) {
+       direction = Scrollbar::Direction::Up;
+     }
+     verticalScrollbar_->Scroll(direction);
+   }*/
 }
 
 void Menu::OnMouseButton(const glm::ivec2& pos,
@@ -90,7 +89,7 @@ void Menu::OnMouseButton(const glm::ivec2& pos,
   if (!IsVisible()) {
     return;
   }
-  Rectangle::OnMouseButton(pos, button, state);
+  Pane::OnMouseButton(pos, button, state);
   if (state == soil::input::Event::StateType::Release) {
     for (int i = 0; i < container_->GetItems().size(); i++) {
       if (const auto* item = container_->GetItems()[i]; item->Contains(pos)) {
@@ -105,24 +104,23 @@ void Menu::OnMouseButton(const glm::ivec2& pos,
   }
 }
 
-void Menu::BeforeNodeUpdate() {
-  if (verticalScrollbar_ != nullptr) {
-    if (container_->GetChildSize().y < container_->GetItemsSize().y) {
-      verticalScrollbar_->SetVisible(true);
-      verticalScrollbar_->SetMinValue(0.F);
-      verticalScrollbar_->SetMaxValue(static_cast<float>(
-          container_->GetItemsSize().y - container_->GetChildSize().y));
-      verticalScrollbar_->SetIncrement(10.F);
-      auto pos = verticalScrollbar_->GetPosition();
-      pos.x = static_cast<float>(GetSize().x) * 0.5F -
-              static_cast<float>(definition_.Scrollbar.Width) * 0.5F;
-      verticalScrollbar_->SetPosition(pos);
-    } else {
-      verticalScrollbar_->SetVisible(false);
-    }
-  }
-  container_->SetLocalPosition(glm::vec3(Menu::GetCenter(), LAYER_Z_INCREMENT));
-  Rectangle::BeforeNodeUpdate();
+void Menu::AfterNodeUpdate() {
+  /* if (verticalScrollbar_ != nullptr) {
+     if (container_->GetChildSize().y < container_->GetItemsSize().y) {
+       verticalScrollbar_->SetVisible(true);
+       verticalScrollbar_->SetMinValue(0.F);
+       verticalScrollbar_->SetMaxValue(static_cast<float>(
+           container_->GetItemsSize().y - container_->GetChildSize().y));
+       verticalScrollbar_->SetIncrement(10.F);
+       auto pos = verticalScrollbar_->GetPosition();
+       pos.x = static_cast<float>(GetSize().x) * 0.5F -
+               static_cast<float>(definition_.Scrollbar.Width) * 0.5F;
+       verticalScrollbar_->SetPosition(pos);
+     } else {
+       verticalScrollbar_->SetVisible(false);
+     }
+   }*/
+  Pane::AfterNodeUpdate();
 }
 
 glm::vec2 Menu::GetScrollOffset() const { return scrollOffset_; }
@@ -153,37 +151,62 @@ Item* Menu::GetItem(const int index) const {
   return dynamic_cast<Item*>(container_->GetItems().at(index));
 }
 
-void Menu::SetSize(const glm::ivec2& size) {
-  Rectangle::SetSize(size);
-  bgPlane_->SetSize(size);
-}
-
-glm::ivec2 Menu::GetChildSize() const {
-  auto childSize = Rectangle::GetChildSize();
-  if (verticalScrollbar_ != nullptr && verticalScrollbar_->IsVisible()) {
-    childSize -= glm::ivec2(definition_.Scrollbar.Width, 0.F);
-  }
-  return childSize;
-}
-
-glm::vec2 Menu::GetCenter() const {
-  auto center = Rectangle::GetCenter();
-  if (verticalScrollbar_ != nullptr && verticalScrollbar_->IsVisible()) {
-    center.x -= definition_.Scrollbar.Width * 0.5F;
-  }
-  return center;
-}
-
-void Menu::addChild(Node* node) {
+void Menu::AddChildNode(Node* node) {
   if (node->GetParent() == this) {
     return;
   }
-  if (dynamic_cast<Item*>(node) != nullptr) {
+  if (container_ != nullptr && dynamic_cast<Rectangle*>(node) != nullptr) {
     container_->AddChild(node);
     SetDirty(DirtyImpact::Dependents);
   } else {
-    Rectangle::addChild(node);
+    Pane::AddChildNode(node);
   }
 }
 
+menu::Item* Menu::CreateMenuItem(const MenuItemDefinition& def) {
+  auto* item = new Item(def.Id);
+  item->SetStyle(def.BackgroundStyle);
+  item->SetRelativeSize(glm::vec2(1.0F, 0.0F));
+  item->SetAspectRatio(5.F / 1.F);
+  item->SetOnClick(def.OnClick);
+  item->SetMaxSize(glm::ivec2(400, 80));
+  if (!def.BackgroundTileName.empty()) {
+    if (def.SpriteSheet == nullptr) {
+      throw std::runtime_error("no sprite sheet");
+    }
+    item->Background().SetFeature(common::component::ShapeComponent::Features::TileIndex,
+                                  def.SpriteSheet->FrameByName("bg_button"));
+    item->Background().SetFeature(common::component::ShapeComponent::Features::RoundingRadius, 0.05F);
+    item->SetPadding(glm::ivec4(30, 0, 30, 0));
+  }
+
+  auto* label = item->AddChild(new common::node::Label(
+      !def.IconName.empty() ? ":" + def.IconName + ":" + def.Caption
+                            : def.Caption));
+  label->Text().SetCharacterSize(def.LetterSize);
+  label->SetAnchor(
+      {
+          soil::stage::scene::gui::layout::Alignment::Horizontal::Left,
+
+          soil::stage::scene::gui::layout::Alignment::Vertical::Center}
+
+  );
+  label->SetTextStyle(def.LabelStyle);
+  if (!def.ToolTip.empty()) {
+    auto* toolTip = new common::node::Label(def.ToolTip);
+    toolTip->SetStyle(Pane::ToolTipStyle);
+    toolTip->Text().SetCharacterSize(0.4F);
+    item->SetToolTip(toolTip);
+  }
+  return item;
+}
+
+Item* Menu::AddMenuItem(const MenuItemDefinition& def) {
+  return container_->AddChild(CreateMenuItem(def));
+}
+
+soil::stage::scene::gui::Rectangle* Menu::AddItem(
+    soil::stage::scene::gui::Rectangle* item) {
+  return container_->AddChild(item);
+}
 }  // namespace soil_samples::gui::menu

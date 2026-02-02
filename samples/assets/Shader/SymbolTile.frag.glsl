@@ -16,7 +16,7 @@ void main() {
         FragColor = vec4(gammaCorrection(uColor.rgb), uColor.a);
     } else {
         vec4  textureColor = texture(uTexture, vec3(fs_in.uv, uTileIndex));
-        if (textureColor.a <= 0.0) {
+        if (textureColor.a <= 0.3) {
             discard;
         }
         FragColor.rgb = gammaCorrection(textureColor.rgb * uColor.rgb);
