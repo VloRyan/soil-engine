@@ -1,5 +1,5 @@
-#ifndef SOIL_VIDEO_RENDER_TYPES_HPP
-#define SOIL_VIDEO_RENDER_TYPES_HPP
+#ifndef SOIL_ENGINE_VIDEO_RENDER_TYPES_HPP
+#define SOIL_ENGINE_VIDEO_RENDER_TYPES_HPP
 
 #include <GL/glcorearb.h>
 
@@ -15,6 +15,7 @@ enum class DepthFunc : std::int16_t {
   Greater = GL_GREATER,
   NotEqual = GL_NOTEQUAL,
   GreaterEqual = GL_GEQUAL,
+  Always = GL_ALWAYS,
 };
 
 enum class BufferBits : std::uint16_t {
@@ -48,7 +49,7 @@ struct Rect {
 
   friend bool operator==(const Rect& lhs, const Rect& rhs) {
     return lhs.LowerLeftPosition == rhs.LowerLeftPosition &&
-           lhs.Size == rhs.Size;
+        lhs.Size == rhs.Size;
   }
 
   friend bool operator!=(const Rect& lhs, const Rect& rhs) {

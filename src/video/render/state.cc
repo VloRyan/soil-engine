@@ -71,7 +71,7 @@ void State::WriteUbo(
   const auto itr = uboMap_.find(target);
   if (itr == uboMap_.end()) {
     throw std::runtime_error("Cannot find Ubo for target: " +
-                             std::to_string(target));
+        std::to_string(target));
   }
   auto& cursor = itr->second->GetCursor();
   writeFunc(cursor);
@@ -177,8 +177,11 @@ void State::SetScissor(const Rect& rect) {
 Rect State::GetScissor() const { return scissor_; }
 
 #ifdef DEBUG
+
 void State::ResetChangeCounter() { changes_ = 0; }
+
 #endif
+
 void State::RegisterUbo(const int target, buffer::UniformBufferObject* ubo) {
   uboMap_[target] = ubo;
 }
@@ -236,7 +239,7 @@ void State::SetTexture(const GLenum target, const byte textureUnit,
   if (textureUnit >= maxImageUnits_) {
     throw std::runtime_error(
         "State::SetTexture: textureUnit out of range, max. image units = " +
-        std::to_string(maxImageUnits_));
+            std::to_string(maxImageUnits_));
   }
   if (textureUnits_[textureUnit] == &texture) {
     return;
@@ -280,7 +283,9 @@ void State::Clear(const BufferBitDescription bits) {
 #endif
   context_.Clear(bufferBits);
 }
+
 const glm::vec4& State::GetClearColor() const { return clearColor_; }
+
 void State::SetClearColor(const glm::vec4& clearColor) {
   if (clearColor_ == clearColor) {
     return;
@@ -306,6 +311,7 @@ StateDef State::Pop() {
       .Scissor = scissor_,
   };
 }
+
 void State::BindVao(const vertex::Vao* vao) {
   if (vao == vao_) {
     return;
@@ -320,6 +326,7 @@ void State::BindVao(const vertex::Vao* vao) {
   changes_++;
 #endif
 }
+
 const vertex::Vao* State::GetVao() const { return vao_; }
 
 void State::SetShader(const shader::Program* shader) {
@@ -341,17 +348,21 @@ void State::SetShader(const shader::Program* shader) {
   changes_++;
 #endif
 }
+
 const std::vector<texture::Texture*>& State::TextureUnits() {
   return textureUnits_;
 }
+
 size_t State::FramesRendered() const { return framesRendered_; }
 
 bool StateDef::operator==(const StateDef& rhs) const {
   return Blend == rhs.Blend && DepthTest == rhs.DepthTest &&
-         StencilTest == rhs.StencilTest && ScissorTest == rhs.ScissorTest &&
-         DepthFunc == rhs.DepthFunc;
+      StencilTest == rhs.StencilTest && ScissorTest == rhs.ScissorTest &&
+      DepthFunc == rhs.DepthFunc;
 }
+
 bool StateDef::operator!=(const StateDef& rhs) const { return !(rhs == *this); }
+
 bool StateDef::operator<(const StateDef& rhs) const {
   if (Blend < rhs.Blend) return true;
   if (rhs.Blend < Blend) return false;
@@ -363,7 +374,10 @@ bool StateDef::operator<(const StateDef& rhs) const {
   if (rhs.ScissorTest < ScissorTest) return false;
   return DepthFunc < rhs.DepthFunc;
 }
+
 bool StateDef::operator>(const StateDef& rhs) const { return rhs < *this; }
+
 bool StateDef::operator<=(const StateDef& rhs) const { return !(rhs < *this); }
+
 bool StateDef::operator>=(const StateDef& rhs) const { return !(*this < rhs); }
 }  // namespace soil::video::render
